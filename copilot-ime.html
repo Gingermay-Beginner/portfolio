@@ -1,0 +1,958 @@
+<!doctype html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Copilot IME — Bringing AI into the input layer · Bingnan Jiang</title>
+  <meta name="description" content="Copilot IME case study — putting AI at the input layer, where intent is born. From “Open app → Ask AI” to “Express intent → AI acts.”">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f4f5;
+      --bg-2: #fafafa;
+      --ink: #18181b;
+      --soft: #3f3f46;
+      --muted: #71717a;
+      --faint: #a1a1aa;
+      --line: #e4e4e7;
+      --line-strong: #d4d4d8;
+      --card: #ffffff;
+      --card-2: #fafafa;
+      --glass: rgba(255, 255, 255, .88);
+      --accent: #18181b;
+      --green: #10b981;
+      --shadow: 0 10px 28px -18px rgba(24, 24, 27, .22);
+      --shadow-soft: 0 6px 20px -16px rgba(24, 24, 27, .3);
+      --radius: 18px;
+      --radius-lg: 22px;
+      --max: 1080px;
+      font-family: "Space Grotesk", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      letter-spacing: .1px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      font-family: Inter, "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    }
+    a { color: inherit; text-decoration: none; }
+    a, button { -webkit-tap-highlight-color: transparent; }
+    ::selection { background: rgba(24, 24, 27, .13); color: var(--ink); }
+
+    .wrap { width: min(var(--max), calc(100vw - 40px)); margin: 0 auto; }
+    .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+    h1, h2, h3, .disp { font-family: "Space Grotesk", Inter, sans-serif; }
+
+    /* ---------- Top bar ---------- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--glass);
+      backdrop-filter: saturate(1.4) blur(14px);
+      -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    }
+    .topbar-inner {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 58px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--soft);
+      transition: color .2s ease;
+    }
+    .back-link:hover { color: var(--ink); }
+    .back-link .arw { transition: transform .22s ease; }
+    .back-link:hover .arw { transform: translateX(-3px); }
+    .top-actions { display: inline-flex; gap: 10px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 36px;
+      padding: 0 15px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--line-strong);
+      background: var(--card);
+      color: var(--ink);
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); border-color: var(--ink); }
+    .btn.solid { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .btn.solid:hover { background: #000; }
+
+    /* ---------- Eyebrow / kickers ---------- */
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .kicker .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green);
+    }
+    .sec-num {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-weight: 500;
+    }
+
+    /* ---------- Hero ---------- */
+    .hero { padding: 72px 0 40px; }
+    .hero h1 {
+      font-size: clamp(42px, 7vw, 76px);
+      line-height: 1.02;
+      letter-spacing: -1.6px;
+      margin: 20px 0 0;
+      font-weight: 700;
+    }
+    .hero .lede {
+      font-size: clamp(18px, 2.4vw, 23px);
+      line-height: 1.5;
+      color: var(--soft);
+      max-width: 620px;
+      margin: 22px 0 0;
+    }
+    .hero .lede em { font-style: normal; color: var(--ink); font-weight: 600; }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      margin-top: 46px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--card);
+      overflow: hidden;
+    }
+    .meta-cell {
+      padding: 18px 20px;
+      border-right: 1px solid var(--line);
+    }
+    .meta-cell:last-child { border-right: none; }
+    .meta-cell .k {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10.5px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+    .meta-cell .v {
+      margin-top: 7px;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.35;
+    }
+
+    /* ---------- Section frame ---------- */
+    section.block { padding: 52px 0; }
+    .sec-head { max-width: 680px; margin-bottom: 34px; }
+    .sec-head h2 {
+      font-size: clamp(26px, 4vw, 38px);
+      line-height: 1.1;
+      letter-spacing: -0.8px;
+      margin: 14px 0 0;
+      font-weight: 600;
+    }
+    .sec-head p {
+      font-size: 16.5px;
+      line-height: 1.6;
+      color: var(--muted);
+      margin: 14px 0 0;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+    }
+
+    /* ---------- Why-cards (Context / the bet) ---------- */
+    .why-lead {
+      padding-bottom: 26px;
+      margin-bottom: 26px;
+    }
+    .why-num {
+      display: block;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      color: var(--green);
+      font-weight: 500;
+    }
+    .why-lead-title {
+      display: block;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(22px, 3vw, 30px);
+      line-height: 1.14;
+      letter-spacing: -0.5px;
+      font-weight: 600;
+      margin: 12px 0 10px;
+    }
+    .why-lead p { margin: 0; color: var(--soft); font-size: 15.5px; line-height: 1.6; max-width: 640px; }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .why-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 20px;
+      background: var(--card-2);
+      transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+    }
+    .why-card:hover { border-color: var(--line-strong); transform: translateY(-2px); box-shadow: var(--shadow); }
+    .why-card .why-num { color: var(--muted); }
+    .why-card strong {
+      display: block;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 16.5px;
+      margin: 9px 0 7px;
+      letter-spacing: -0.2px;
+    }
+    .why-card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+
+    /* ---------- Problem: standalone vs embedded break cards ---------- */
+    .break-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .break-card {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px 22px;
+      background: var(--card);
+    }
+    .break-card > strong {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 19px;
+      letter-spacing: -0.3px;
+      display: block;
+    }
+    .break-card .desc { display: block; margin-top: 8px; color: var(--soft); font-size: 14.5px; line-height: 1.55; }
+    .break-card .flow {
+      display: block;
+      margin-top: 14px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: .2px;
+      color: var(--ink);
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 10px 12px;
+      line-height: 1.5;
+    }
+    .signals { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 9px; }
+    .signals li {
+      position: relative;
+      padding-left: 24px;
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--soft);
+    }
+    .signals li::before {
+      position: absolute;
+      left: 0; top: 0;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .signals li.good::before { content: "+"; color: var(--green); }
+    .signals li.bad::before { content: "\2212"; color: var(--faint); }
+    .callout {
+      margin-top: 20px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--ink);
+      color: #fff;
+      border-radius: 14px;
+      padding: 20px 22px;
+    }
+    .callout strong {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--green);
+      white-space: nowrap;
+      padding-top: 2px;
+    }
+    .callout span { font-size: 15.5px; line-height: 1.55; color: #e4e4e7; }
+
+    /* ---------- Primer ---------- */
+    .pyp { border: 1px solid var(--line); border-radius: 12px; padding: 24px; background: var(--card-2); }
+    .pyp-kicker {
+      display: inline-flex; align-items: center; gap: 9px;
+      font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted);
+    }
+    .pyp-kicker b {
+      background: var(--ink); color: #fff; padding: 3px 8px; border-radius: 6px;
+      font-weight: 600; letter-spacing: .6px;
+    }
+    .pyp h3 {
+      font-size: clamp(20px, 2.6vw, 26px);
+      line-height: 1.2; letter-spacing: -0.4px; font-weight: 600;
+      margin: 14px 0 0;
+    }
+    .pyp h3 em, .pyp .barcap em { font-style: normal; color: var(--green); font-weight: 600; }
+    .pyp .barcap { color: var(--soft); font-size: 14.5px; line-height: 1.6; margin: 14px 0 0; }
+    .pyp-cbar-img { display: block; width: 100%; max-width: 560px; height: auto; margin-top: 18px; border-radius: 8px; }
+    .pyp-fig {
+      margin: 26px 0 0; border: 1px solid var(--line); border-radius: 14px;
+      background: var(--card-2); padding: 22px;
+    }
+    .pyp-fig img { display: block; width: 100%; height: auto; }
+    .pyp-fig figcaption { margin-top: 14px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+
+    /* ---------- Feature map ---------- */
+    .fmap-note { font-size: 13px; color: var(--faint); margin: 0 0 18px; font-family: "JetBrains Mono", monospace; letter-spacing: .3px; }
+    .fmap {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 70px 1fr;
+      gap: 0;
+      align-items: stretch;
+    }
+    .fmap-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
+    .fmap-path { fill: none; stroke: var(--line-strong); stroke-width: 1.5; opacity: .55; transition: stroke .2s ease, opacity .2s ease, stroke-width .2s ease; }
+    .fmap-path.is-active { stroke: var(--ink); opacity: 1; stroke-width: 2; }
+    .fmap-path.is-dim { opacity: .12; }
+    .fmap-col { display: flex; flex-direction: column; gap: 12px; justify-content: space-between; position: relative; z-index: 2; }
+    .fmap-node {
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 13px 15px;
+      background: var(--card);
+      cursor: pointer;
+      transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+    }
+    .fmap-node:hover { border-color: var(--line-strong); }
+    .fmap-node.is-active { border-color: var(--ink); box-shadow: var(--shadow-soft); transform: translateY(-1px); }
+    .fmap-node.is-linked { border-color: var(--line-strong); }
+    .fmap-node.is-dim { opacity: .38; }
+    .fmap-node strong {
+      display: block;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 15px; letter-spacing: -0.2px; margin-top: 3px;
+    }
+    .fmap-kicker {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: "JetBrains Mono", monospace; font-size: 10px;
+      letter-spacing: .8px; text-transform: uppercase; color: var(--muted);
+    }
+    .fmap-kicker .kdot { width: 6px; height: 6px; border-radius: 50%; background: var(--faint); }
+    .fmap-kicker.k-must .kdot { background: var(--ink); }
+    .fmap-kicker.k-perf .kdot { background: var(--muted); }
+    .fmap-kicker.k-delight .kdot { background: var(--green); }
+    .fmap-kicker .focus { color: var(--green); font-weight: 600; }
+    .fmap-desc { margin: 6px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+    .fmap-mid { display: flex; align-items: center; justify-content: center; }
+    .fmap-mid span {
+      writing-mode: vertical-rl;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--faint);
+    }
+    .fmap-caption { display: flex; justify-content: space-between; margin-bottom: 14px; }
+    .fmap-caption span {
+      font-family: "JetBrains Mono", monospace; font-size: 10.5px;
+      letter-spacing: 1.2px; text-transform: uppercase; color: var(--faint);
+    }
+
+    /* ---------- Final design: flow states ---------- */
+    .state { display: grid; grid-template-columns: 1fr; gap: 0; }
+    .state + .state { margin-top: 20px; }
+    .state-copy { margin-bottom: 16px; }
+    .state-copy strong {
+      display: block; font-family: "Space Grotesk", sans-serif;
+      font-size: 18px; letter-spacing: -0.2px;
+    }
+    .state-copy span { display: block; margin-top: 7px; color: var(--muted); font-size: 15px; line-height: 1.6; max-width: 640px; }
+    .shot { border: 1px solid var(--line); border-radius: 14px; overflow-x: auto; overflow-y: hidden; background: var(--card-2); -webkit-overflow-scrolling: touch; }
+    .shot img { display: block; width: auto; height: 560px; max-width: none; }
+    .shot--fit { overflow: hidden; }
+    .shot--fit img { width: 100%; height: auto; }
+
+    .principles { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+    .principle { border: 1px solid var(--line); border-radius: 14px; padding: 22px; background: var(--card-2); }
+    .principle .pk {
+      font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: 1.1px; text-transform: uppercase; color: var(--green);
+    }
+    .principle strong { display: block; font-family: "Space Grotesk", sans-serif; font-size: 17px; margin: 9px 0 8px; letter-spacing: -0.2px; }
+    .principle p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+    /* ---------- Reflection ---------- */
+    .reflect {
+      background: var(--ink);
+      color: #fff;
+      border-radius: var(--radius-lg);
+      padding: 44px 40px;
+    }
+    .reflect .rk {
+      font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: 1.3px; text-transform: uppercase; color: var(--green);
+    }
+    .reflect .big {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(24px, 3.6vw, 36px);
+      line-height: 1.14; letter-spacing: -0.6px; font-weight: 600;
+      margin: 16px 0 0;
+    }
+    .reflect .big .fade { color: #a1a1aa; }
+    .reflect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 30px; }
+    .reflect-grid .rc strong {
+      display: block; font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: 1.1px; text-transform: uppercase; color: #71717a; margin-bottom: 8px;
+    }
+    .reflect-grid .rc p { margin: 0; color: #d4d4d8; font-size: 15px; line-height: 1.6; }
+
+    /* ---------- Footer ---------- */
+    footer { padding: 40px 0 60px; margin-top: 8px; }
+    .foot-inner { width: min(1180px, calc(100vw - 40px)); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    .foot-meta { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--faint); letter-spacing: .4px; }
+    .foot-meta strong { color: var(--soft); font-weight: 600; }
+
+    /* ---------- Shell + left section nav ---------- */
+    section[id] { scroll-margin-top: 76px; }
+    .shell {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 196px minmax(0, 1fr);
+      gap: 46px;
+      align-items: start;
+    }
+    .content { min-width: 0; }
+    .content .wrap { width: 100%; }
+    .toc {
+      position: sticky;
+      top: 78px;
+      margin-top: 96px;
+      padding-right: 8px;
+    }
+    .toc-title {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: var(--ink);
+      margin-bottom: 3px;
+    }
+    .toc-kicker {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 16px;
+    }
+    .toc-list { display: flex; flex-direction: column; }
+    .toc-list a {
+      display: flex;
+      gap: 11px;
+      align-items: baseline;
+      padding: 8px 0 8px 15px;
+      margin-left: -1px;
+      border-left: 2px solid var(--line);
+      font-size: 13.5px;
+      color: var(--muted);
+      transition: color .2s ease, border-color .2s ease;
+    }
+    .toc-list a .n {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10.5px;
+      color: var(--faint);
+      transition: color .2s ease;
+    }
+    .toc-list a:hover { color: var(--ink); }
+    .toc-list a.active { color: var(--ink); font-weight: 600; border-color: var(--ink); }
+    .toc-list a.active .n { color: var(--green); }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; gap: 0; }
+      .toc { display: none; }
+    }
+    @media (max-width: 820px) {
+      .meta-grid { grid-template-columns: 1fr 1fr; }
+      .meta-cell:nth-child(2) { border-right: none; }
+      .meta-cell:nth-child(1), .meta-cell:nth-child(2) { border-bottom: 1px solid var(--line); }
+      .why-grid { grid-template-columns: 1fr; }
+      .break-grid { grid-template-columns: 1fr; }
+      .principles { grid-template-columns: 1fr; }
+      .reflect-grid { grid-template-columns: 1fr; }
+      .fmap { grid-template-columns: 1fr; }
+      .fmap-svg { display: none; }
+      .fmap-mid { display: none; }
+      .fmap-caption { display: none; }
+      .fmap-col { gap: 10px; }
+      .fmap-col--left { margin-bottom: 10px; }
+      .shot:not(.shot--fit) img { height: 360px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="back-link" href="portfolio.html">
+        <span class="arw mono">&larr;</span>
+        <span>Bingnan Jiang</span>
+      </a>
+      <div class="top-actions">
+        <a class="btn" href="portfolio.html#work">All work</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="shell">
+      <aside class="toc" id="toc">
+        <div class="toc-title">Copilot IME</div>
+        <div class="toc-kicker">Case study</div>
+        <nav class="toc-list">
+          <a href="#context"><span class="n">01</span><span>Context</span></a>
+          <a href="#problem"><span class="n">02</span><span>Problem</span></a>
+          <a href="#insight"><span class="n">03</span><span>Insight</span></a>
+          <a href="#process"><span class="n">04</span><span>Process</span></a>
+          <a href="#final"><span class="n">05</span><span>Final design</span></a>
+          <a href="#reflection"><span class="n">06</span><span>Reflection</span></a>
+        </nav>
+      </aside>
+      <div class="content">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap">
+        <div class="kicker"><span class="dot"></span>Case study · Human &rarr; AI</div>
+        <h1>Copilot IME</h1>
+        <p class="lede">Put AI at the <em>input layer</em> — where intent is born, before it's ever sent to any app. From <em>&ldquo;Open app &rarr; Ask AI&rdquo;</em> to <em>&ldquo;Express intent &rarr; AI acts.&rdquo;</em></p>
+        <div class="meta-grid">
+          <div class="meta-cell"><div class="k">Role</div><div class="v">Product design · Product manager</div></div>
+          <div class="meta-cell"><div class="k">Surface</div><div class="v">Input method (IME) · candidate bar</div></div>
+          <div class="meta-cell"><div class="k">Scope</div><div class="v">Research &rarr; concept &rarr; prototype</div></div>
+          <div class="meta-cell"><div class="k">Timeline</div><div class="v">2025</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 01 CONTEXT / THE BET -->
+    <section class="block" id="context">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">01 / Context</div>
+          <h2>Why the input method?</h2>
+          <p>People touch the keyboard all day — and the layer behind it, the input method (IME), is what you can actually own and ship. Putting AI there is a deliberate bet on reach, timing, and distribution.</p>
+        </div>
+        <div class="card">
+          <div class="why-lead">
+            <span class="why-num">The core bet · Where intent is born</span>
+            <strong class="why-lead-title">The keyboard is where thought becomes language.</strong>
+            <p>Put AI at the input layer and you catch intent at its source — before it's ever sent to any app. Four things make that surface uniquely worth owning:</p>
+          </div>
+          <div class="why-grid">
+            <div class="why-card">
+              <span class="why-num">01 · Everywhere, all day</span>
+              <strong>Unmatched reach and context</strong>
+              <p>You touch the keyboard in every app, hundreds of times a day. No other surface has that reach — or sees as much of what you're doing.</p>
+            </div>
+            <div class="why-card">
+              <span class="why-num">02 · The timing</span>
+              <strong>A step-change from large models</strong>
+              <p>LLMs lift input far beyond autocomplete — iFlytek's AI input is the proof case.</p>
+            </div>
+            <div class="why-card">
+              <span class="why-num">03 · The moat</span>
+              <strong>Owns distribution</strong>
+              <p>Split out from the OS, the IME ships and iterates on its own — and sits inside every app without asking each one's permission.</p>
+            </div>
+            <div class="why-card">
+              <span class="why-num">04 · The wedge</span>
+              <strong>CJK users live here</strong>
+              <p>For Chinese, Japanese, and Korean users the input method is already indispensable — the perfect place to start.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 PROBLEM / ENTRY POINTS -->
+    <section class="block" id="problem">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">02 / Problem</div>
+          <h2>Where should AI enter?</h2>
+          <p>A standalone app you go to, or something built into the workflow you're already in? Each model gets something right — and each pays for it somewhere.</p>
+        </div>
+        <div class="break-grid">
+          <div class="break-card">
+            <strong>Standalone AI apps</strong>
+            <span class="desc">A destination you open on purpose.</span>
+            <span class="flow">Workflow &rarr; Open App &rarr; Ask AI &rarr; Get Answer &rarr; Workflow</span>
+            <ul class="signals">
+              <li class="good">General-purpose — handles any task, not one domain.</li>
+              <li class="bad">No trigger — nothing reminds you to open it.</li>
+              <li class="bad">No context — it can't see your data or task.</li>
+            </ul>
+          </div>
+          <div class="break-card">
+            <strong>Embedded AI features</strong>
+            <span class="desc">A feature inside products you're already using.</span>
+            <span class="flow">Workflow &rarr; AI Feature</span>
+            <ul class="signals">
+              <li class="bad">Locked to one scenario — no cross-app, general help.</li>
+              <li class="good">Auto-triggered by the workflow itself.</li>
+              <li class="good">Already has the surrounding context.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>Core view</strong>
+          <span>The best entry point takes both — in-context like an embedded feature, general like a standalone app — a surface people use all day. That surface is the input method.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 INSIGHT / PRIMER -->
+    <section class="block" id="insight">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">03 / Insight</div>
+          <h2>The IME is already an intent surface</h2>
+          <p>CJK input isn't about typing letters — it's a two-step act of expressing a sound, then choosing a meaning. That existing behavior is exactly the seam AI can slip into.</p>
+        </div>
+        <div class="card">
+          <div class="pyp">
+            <div class="pyp-kicker"><b>Primer</b>CJK input</div>
+            <h3>In Chinese you don't type letters — you type a <em>sound</em>, then <em>choose the meaning</em>.</h3>
+            <p class="barcap">You typed just <em>&ldquo;jie&rdquo;</em> (no tone) — the system returns a whole row of same-sound characters, and you must pick one before any character is committed. That row lives in a small piece of UI called a <em>candidate bar</em>; you press a number to commit one.</p>
+            <img class="pyp-cbar-img" src="assets/candidate-bar.png" alt="Candidate bar UI: jie maps to 街 节 洁 杰 姐 借" loading="lazy">
+          </div>
+          <figure class="pyp-fig">
+            <img src="assets/pinyin-middle-layer.png" alt="Diagram: the conversion layer from pinyin to Chinese characters" loading="lazy">
+            <figcaption>The conversion layer: a phonetic sound (&ldquo;jie&rdquo;) fans out into same-sound candidates — different tones and homophones — and only the character you choose is committed as output.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 PROCESS / FEATURE MAP -->
+    <section class="block" id="process">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">04 / Process</div>
+          <h2>One keyboard, many triggers</h2>
+          <p>Each feature is matched to the trigger that fits its intent — passive when the touch is light, deliberate when the intent is heavy. Hover to trace the link; click to pin it.</p>
+        </div>
+        <div class="card">
+          <p class="fmap-note">Interactive · hover a node to trace, click to pin</p>
+          <div class="fmap-caption">
+            <span>Capability · Kano</span>
+            <span>Trigger · Effort</span>
+          </div>
+          <div class="fmap" id="fmap">
+            <svg class="fmap-svg" id="fmap-svg"></svg>
+            <div class="fmap-col fmap-col--left" id="fmap-left"></div>
+            <div class="fmap-mid"><span>maps to</span></div>
+            <div class="fmap-col fmap-col--right" id="fmap-right"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 FINAL DESIGN -->
+    <section class="block" id="final">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">05 / Final design</div>
+          <h2>Two ways AI lives inside the keyboard</h2>
+          <p>An embedded entry point for expressing intent as you type, and a read-write assistance layer for acting on any text in place — both without leaving the line.</p>
+        </div>
+
+        <div class="card">
+          <div class="state">
+            <div class="state-copy">
+              <strong>Embedded entry points — Intent Bar</strong>
+              <span>Bring AI into typing surfaces where users already express intent. The candidate bar becomes the entry: Candidate Bar &rarr; Intent Bar &rarr; Copilot Card &rarr; Destination.</span>
+            </div>
+            <div class="shot"><img src="assets/intent-bar-flow.png" alt="Flow from candidate bar to destination product: Candidate Bar → Intent Bar → Copilot Card → Destination" loading="lazy"></div>
+          </div>
+
+          <div class="state">
+            <div class="state-copy">
+              <strong>Read-write loop — Action Bar</strong>
+              <span>Selection turns reading into writing — highlight any text and act on it in place, without leaving the line: Action Bar &rarr; Copilot Card &rarr; in-line result.</span>
+            </div>
+            <div class="shot shot--fit"><img src="assets/action-bar-flow.png" alt="Selection-translation flow: Action Bar → Copilot Card → In-line Result" loading="lazy"></div>
+          </div>
+
+          <div class="principles">
+            <div class="principle">
+              <div class="pk">Principle 01</div>
+              <strong>Reduce cognitive load</strong>
+              <p>We layered in a lot of intelligence — recommendations, inline answers, quick actions — yet deliberately shipped no new UI pattern. Every capability reuses the candidate bar, the one surface every Chinese user already touches dozens of times a day. New power, no new mental model.</p>
+            </div>
+            <div class="principle">
+              <div class="pk">Principle 02</div>
+              <strong>Don't interrupt the act of typing</strong>
+              <p>Assistance appears inline, right at the cursor where the user is already expressing intent — no app switch, no modal, no break in the typing rhythm. The AI meets the user inside the keystroke, not after it.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 REFLECTION -->
+    <section class="block" id="reflection">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">06 / Reflection</div>
+          <h2>From destination to infrastructure</h2>
+        </div>
+        <div class="reflect">
+          <div class="rk">The shift</div>
+          <div class="big">From <span class="fade">&ldquo;Open App &rarr; Ask AI&rdquo;</span> to &ldquo;Express Intent &rarr; AI Acts.&rdquo;</div>
+          <div class="reflect-grid">
+            <div class="rc">
+              <strong>What changes</strong>
+              <p>Most AI still works as a destination. This exploration asks how AI can appear directly in everyday input workflows — meeting intent at its source instead of waiting to be summoned.</p>
+            </div>
+            <div class="rc">
+              <strong>How it feels</strong>
+              <p>By reducing context switching, interaction feels lighter and more natural. The assistance is there when you reach for it, and invisible when you don't.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap foot-inner">
+      <div class="foot-meta"><strong>Copilot IME</strong> · Human &rarr; AI · Concept system</div>
+      <div class="top-actions">
+        <a class="btn" href="portfolio.html#work">Next work &rarr;</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      // ---- Feature-map data (mirrors the source case study) ----
+      var features = [
+        { id: "core", label: "Core input", kano: "Must-be" },
+        { id: "answer", label: "Copilot answer", kano: "Performance" },
+        { id: "discovery", label: "Scenario discovery", kano: "Performance", star: true },
+        { id: "translate", label: "Translation", kano: "Performance" },
+        { id: "writing", label: "Writing assist", kano: "Performance" },
+        { id: "voiceact", label: "Voice to action", kano: "Performance" },
+        { id: "pet", label: "Pet & skins", kano: "Delighter" }
+      ];
+      var modalities = [
+        { id: "type", label: "As-you-type", effort: "Passive", desc: "Candidates surface while you type — the lightest touch." },
+        { id: "select", label: "Select text", effort: "Deliberate", desc: "Highlight something, then act on it." },
+        { id: "hotkey", label: "Hotkey", effort: "On-demand", desc: "A shortcut to summon Copilot when you want it." },
+        { id: "voice", label: "Voice", effort: "Hands-free", desc: "Speak your intent — fast, no typing." },
+        { id: "pet", label: "Pet tap", effort: "Ambient", desc: "A low-friction entry people enjoy touching." }
+      ];
+      var linkNotes = {
+        core: "Table stakes — if typing and prediction aren't flawless, nothing else matters.",
+        answer: "Answers and search right where you type — no app-switch.",
+        discovery: "The IME becomes Copilot's discovery layer — the right feature, in the right app, at the right moment.",
+        translate: "A daily job for CJK users — met at the input layer, by select or voice.",
+        writing: "Shape the output directly — polish, rewrite, retone — no re-prompting.",
+        voiceact: "From speech-to-text toward speech-to-intent-to-action.",
+        pet: "Low ROI on pure utility — but the wedge into Japan, and a friendly Copilot entry. A deliberate strategic bet."
+      };
+      var capabilityLinks = [
+        ["core", "type"], ["answer", "type"], ["answer", "hotkey"], ["answer", "pet"],
+        ["discovery", "type"], ["translate", "select"], ["translate", "voice"],
+        ["writing", "select"], ["writing", "hotkey"], ["voiceact", "voice"], ["pet", "pet"]
+      ];
+
+      var leftEl = document.getElementById("fmap-left");
+      var rightEl = document.getElementById("fmap-right");
+      var mapEl = document.getElementById("fmap");
+      var svg = document.getElementById("fmap-svg");
+      var SVGNS = "http://www.w3.org/2000/svg";
+
+      var stageNodes = {}, capNodes = {}, pathEls = [];
+      var pinned = null; // { type, id }
+      var hover = null;
+
+      function kanoClass(k) { return k === "Must-be" ? "k-must" : k === "Delighter" ? "k-delight" : "k-perf"; }
+
+      features.forEach(function (f) {
+        var node = document.createElement("div");
+        node.className = "fmap-node";
+        var kicker = '<div class="fmap-kicker ' + kanoClass(f.kano) + '"><span class="kdot"></span><span>' + f.kano + '</span>' + (f.star ? '<span class="focus">★ focus</span>' : '') + '</div>';
+        node.innerHTML = kicker + '<strong>' + f.label + '</strong><p class="fmap-desc">' + linkNotes[f.id] + '</p>';
+        node.addEventListener("mouseenter", function () { onEnter("stage", f.id); });
+        node.addEventListener("click", function () { onClick("stage", f.id); });
+        leftEl.appendChild(node);
+        stageNodes[f.id] = node;
+      });
+
+      modalities.forEach(function (m) {
+        var node = document.createElement("div");
+        node.className = "fmap-node";
+        node.innerHTML = '<div class="fmap-kicker"><span class="kdot"></span><span>' + m.effort + '</span></div><strong>' + m.label + '</strong><p class="fmap-desc">' + m.desc + '</p>';
+        node.addEventListener("mouseenter", function () { onEnter("cap", m.id); });
+        node.addEventListener("click", function () { onClick("cap", m.id); });
+        rightEl.appendChild(node);
+        capNodes[m.id] = node;
+      });
+
+      capabilityLinks.forEach(function (pair) {
+        var p = document.createElementNS(SVGNS, "path");
+        p.setAttribute("class", "fmap-path");
+        p.__stage = pair[0];
+        p.__cap = pair[1];
+        svg.appendChild(p);
+        pathEls.push(p);
+      });
+
+      mapEl.addEventListener("mouseleave", function () { hover = null; render(); });
+
+      function activeMap() { return pinned || hover; }
+
+      function isLinkedToPinned(type, id) {
+        if (!pinned) return true;
+        if (pinned.type === type && pinned.id === id) return true;
+        if (pinned.type === "stage" && type === "cap") return capabilityLinks.some(function (l) { return l[0] === pinned.id && l[1] === id; });
+        if (pinned.type === "cap" && type === "stage") return capabilityLinks.some(function (l) { return l[1] === pinned.id && l[0] === id; });
+        return false;
+      }
+      function onEnter(type, id) {
+        if (pinned && !isLinkedToPinned(type, id)) return;
+        hover = { type: type, id: id };
+        render();
+      }
+      function onClick(type, id) {
+        if (pinned) {
+          if (pinned.type === type && pinned.id === id) { pinned = null; hover = null; render(); }
+          return;
+        }
+        pinned = { type: type, id: id };
+        hover = { type: type, id: id };
+        render();
+      }
+
+      function render() {
+        var am = activeMap();
+        var linkedStages = {}, linkedCaps = {};
+        if (am && am.type === "cap") capabilityLinks.forEach(function (l) { if (l[1] === am.id) linkedStages[l[0]] = true; });
+        if (am && am.type === "stage") capabilityLinks.forEach(function (l) { if (l[0] === am.id) linkedCaps[l[1]] = true; });
+
+        features.forEach(function (f) {
+          var n = stageNodes[f.id];
+          var isActive = am && am.type === "stage" && am.id === f.id;
+          var isLinked = !!linkedStages[f.id];
+          var isDim = am && !isActive && !isLinked;
+          n.classList.toggle("is-active", !!isActive);
+          n.classList.toggle("is-linked", isLinked);
+          n.classList.toggle("is-dim", !!isDim);
+        });
+        modalities.forEach(function (m) {
+          var n = capNodes[m.id];
+          var isActive = am && am.type === "cap" && am.id === m.id;
+          var isLinked = !!linkedCaps[m.id];
+          var isDim = am && !isActive && !isLinked;
+          n.classList.toggle("is-active", !!isActive);
+          n.classList.toggle("is-linked", isLinked);
+          n.classList.toggle("is-dim", !!isDim);
+        });
+        pathEls.forEach(function (p) {
+          var on = am && ((am.type === "stage" && p.__stage === am.id) || (am.type === "cap" && p.__cap === am.id));
+          p.classList.toggle("is-active", !!on);
+          p.classList.toggle("is-dim", !!(am && !on));
+        });
+      }
+
+      function drawPaths() {
+        var mapRect = mapEl.getBoundingClientRect();
+        svg.setAttribute("viewBox", "0 0 " + mapRect.width + " " + mapRect.height);
+        pathEls.forEach(function (p) {
+          var s = stageNodes[p.__stage], c = capNodes[p.__cap];
+          if (!s || !c) return;
+          var sr = s.getBoundingClientRect(), cr = c.getBoundingClientRect();
+          var x1 = sr.right - mapRect.left;
+          var y1 = sr.top + sr.height / 2 - mapRect.top;
+          var x2 = cr.left - mapRect.left;
+          var y2 = cr.top + cr.height / 2 - mapRect.top;
+          var dx = (x2 - x1) * 0.5;
+          p.setAttribute("d", "M " + x1 + " " + y1 + " C " + (x1 + dx) + " " + y1 + ", " + (x2 - dx) + " " + y2 + ", " + x2 + " " + y2);
+        });
+      }
+
+      var raf;
+      function schedule() { cancelAnimationFrame(raf); raf = requestAnimationFrame(drawPaths); }
+      window.addEventListener("resize", schedule);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+      drawPaths();
+      setTimeout(drawPaths, 120);
+      setTimeout(drawPaths, 400);
+      render();
+    })();
+
+    // ---- Left section-nav scroll-spy ----
+    (function () {
+      var ids = ["context", "problem", "insight", "process", "final", "reflection"];
+      var links = {};
+      ids.forEach(function (id) { links[id] = document.querySelector('.toc-list a[href="#' + id + '"]'); });
+      var els = ids.map(function (id) { return document.getElementById(id); }).filter(Boolean);
+      if (!els.length) return;
+      var visible = {};
+      function setActive(id) {
+        ids.forEach(function (k) { if (links[k]) links[k].classList.toggle("active", k === id); });
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) visible[e.target.id] = true; else delete visible[e.target.id];
+        });
+        var top = ids.filter(function (id) { return visible[id]; })[0];
+        if (top) setActive(top);
+      }, { rootMargin: "-40% 0px -55% 0px", threshold: 0 });
+      els.forEach(function (el) { io.observe(el); });
+      setActive("context");
+    })();
+  </script>
+</body></html>

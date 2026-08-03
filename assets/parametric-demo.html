@@ -1,0 +1,1152 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>devbar — voicebar (spring)</title>
+<style>
+  /* ---------- canonical tokens (shared across all tools) ----------
+     See ~/Documents/ai-prompts/tools-visual-style.md.
+     Don't introduce new colors here — extend the canonical set there if needed. */
+  :root {
+    --bg:          #0E0E10;
+    --bg-2:        #13131A;
+    --bg-3:        #17171B;
+    --surface:     #14141A;
+    --hover:       #1A1A1F;
+
+    --border:      #1E1E22;
+    --border-2:    #26262C;
+    --divider:     #1C1C20;
+
+    --text:        #ECECF1;
+    --text-mute:   #A6A6B0;
+    --text-dim:    #6B6B76;
+    --text-faint:  #4A4A52;
+
+    --accent:      #7C5CFF;
+    --accent-soft: #8F74FF;
+
+    --radius:      14px;
+    --margin:      12px;
+
+    /* ---------- voicebar-specific (intentionally NOT canonical) ---------- */
+    --pill-w:        88px;
+    --pill-h:        36px;
+    --pill-radius:   12px;   /* pill is the product, smaller than panel radius */
+    --spring-w-px:   72px;
+    --spring-h-px:   14px;
+    --spring-stroke: 1.2;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    /* No fixed height — the document sizes to its content (the panel), so the
+       embedding iframe + card can adapt to it instead of a hard-coded height. */
+    /* Transparent backdrop — lets whatever sits behind this iframe (PPT slide,
+       article card, etc.) show through. */
+    background: transparent;
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 32px;
+    /* height follows content (the taller column = the controls panel) */
+    padding: 32px;
+    box-sizing: border-box;
+  }
+
+  .canvas {
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius);
+    /* PPT-embed: transparent so the peach body backdrop bleeds through. */
+    background: transparent;
+  }
+
+  /* Cancel confirmation: the pill itself morphs — width expands, its normal
+     contents fade out, and the cancellation message + Undo button fade in.
+     Same border-radius (12px) as the listening pill so the morph reads as one
+     continuous surface. Auto-dismisses after a few seconds. */
+  .cancelled-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;    /* icon+text hug the left, button is pushed right via margin-left:auto */
+    gap: 8px;
+    padding: 0 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 200ms ease 60ms;
+  }
+  .cancelled-content > .cancelled-btn {
+    margin-left: auto;
+  }
+  .cancelled-icon {
+    width: 18px; height: 18px;
+    flex-shrink: 0;
+    color: var(--text);
+  }
+  .cancelled-btn {
+    background: rgba(255, 255, 255, 0.14);   /* alpha-white overlay = hover treatment */
+    color: var(--text);
+    border: 0;
+    padding: 5px 12px;
+    border-radius: 7px;             /* squircle, matches icon-btn */
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 150ms ease;
+    flex-shrink: 0;
+  }
+  .cancelled-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  /* When the pill enters its "cancelled" state, widen it, swap content, hide
+     the spring and the action buttons (so the tooltip + icons don't show
+     through during the morph). */
+  .pill.cancelled {
+    width: 240px;
+    overflow: hidden;
+  }
+  .pill.cancelled .cancelled-content { opacity: 1; pointer-events: auto; }
+  .pill.cancelled .spring,
+  .pill.cancelled .icon-btn {
+    opacity: 0 !important;
+    pointer-events: none;
+    transition: opacity 150ms ease;
+  }
+
+  .controls {
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    align-self: start;              /* size to content, don't stretch to the canvas column */
+    accent-color: var(--accent);    /* native sliders + checkboxes pick up purple */
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);   /* lift it off the page bg = floating panel feel */
+  }
+
+  /* Header identifying the tool + subject being designed (mirrors Devbar's
+     "● devbar onboarding" pattern). Pairs purple dot + monospace brand + dim subject. */
+  .controls-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: -2px -2px 16px;
+    padding: 0 0 14px;
+    border-bottom: 1px solid var(--divider);
+  }
+  .controls-header .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+  .controls-header .brand {
+    font-family: ui-monospace, SF Mono, Menlo, monospace;
+    font-weight: 700;
+    color: var(--text);
+    font-size: 13px;
+  }
+  .controls-header .subject {
+    font-family: ui-monospace, SF Mono, Menlo, monospace;
+    color: var(--text-dim);
+    font-size: 13px;
+  }
+  .controls h2 {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-dim); margin: 0 0 12px;
+  }
+  .control-group { margin-bottom: 18px; }
+  /* Reset CTA — mirrors the Swift devbar's "Reset to defaults" button.
+     At rest: bg-3 surface, border-2 stroke, text-mute label, no glow.
+     On hover: accent fill, white label, inner white-stroke + accent glow. */
+  .btn-reset {
+    margin-top: 14px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: flex-start;
+    padding: 9px 12px;
+    border-radius: 7px;
+    background: var(--bg-3);
+    border: 1px solid var(--border-2);
+    color: var(--text-mute);
+    font: 500 11.5px ui-monospace, SF Mono, Menlo, monospace;
+    cursor: pointer;
+    transition: background 140ms ease, border-color 140ms ease,
+                color 140ms ease, box-shadow 140ms ease,
+                transform 120ms ease;
+  }
+  .btn-reset:hover {
+    background: var(--accent);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+    box-shadow:
+      0 6px 8px color-mix(in srgb, var(--accent) 50%, transparent),
+      0 1px 1px rgba(0, 0, 0, 0.4);
+  }
+  .btn-reset:active { transform: scale(0.985); }
+  .btn-reset .icon { width: 12px; height: 12px; flex-shrink: 0; }
+  /* Panel footer — divider line (titlebar weight) above the Reset button, setting
+     it off from the parameter groups as a panel-level "restore all" action.
+     padding-top matches the panel's 16px bottom padding so the Reset button sits
+     an equal distance from the divider above and the panel's bottom edge below. */
+  .control-footer {
+    padding-top: 16px;
+    border-top: 1px solid var(--divider);
+  }
+  .control-footer .btn-reset { margin-top: 0; }
+  .seg {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+    background: var(--bg); padding: 3px; border-radius: 8px;
+  }
+  .seg button {
+    background: transparent; color: var(--text-mute); border: 0;
+    padding: 6px 8px; border-radius: 5px; font-size: 12px; cursor: pointer;
+  }
+  .seg button.on {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    color: var(--text);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent);
+  }
+  .row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px; font-size: 12px; margin: 6px 0;
+  }
+  .row input[type=range] { flex: 1; }
+  .hint { font-size: 11px; color: var(--text-dim); line-height: 1.5; }
+
+  /* Input-source group — the signal controls (manual Volume + Simulate play/stop).
+     No box; just a labelled block closed off with a divider line (same weight as
+     the titlebar's) so it reads as the signal feeding INTO the spring, set apart
+     from the parameter groups below. */
+  .source-box {
+    margin: 0 0 16px;
+    padding: 0 0 14px;
+    border-bottom: 1px solid var(--divider);
+  }
+  .source-label {
+    font-size: 10px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  /* Play/Stop toggle for the live-voice simulator. Reads as a button (not a
+     checkbox); when active it fills with the accent treatment + swaps the play
+     triangle for a stop square, so it doubles as the "is it running" indicator. */
+  .sim-btn {
+    width: 100%;
+    display: flex; align-items: center; gap: 8px;
+    margin: 6px 0;
+    padding: 8px 12px;
+    border-radius: 7px;
+    background: var(--bg-3);
+    border: 1px solid var(--border-2);
+    color: var(--text-mute);
+    font-size: 12px; font-weight: 500;
+    cursor: pointer;
+    transition: background 140ms ease, border-color 140ms ease, color 140ms ease;
+  }
+  .sim-btn:hover {
+    border-color: color-mix(in srgb, var(--accent) 50%, var(--border-2));
+    color: var(--text);
+  }
+  .sim-btn .icon { width: 11px; height: 11px; flex-shrink: 0; }
+  .sim-btn .stop { display: none; }
+  .sim-btn[aria-pressed="true"] {
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    border-color: var(--accent);
+    color: var(--text);
+  }
+  .sim-btn[aria-pressed="true"] .play { display: none; }
+  .sim-btn[aria-pressed="true"] .stop { display: block; }
+
+  /* Custom range slider — dark track matches the seg's --bg (the visible color of
+     unselected tabs) + accent fill driven by JS --val. */
+  .controls input[type="range"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(
+      to right,
+      var(--accent) calc(var(--val, 0) * 1%),
+      var(--bg) calc(var(--val, 0) * 1%)
+    );
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .controls input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px; height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 0;
+    cursor: pointer;
+  }
+  .controls input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: 0;
+    cursor: pointer;
+  }
+
+  /* Custom checkbox — circular, matches Devbar's radio circle exactly:
+     outer ring (subtle accent fill + solid accent border) + solid accent
+     dot in center when checked. */
+  .controls input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 14px; height: 14px;
+    margin: 0 6px 0 0;
+    border-radius: 50%;
+    background: var(--bg-3);
+    border: 1px solid var(--border-2);
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    vertical-align: middle;
+    transition: background 120ms ease, border-color 120ms ease;
+  }
+  .controls input[type="checkbox"]:hover {
+    border-color: color-mix(in srgb, var(--accent) 50%, var(--border-2));
+  }
+  .controls input[type="checkbox"]:checked {
+    background: color-mix(in srgb, var(--accent) 8%, transparent);
+    border-color: var(--accent);
+  }
+  .controls input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    left: 50%; top: 50%;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    transform: translate(-50%, -50%);
+  }
+
+  /* ---------- voice pill ---------- */
+  .panel {
+    width: 160px; height: 70px; padding: 4px; box-sizing: border-box;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .pill {
+    position: relative;
+    width: var(--pill-w); height: var(--pill-h);
+    background: var(--surface);
+    border-radius: var(--pill-radius);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    display: flex; align-items: center; justify-content: center;
+    /* overflow not hidden — tooltips above the action buttons need to escape the pill bounds */
+    transition: width 220ms ease;
+  }
+
+  /* ---------- the spring ---------- */
+  .spring {
+    width: var(--spring-w-px);
+    height: var(--spring-h-px);
+    overflow: visible;
+    transition: opacity 150ms ease;
+  }
+  .spring path {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: var(--spring-stroke);
+  }
+  .spring path.bg { stroke: rgba(255, 255, 255, 0.18); }   /* dim baseline, alpha treatment */
+  .spring path.fg { stroke: var(--text); }                 /* bright, animated by stroke-dasharray */
+
+  /* Action buttons: anchored to the pill's left/right edges. Cancel is a subtle
+     "secondary" button (transparent over dark pill); Submit is the highlighted
+     "primary" action (white circle, dark icon). */
+  .icon-btn {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text);
+    background: transparent;
+    border: 0;
+    border-radius: 7px;             /* squircle, not full circle */
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 200ms ease, background 150ms ease;
+    padding: 0;
+  }
+  .icon-btn.cancel { left: 6px; }
+  .icon-btn.submit {
+    right: 6px;
+    background: var(--text);        /* primary action — light circle, dark icon */
+    color: var(--bg);
+  }
+  .icon-btn svg { width: 10px; height: 10px; }
+
+  /* Hint tooltip that floats above the bottom-bar pill when it's in idle state
+     and the user hovers — invites them to click. Reuses the same visual style
+     as the button tooltips. */
+  .pill-tip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(2px);
+    background: var(--hover);
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+    padding: 6px 8px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    transition: opacity 150ms ease, transform 150ms ease;
+  }
+  .pill-tip .key {
+    background: rgba(255, 255, 255, 0.14);     /* alpha-white overlay */
+    color: var(--text);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: ui-monospace, SF Mono, Menlo, monospace;
+  }
+  /* Tooltip floating above the button on hover */
+  .btn-tip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(2px);
+    background: var(--hover);
+    color: var(--text);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+    padding: 6px 8px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    transition: opacity 150ms ease, transform 150ms ease;
+  }
+  .btn-tip .key {
+    background: rgba(255, 255, 255, 0.14);     /* alpha-white overlay */
+    color: var(--text);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-family: ui-monospace, SF Mono, Menlo, monospace;
+  }
+  .icon-btn:hover .btn-tip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ---------- Caret follow (compact bar near the cursor) ----------
+     Pill stays compact (88px) so it doesn't intrude on the user's text area.
+     Buttons stay hidden until the user hovers, and the spring dims behind
+     them so the icons read clearly. */
+  .stage.variant-caret .panel.listening .pill:hover .icon-btn {
+    opacity: 1;
+  }
+  .stage.variant-caret .panel.listening .pill:hover .spring {
+    opacity: 0.25;
+  }
+
+  .panel.listening .pill .icon-btn.cancel:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .panel.listening .pill .icon-btn.submit:hover {
+    background: rgba(255, 255, 255, 0.88);
+  }
+
+  /* ---------- demo playbar (mirrors the Timeline Console dock) ----------
+     Lifted OUT of the controls panel into its own elevated white transport,
+     spanning the full stage width and centered, so it reads as a separate,
+     higher-level control rather than part of the dark parameter panel. */
+  .pb-bar {
+    position: absolute;
+    left: 32px;
+    bottom: 32px;
+    z-index: 3;
+    display: none;   /* home embed: no transport — animation auto-runs */
+    align-items: center; gap: 8px;
+    background: #ffffff;
+    border: 1px solid rgba(20, 16, 40, 0.08);
+    border-radius: 24px;
+    padding: 9px 14px;
+    box-shadow: 0 8px 24px rgba(20, 16, 40, 0.18), 0 1px 3px rgba(20, 16, 40, 0.10);
+    transition: opacity 200ms, transform 200ms;
+  }
+  .pb-bar.hidden { opacity: 0; pointer-events: none; transform: translateY(8px); }
+  .pb-bar button {
+    border: 0; cursor: pointer; font: inherit;
+    padding: 7px 15px; border-radius: 16px; font-size: 12.5px; font-weight: 500;
+    color: #4a4a52; background: transparent; white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+  }
+  .pb-bar button:hover { background: rgba(20, 16, 40, 0.06); color: #1a1a1f; }
+  .pb-bar button.on { background: none; color: #5e6ad2; }
+  .pb-bar button.on:hover { background: rgba(94,106,210,0.08); color: #5e6ad2; }
+  .pb-bar .sep { width: 1px; height: 18px; background: rgba(20, 16, 40, 0.12); margin: 0 3px; }
+  .pb-bar .beat {
+    font-size: 11.5px; color: #6b6b76;
+    font-variant-numeric: tabular-nums; padding: 0 6px;
+    min-width: 110px; text-align: center;
+  }
+
+</style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="canvas">
+      <div class="panel" id="panel">
+        <div class="pill" id="pill">
+          <span class="pill-tip"><span>Click &amp; Speak</span><span class="key">⌥</span></span>
+
+          <button class="icon-btn cancel" id="btnCancel" aria-label="Cancel">
+            <svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1 1 L7 7 M7 1 L1 7"/></svg>
+            <span class="btn-tip"><span>Cancel</span></span>
+          </button>
+
+          <svg class="spring" id="spring" viewBox="0 0 72 14" preserveAspectRatio="none">
+            <!-- Path content is generated by buildSpringPath() at startup and on slider change. -->
+            <path class="bg" d="" />
+            <path class="fg" d="" />
+          </svg>
+          <button class="icon-btn submit" id="btnSubmit" aria-label="Submit">
+            <svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 4.5 L3.3 6.3 L6.8 1.7"/></svg>
+            <span class="btn-tip"><span>Finish</span><span class="key">⌥</span></span>
+          </button>
+
+          <div class="cancelled-content">
+            <svg class="cancelled-icon" viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="8.5" stroke="currentColor" stroke-width="1.5"/>
+              <circle cx="10" cy="6.5" r="1.1" fill="currentColor"/>
+              <line x1="10" y1="9.5" x2="10" y2="14.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+            <span>Transcript cancelled</span>
+            <button class="cancelled-btn" id="cancelledUndo">Undo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="controls-header">
+        <span class="dot"></span>
+        <span class="brand">Parameter Tool</span>
+        <span class="subject">voicebar</span>
+      </div>
+
+      <!-- Input source — drives the whole live preview. Drag Volume to hold a
+           steady level, or hit play to feed in a simulated voice. Sits above the
+           tuning groups because it's the signal you're previewing, not a knob. -->
+      <div class="source-box">
+        <div class="source-label">Input signal</div>
+        <div class="row">
+          <span>Volume</span>
+          <input type="range" id="vol" min="0" max="100" value="30" />
+          <span id="volVal" style="width:32px;text-align:right;color:var(--text-dim);">30</span>
+        </div>
+        <button class="sim-btn" id="autoVol" type="button" aria-pressed="false">
+          <svg class="icon play" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M3 2 L10 6 L3 10 Z"/></svg>
+          <svg class="icon stop" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><rect x="3" y="3" width="6" height="6" rx="1"/></svg>
+          <span class="sim-label">Simulate live voice</span>
+        </button>
+      </div>
+
+      <div class="control-group">
+        <h2>Shape · Static</h2>
+        <div class="row">
+          <span>Coils</span>
+          <input type="range" id="coils" min="3" max="18" value="9" />
+          <span id="coilsVal" style="width:32px;text-align:right;color:var(--text-dim);">9</span>
+        </div>
+        <div class="row">
+          <span>Stroke</span>
+          <input type="range" id="stroke" min="10" max="36" value="12" />
+          <span id="strokeVal" style="width:32px;text-align:right;color:var(--text-dim);">1.2</span>
+        </div>
+        <div class="row">
+          <span>Arch spread</span>
+          <input type="range" id="archSpread" min="-50" max="50" value="-15" />
+          <span id="archSpreadVal" style="width:32px;text-align:right;color:var(--text-dim);">-0.15</span>
+        </div>
+        <div class="row">
+          <span>Dip height</span>
+          <input type="range" id="dipHeight" min="0" max="60" value="20" />
+          <span id="dipHeightVal" style="width:32px;text-align:right;color:var(--text-dim);">2.0</span>
+        </div>
+        <div class="row">
+          <span>Dip spread</span>
+          <input type="range" id="dipSpread" min="-30" max="60" value="25" />
+          <span id="dipSpreadVal" style="width:32px;text-align:right;color:var(--text-dim);">0.25</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <h2>Response · Dynamic</h2>
+        <div class="row">
+          <span>Sensitivity</span>
+          <input type="range" id="litK" min="10" max="100" step="5" value="50" />
+          <span id="litKVal" style="width:32px;text-align:right;color:var(--text-dim);">5.0</span>
+        </div>
+        <div class="row">
+          <span>Smooth · attack</span>
+          <input type="range" id="smoothAttack" min="0" max="95" value="20" />
+          <span id="smoothAttackVal" style="width:32px;text-align:right;color:var(--text-dim);">.20</span>
+        </div>
+        <div class="row">
+          <span>Smooth · release</span>
+          <input type="range" id="smoothRelease" min="0" max="95" value="0" />
+          <span id="smoothReleaseVal" style="width:32px;text-align:right;color:var(--text-dim);">.00</span>
+        </div>
+        <div class="row">
+          <span>Buffer (ms)</span>
+          <input type="range" id="bufferMs" min="10" max="200" value="21" />
+          <span id="bufferMsVal" style="width:32px;text-align:right;color:var(--text-dim);">21</span>
+        </div>
+      </div>
+
+      <!-- Panel footer — Reset restores every Shape + Response slider, so it sits
+           outside (below) the groups rather than nested in Response where its
+           scope would read too narrow. Divider line sets it off from the params. -->
+      <div class="control-footer">
+        <button class="btn-reset" id="resetTuning" type="button">
+          <svg class="icon" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M2 6 a4 4 0 1 0 1.2-2.83"/>
+            <polyline points="1.6,1.4 2,3.6 4.2,3.2"/>
+          </svg>
+          Reset to defaults
+        </button>
+      </div>
+    </div>
+
+    <!-- Demo dock — lifted OUT of the controls panel into its own elevated
+         white transport, centered under the stage, so it reads as a separate,
+         higher-level control rather than part of the dark parameter panel. -->
+    <div class="pb-bar" id="pbBar">
+      <button id="pbPlay" type="button">▶ Play</button>
+    </div>
+  </div>
+
+<script>
+  const SPRING_W = 72;          // viewBox width
+  let pathStart  = 0;           // visible start of path (set by buildSpringPath)
+  let pathEnd    = SPRING_W;    // visible end of path
+  let pathLen    = 0;           // arc-length of the rendered path (set after applySpringPath)
+
+  const state = {
+    mode: 'listening',
+    rawVolume: 0.3,       // current volume 0..1
+    displayVolume: 0,     // smoothed 0..1
+    smoothingAttack: 0.20,  // EMA smoothing when raw > display (alpha = 0.8 in Swift)
+    smoothingRelease: 0,    // EMA smoothing when raw < display (alpha = 1.0 in Swift — instant snap-down)
+    bufferMs: 21,           // simulated audio-buffer tick (ms). displayVolume only updates
+                            //   this often, regardless of frame rate, to mirror how the
+                            //   Swift app's smoothVol is capped by AVAudioEngine's
+                            //   installTap buffer size (1024 frames ≈ 21ms @ 48kHz).
+    lastBufferTick: 0,      // wall-clock of the last buffer-tick (rAF time)
+    litK: 5.0,              // exponent coefficient in `lit = 1 - exp(-k * displayVolume)`
+    autoVol: false,
+    numCoils: 9,          // spring density
+    archSpread: -0.15,    // horizontal spread of arch control points (fraction of coil width W);
+                          // 0 = tightest V at trough, higher = rounder U,
+                          // negative = control points fall outside the segment
+    dipHeight: 2.0,       // height of the rounded "top circles" between coils (path units)
+    dipSpread: 0.25,      // horizontal spread of dip control points (fraction of overlap)
+    autoTarget: 0.5,      // current "spoken phoneme" target for auto-vol
+    autoNextAt: 0,        // when to pick a new target
+    simInterval: 100,     // ms between target re-picks (varied ±25%)
+    simJump: 0.10,        // minimum distance between consecutive targets
+    simSlew: 1.0,         // per-frame pull toward target (1 = snap)
+    simBias: 0.98,        // 0 = uniform, 1 = strongly biased toward low values (power curve)
+    idleStyle: 'C',       // B=breathing, C=center-expand (default), D=dual dot, F=single drift
+    variant: 'caret',     // fixed: compact caret-follow bar
+  };
+
+  // ---------- path builder ----------
+  // Builds the spring path. To avoid the "stray outer V arms" at the ends, the first arch
+  // is rendered as its *second half* only (starts at the arch's bottom-midpoint and rises
+  // up to baseline), and the last arch is its *first half* only (descends from baseline
+  // to bottom-midpoint). All inner arches are full.
+  //
+  // Geometry: baseline at y=1, arch trough at y≈13 (control y=17), dip-bump tops at y≈-0.5.
+  // Half-arch control points are derived via de Casteljau subdivision at t=0.5.
+  function buildSpringPath(numCoils, archSpread, dipHeight, dipSpread) {
+    const overlap = 4;
+    // Path margin inside the SVG. Combined with the 8px SVG↔pill gap, total visible
+    // margin from pill edge = 8 + MARGIN. (e.g. MARGIN=4 → 12px from pill edge.)
+    const MARGIN = 4;
+    const visibleStart = MARGIN;
+    const visibleEnd   = SPRING_W - MARGIN;
+    const step = (visibleEnd - visibleStart) / (numCoils - 1);
+    const W = step + overlap;
+    // archSpread (0..0.5+) is a fraction of W. Smaller = sharper V,
+    // larger = wider U at the trough. The depth of the curve stays the
+    // same — only the horizontal positions of the bezier control points
+    // change, so the wave's midpoint still lands at troughY.
+    const archOffX = W * archSpread;
+    const dipOffX  = overlap * dipSpread;
+
+    pathStart = visibleStart;
+    pathEnd   = visibleEnd;
+
+    const s0 = visibleStart - W / 2;  // first arch's actual start (we draw second half only)
+
+    const r = n => +n.toFixed(2);
+    let d = '';
+    let prevEnd = null;
+    // dipHeight = how far ABOVE baseline (y=1) the dip-arc control points
+    // sit, in path units. Default 2 → dipCtrlY = -1, matching the
+    // original baked-in geometry.
+    const dipCtrlY = r(1 - dipHeight);
+
+    for (let i = 0; i < numCoils; i++) {
+      const s = s0 + i * step;
+      const e = s + W;
+      const mx = (s + e) / 2;  // bottom-mid x of this arch
+
+      if (i === 0) {
+        // Second half of first arch: from (mx, 13) up to (e, 1).
+        const c1x = 0.25 * s + 0.75 * e - archOffX / 4;
+        const c2x = e - archOffX / 2;
+        d += `M ${r(mx)} 13 C ${r(c1x)} 13, ${r(c2x)} 9, ${r(e)} 1 `;
+      } else if (i === numCoils - 1) {
+        // Dip into the last arch, then its first half: from (s, 1) down to (mx, 13).
+        d += `C ${r(prevEnd - dipOffX)} ${dipCtrlY}, ${r(s + dipOffX)} ${dipCtrlY}, ${r(s)} 1 `;
+        const c1x = s + archOffX / 2;
+        const c2x = 0.75 * s + 0.25 * e + archOffX / 4;
+        d += `C ${r(c1x)} 9, ${r(c2x)} 13, ${r(mx)} 13 `;
+      } else {
+        // Full middle arch (dip + arch).
+        d += `C ${r(prevEnd - dipOffX)} ${dipCtrlY}, ${r(s + dipOffX)} ${dipCtrlY}, ${r(s)} 1 `;
+        d += `C ${r(s + archOffX)} 17, ${r(e - archOffX)} 17, ${r(e)} 1 `;
+      }
+
+      prevEnd = e;
+    }
+
+    return d.trim();
+  }
+
+  // ---------- DOM ----------
+  const panel       = document.getElementById('panel');
+  const pill        = document.getElementById('pill');
+  const spring      = document.getElementById('spring');
+  const btnCancel   = document.getElementById('btnCancel');
+  const btnSubmit   = document.getElementById('btnSubmit');
+  const cancelledUndo = document.getElementById('cancelledUndo');
+  let cancelledTimer  = null;
+
+  function setMode(mode) {
+    state.mode = mode;
+    panel.classList.toggle('listening',  mode === 'listening');
+    panel.classList.toggle('processing', mode === 'processing');
+    panel.classList.toggle('idle',       mode === 'idle');
+  }
+
+  btnCancel.addEventListener('click', () => {
+    // Pill morphs into the cancelled state in-place: width expands, contents swap.
+    setMode('idle');
+    pill.classList.add('cancelled');
+    clearTimeout(cancelledTimer);
+    cancelledTimer = setTimeout(() => pill.classList.remove('cancelled'), 4500);
+  });
+
+  cancelledUndo.addEventListener('click', () => {
+    pill.classList.remove('cancelled');
+    clearTimeout(cancelledTimer);
+    setMode('listening');
+  });
+  const stage       = document.getElementById('stage');
+  stage.classList.add('variant-caret');
+  const volEl       = document.getElementById('vol');
+  const volVal      = document.getElementById('volVal');
+  const autoVolEl   = document.getElementById('autoVol');
+  const coilsEl     = document.getElementById('coils');
+  const coilsVal    = document.getElementById('coilsVal');
+  const strokeEl    = document.getElementById('stroke');
+  const strokeVal   = document.getElementById('strokeVal');
+  const archSpreadEl  = document.getElementById('archSpread');
+  const archSpreadVal = document.getElementById('archSpreadVal');
+  const dipHeightEl   = document.getElementById('dipHeight');
+  const dipHeightVal  = document.getElementById('dipHeightVal');
+  const dipSpreadEl   = document.getElementById('dipSpread');
+  const dipSpreadVal  = document.getElementById('dipSpreadVal');
+  const smoothAttackEl   = document.getElementById('smoothAttack');
+  const smoothAttackVal  = document.getElementById('smoothAttackVal');
+  const smoothReleaseEl  = document.getElementById('smoothRelease');
+  const smoothReleaseVal = document.getElementById('smoothReleaseVal');
+  const bufferMsEl       = document.getElementById('bufferMs');
+  const bufferMsVal      = document.getElementById('bufferMsVal');
+  const litKEl      = document.getElementById('litK');
+  const litKVal     = document.getElementById('litKVal');
+  const springBg    = document.querySelector('.spring path.bg');
+  const springFg    = document.querySelector('.spring path.fg');
+
+  function applySpringPath() {
+    const d = buildSpringPath(state.numCoils, state.archSpread, state.dipHeight, state.dipSpread);
+    springBg.setAttribute('d', d);
+    springFg.setAttribute('d', d);
+    // getTotalLength() walks the actual cubic Bezier arc, so the dash math below
+    // measures distance ALONG the coil (not horizontal extent).
+    pathLen = springFg.getTotalLength();
+  }
+  applySpringPath();
+
+  // ---------- controls ----------
+  // Fixed to caret-follow + listening; set the panel state on load.
+  setMode('listening');
+
+  volEl.addEventListener('input', () => {
+    state.rawVolume = +volEl.value / 100;
+    volVal.textContent = volEl.value;
+  });
+  // Play/Stop toggle for the live-voice simulator. Pressed = running; the auto
+  // wobble in the render loop drives the Volume slider so you can watch the
+  // dynamic spring response. Interval / jump / bias use their baked-in defaults.
+  autoVolEl.addEventListener('click', () => {
+    state.autoVol = !state.autoVol;
+    autoVolEl.setAttribute('aria-pressed', String(state.autoVol));
+  });
+  coilsEl.addEventListener('input', () => {
+    state.numCoils = +coilsEl.value;
+    coilsVal.textContent = coilsEl.value;
+    applySpringPath();
+  });
+  strokeEl.addEventListener('input', () => {
+    const v = +strokeEl.value / 10;
+    strokeVal.textContent = v.toFixed(1);
+    document.documentElement.style.setProperty('--spring-stroke', v);
+  });
+  archSpreadEl.addEventListener('input', () => {
+    const v = +archSpreadEl.value / 100;
+    // Keep the leading "0." (or "-0.") so negative values read correctly —
+    // the slice trick used by the other sliders would eat the sign.
+    archSpreadVal.textContent = v.toFixed(2);
+    state.archSpread = v;
+    applySpringPath();
+  });
+  dipHeightEl.addEventListener('input', () => {
+    const v = +dipHeightEl.value / 10;
+    dipHeightVal.textContent = v.toFixed(1);
+    state.dipHeight = v;
+    applySpringPath();
+  });
+  dipSpreadEl.addEventListener('input', () => {
+    const v = +dipSpreadEl.value / 100;
+    dipSpreadVal.textContent = v.toFixed(2);
+    state.dipSpread = v;
+    applySpringPath();
+  });
+  smoothAttackEl.addEventListener('input', () => {
+    const v = +smoothAttackEl.value / 100;
+    smoothAttackVal.textContent = v.toFixed(2).slice(1);
+    state.smoothingAttack = v;
+  });
+  smoothReleaseEl.addEventListener('input', () => {
+    const v = +smoothReleaseEl.value / 100;
+    smoothReleaseVal.textContent = v.toFixed(2).slice(1);
+    state.smoothingRelease = v;
+  });
+  bufferMsEl.addEventListener('input', () => {
+    const v = +bufferMsEl.value;
+    bufferMsVal.textContent = String(v);
+    state.bufferMs = v;
+  });
+  litKEl.addEventListener('input', () => {
+    const v = +litKEl.value / 10;
+    litKVal.textContent = v.toFixed(1);
+    state.litK = v;
+  });
+
+  // Reset to defaults — snap every Spring-tuning slider back to its
+  // baked-in initial value and trigger 'input' so the existing
+  // listeners do the rest (update labels, mutate state, rebuild path).
+  const resetBtn = document.getElementById('resetTuning');
+  const tuningDefaults = [
+    [coilsEl,         '9'],
+    [strokeEl,        '12'],   // → 1.2
+    [archSpreadEl,    '-15'],  // → -0.15
+    [dipHeightEl,     '20'],   // → 2.0
+    [dipSpreadEl,     '25'],   // → 0.25
+    [litKEl,          '50'],   // → 5.0
+    [smoothAttackEl,  '20'],   // → .20
+    [smoothReleaseEl, '0'],    // → .00 — release alpha 1.0, instant snap-down
+    [bufferMsEl,      '21'],   // → 21 ms = Swift's 1024-frame buffer @ 48kHz
+  ];
+  resetBtn.addEventListener('click', () => {
+    for (const [el, value] of tuningDefaults) {
+      el.value = value;
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  });
+
+
+  // ---------- render loop ----------
+  function tick(now) {
+    // auto wobble in listening mode — picks a sustained target every 250-500ms (full 0..1)
+    // and slews toward it; mimics actual speech with silences + loud bursts.
+    if (state.autoVol && state.mode === 'listening') {
+      if (now > state.autoNextAt) {
+        // Bias toward low values via power curve: exponent = 1 (uniform) → 4 (strongly low).
+        const exp = 1 + state.simBias * 3;
+        let next;
+        let tries = 0;
+        do {
+          next = Math.pow(Math.random(), exp);
+          tries++;
+        } while (Math.abs(next - state.autoTarget) < state.simJump && tries < 12);
+        state.autoTarget = next;
+        state.autoNextAt = now + state.simInterval * (0.75 + Math.random() * 0.5);
+      }
+      state.rawVolume += (state.autoTarget - state.rawVolume) * state.simSlew;
+      state.rawVolume = Math.max(0, Math.min(1, state.rawVolume));
+      volEl.value = Math.round(state.rawVolume * 100);
+      volVal.textContent = volEl.value;
+    }
+
+    // Asymmetric EMA — mirrors Swift's smoothVol pipeline. Attack and
+    // release have separate smoothing values so you can independently
+    // tune how fast the spring climbs to a new peak (attack, raw rising)
+    // vs how fast it falls back between syllables (release, raw falling).
+    //
+    // Buffer gate: only run the EMA every `bufferMs` ms, mirroring how
+    // the Swift smoothVol update is gated by AVAudioEngine's tap-buffer
+    // callback rate. With buffer=21ms (~48 Hz) the EMA fires ~48 times
+    // per second; bump it to 100+ and the spring will visibly lag.
+    if (now - state.lastBufferTick >= state.bufferMs) {
+      state.lastBufferTick = now;
+      const isRising = state.rawVolume > state.displayVolume;
+      const smoothing = isRising ? state.smoothingAttack : state.smoothingRelease;
+      state.displayVolume = state.displayVolume * smoothing
+                         + state.rawVolume   * (1 - smoothing);
+    }
+
+    // Reset FG opacity each frame so the "Breathe" idle style (which modulates it)
+    // doesn't leak into other modes/styles.
+    springFg.setAttribute('stroke-opacity', '1');
+
+    // Animate the FG stroke by length along the coil (not by horizontal extent).
+    // dasharray "A B" means: A length visible, then B invisible (repeat).
+    // dashoffset shifts the pattern forward along the path.
+    if (state.mode === 'listening') {
+      // Exponential ramp: small volumes already light up a substantial portion, large
+      // volumes saturate softly toward full. Coefficient (litK) tuned to mirror Swift's
+      // `1 - exp(-50 * smoothVol)` for real audio. vol=0 → fully dark; vol=1 → ~99% lit.
+      const litLen = pathLen * (1 - Math.exp(-state.litK * state.displayVolume));
+      springFg.setAttribute('stroke-dasharray', `${litLen} ${pathLen}`);
+      springFg.setAttribute('stroke-dashoffset', '0');
+    } else if (state.mode === 'processing') {
+      // A comet of length winLen travels along the path: enters from the left,
+      // crosses, exits on the right, restarts. Stroke dimmed so it reads as
+      // "indeterminate / working" rather than confidently lit like listening.
+      const t = ((now / 1400) % 1);
+      const winLen = pathLen * 0.30;
+      springFg.setAttribute('stroke-dasharray', `${winLen} ${pathLen}`);
+      const off = winLen - t * (pathLen + winLen);
+      springFg.setAttribute('stroke-dashoffset', `${off}`);
+      springFg.setAttribute('stroke-opacity', '0.55');
+    } else {
+      // idle — dispatch by style
+      if (state.idleStyle === 'B') {
+        // Breathe: whole spring brightness oscillates via FG opacity, ~4s cycle
+        const op = 0.10 + 0.30 * (0.5 + 0.5 * Math.sin(now / 4000 * 2 * Math.PI));
+        springFg.setAttribute('stroke-dasharray', `${pathLen} ${pathLen}`);
+        springFg.setAttribute('stroke-dashoffset', '0');
+        springFg.setAttribute('stroke-opacity', op.toFixed(3));
+      } else if (state.idleStyle === 'C') {
+        // Expand: bright window grows from the center outward, then shrinks back.
+        // Opacity oscillates in phase with size (clear when expanded, dim when contracted).
+        const phase = (now / 3500) * 2 * Math.PI;
+        const wave  = 0.5 + 0.5 * Math.sin(phase);
+        const winLen = pathLen * (0.25 + 0.73 * wave);
+        const op = 0.10 + 0.30 * wave;
+        springFg.setAttribute('stroke-dasharray', `${winLen} ${pathLen}`);
+        springFg.setAttribute('stroke-dashoffset', `${(winLen - pathLen) / 2}`);
+        springFg.setAttribute('stroke-opacity', op.toFixed(3));
+      } else if (state.idleStyle === 'D') {
+        // Dual dots: two small dots half-a-path apart, drift together (3.5s loop)
+        const t = ((now / 3500) % 1);
+        const winLen = pathLen * 0.02;
+        const half = pathLen / 2;
+        springFg.setAttribute('stroke-dasharray', `${winLen} ${half - winLen}`);
+        springFg.setAttribute('stroke-dashoffset', `${-t * half}`);
+      } else {
+        // F — single tiny dot drifting (2.8s loop)
+        const t = ((now / 2800) % 1);
+        const winLen = pathLen * 0.01;
+        springFg.setAttribute('stroke-dasharray', `${winLen} ${pathLen}`);
+        const off = winLen - t * (pathLen + winLen);
+        springFg.setAttribute('stroke-dashoffset', `${off}`);
+      }
+    }
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  // Keep each range slider's --val in sync so its accent-fill gradient tracks the value.
+  function updateRangeFill(el) {
+    const min = +el.min || 0, max = +el.max || 100, val = +el.value;
+    el.style.setProperty('--val', ((val - min) / (max - min)) * 100);
+  }
+  document.querySelectorAll('.controls input[type="range"]').forEach(el => {
+    updateRangeFill(el);
+    el.addEventListener('input', () => updateRangeFill(el));
+  });
+  // For sliders driven externally (auto-vol simulating real audio), refresh every frame.
+  const liveRanges = [document.getElementById('vol')];
+  function refreshLive() {
+    liveRanges.forEach(el => el && updateRangeFill(el));
+    requestAnimationFrame(refreshLive);
+  }
+  requestAnimationFrame(refreshLive);
+
+  // ---------- demo playback (keyframes + dock) ----------
+  // The panel plays itself by tweening the tuning sliders through curated
+  // keyframes. Each frame writes slider .value and dispatches 'input', so the
+  // existing listeners update label + state + spring path + fill for free.
+  // Any user gesture on a slider or a dock control pauses auto-play and hands
+  // control back to the user. Also kicks off the live-voice sim so the spring
+  // pulses while the shape morphs.
+  autoVolEl.click();
+
+  const PB_SLIDERS = [
+    coilsEl, strokeEl, archSpreadEl, dipHeightEl, dipSpreadEl,
+    litKEl, smoothAttackEl, smoothReleaseEl, bufferMsEl,
+  ];
+  // Raw slider units, one row per keyframe:
+  //   [coils, stroke, archSpread, dipHeight, dipSpread, sensitivity(litK), smoothAttack, smoothRelease, bufferMs]
+  const PB_PRESETS = [
+    [ 9, 12, -15, 20,  25,  50, 20,  0,  21],  // 0 · defaults
+    [ 6, 26,  10,  8,  40,  70, 40, 20,  30],
+    [14, 10, -40, 45, -20,  30, 10, 60,  60],
+    [11, 30,  30, 30,  50,  90, 60, 10,  18],
+    [ 4, 18, -25, 12,  15,  50, 25, 35,  80],
+    [16, 14,  45, 50, -10,  40, 50, 70,  40],
+    [ 8, 22,   0,  5,  50,  80, 15,  5,  25],
+    [12, 34, -40, 40,  30,  60, 80, 45,  50],
+    [ 5, 12,  20, 25, -15,  20, 30,  0,  70],
+    [18, 20, -10, 55,  20, 100, 45, 25,  35],
+    [ 7, 28,  35, 15,  45,  55, 10, 55,  55],
+  ];
+  const PB_DUR = 1500;   // tween duration (ms) between keyframes
+  const PB_HOLD = 1000;  // dwell (ms) on each keyframe before auto-advancing
+
+  const pbBar     = document.getElementById('pbBar');
+  const pbPlayBtn  = document.getElementById('pbPlay');
+
+  let pbIndex = 0, pbTargetIndex = 0;
+  let pbPlaying = true, pbTweening = false;
+  let pbFrom = [], pbTo = [], pbStart = 0, pbHoldUntil = 0;
+  let pbStatus = 'Playing';
+
+  function pbUpdateBeat() {
+    // beat readout removed; play button label carries the state
+  }
+  function pbStartTween(target, now) {
+    pbFrom = PB_SLIDERS.map(el => +el.value);
+    pbTo = PB_PRESETS[target];
+    pbTargetIndex = target;
+    pbStart = now;
+    pbTweening = true;
+  }
+  function pbPlay() {
+    pbPlaying = true; pbStatus = 'Playing';
+    pbPlayBtn.classList.add('on'); pbPlayBtn.textContent = '⏸ Pause';
+    pbHoldUntil = 0; pbUpdateBeat();
+  }
+  function pbPause() {
+    pbPlaying = false; pbStatus = 'Paused';
+    pbPlayBtn.classList.remove('on'); pbPlayBtn.textContent = '▶ Play';
+    pbUpdateBeat();
+  }
+
+  pbPlayBtn.addEventListener('click', () => { pbPlaying ? pbPause() : pbPlay(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'h' || e.key === 'H') pbBar.classList.toggle('hidden');
+  });
+
+  // Manual slider gesture → stop auto-play, follow the user.
+  PB_SLIDERS.forEach(el => {
+    ['pointerdown', 'keydown'].forEach(ev =>
+      el.addEventListener(ev, () => { if (pbPlaying) pbPause(); }));
+  });
+  // Dragging Volume also stops the live-voice sim so the user's level holds.
+  volEl.addEventListener('pointerdown', () => { if (state.autoVol) autoVolEl.click(); });
+  // The in-panel "Reset to defaults" also drops out of auto-play, back to frame 0.
+  resetBtn.addEventListener('click', () => {
+    pbPause(); pbStatus = 'Idle'; pbIndex = 0; pbTargetIndex = 0; pbTweening = false;
+    pbUpdateBeat();
+  });
+
+  function pbTick(now) {
+    if (pbTweening) {
+      const t = Math.min(1, (now - pbStart) / PB_DUR);
+      const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      for (let i = 0; i < PB_SLIDERS.length; i++) {
+        const el = PB_SLIDERS[i], step = +el.step || 1;
+        const val = Math.round((pbFrom[i] + (pbTo[i] - pbFrom[i]) * e) / step) * step;
+        if (+el.value !== val) {
+          el.value = val;
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+      if (t >= 1) {
+        pbTweening = false; pbIndex = pbTargetIndex;
+        pbHoldUntil = now + PB_HOLD; pbUpdateBeat();
+      }
+    } else if (pbPlaying && now >= pbHoldUntil) {
+      pbStartTween((pbIndex + 1) % PB_PRESETS.length, now);
+    }
+    requestAnimationFrame(pbTick);
+  }
+  // Start in auto-play (matches the "make it move" default); Play button reads Pause.
+  pbPlayBtn.classList.add('on'); pbPlayBtn.textContent = '⏸ Pause';
+  pbUpdateBeat();
+  requestAnimationFrame(pbTick);
+
+  // Report content height to the embedding parent (index.html) so the iframe —
+  // and the colored card wrapping it — can size to the panel instead of a fixed
+  // height. The panel is the tallest element, so documentElement.scrollHeight is
+  // the natural document height.
+  function reportHeight() {
+    const h = Math.ceil(document.documentElement.scrollHeight);
+    parent.postMessage({ type: 'voicebar-height', height: h }, '*');
+  }
+  if (window.ResizeObserver) {
+    new ResizeObserver(reportHeight).observe(document.body);
+  }
+  window.addEventListener('load', reportHeight);
+  reportHeight();
+</script>
+</body>
+</html>

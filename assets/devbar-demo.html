@@ -1,0 +1,954 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>flow-remote · state-jumper</title>
+<link rel="preconnect" href="https://rsms.me/" />
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ---------- tokens (devbar matches the real OnboardingDevbar prototype) ---------- */
+  :root {
+    --bg: #0e0e10;
+    --bg-2: #131316;
+    --bg-3: #17171b;
+    --surface: #141418;
+    --surface-hover: #1a1a1f;
+    --border: #1e1e22;
+    --border-2: #26262c;
+    --divider: #1c1c20;
+
+    --text: #ececf1;
+    --text-mute: #a6a6b0;
+    --text-dim: #6b6b76;
+    --text-faint: #4a4a52;
+
+    --accent: #7c5cff;
+    --accent-soft: #8f74ff;
+    --accent-12: rgba(124, 92, 255, 0.12);
+    --accent-08: rgba(124, 92, 255, 0.08);
+    --danger: #e5484d;
+
+    --dot-past: #3a3a42;
+    --dot-active: var(--accent);
+    --dot-future: #2a2a30;
+
+    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", "SF Mono", ui-monospace, "Menlo", monospace;
+
+    --t-xs: 10.5px;
+    --t-sm: 11.5px;
+    --t-md: 12.5px;
+    --t-lg: 13.5px;
+
+    --s-1: 4px;  --s-2: 8px;  --s-3: 12px;  --s-4: 16px;  --s-5: 20px;  --s-6: 24px;
+    --radius-sm: 5px;  --radius-md: 7px;  --radius-lg: 9px;
+    --radius: 14px;   /* rounded card shell */
+
+    /* onboarding = the real app's "Bebop Slate" palette (navy ink, not violet) */
+    --onb-bg: #ffffff;        /* card surface */
+    --onb-ink: #1F2431;       /* brand / primary navy — eyebrow, CTA, caret */
+    --onb-ink-hover: #171B27;
+    --onb-text: #1F2431;      /* text primary */
+    --onb-mute: #3E4760;      /* text secondary */
+    --onb-dim: #4A5471;       /* text muted */
+    --onb-line: #D7DEEF;      /* stroke subtle */
+    --onb-right: #EBEBEB;     /* right-pane canvas */
+    --onb-live: #0A84FF;      /* macOS blue — recording/active */
+    --onb-serif: ui-serif, "New York", Georgia, "Times New Roman", serif;
+
+    /* Compact composition that fits the FULL devbar (taller than the card) + the
+       onboarding card, both at real size, inside the green frame with a small
+       overlap (devbar layered on top). Card 1000×640, devbar 260×704. */
+    /* real sizes, unchanged */
+    --devbar-w: 260px;
+    --devbar-h: 704px;
+    --card-w: 1000px;
+    --card-h: 640px;
+    --m: 40px;            /* equal margin around the whole group; also the room the
+                            devbar's drop shadow renders into (un-clipped) */
+    --overlap: 16px;      /* devbar overlaps the card's left edge */
+    /* group bounding box = devbar (tallest, 704) × [devbar + card - overlap] wide,
+       centered in the stage with --m on every side */
+    --stage-w: 1324px;    /* 2m + devbar + (card - overlap) = 80+260+984 */
+    --stage-h: 784px;     /* 2m + devbar-h = 80+704 */
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    height: 100%;
+    background: transparent;        /* green tool card bleeds through */
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01", "ss02";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* Clip any overflow; the stage is absolutely centered and JS scales it to fit the iframe. */
+  body { position: relative; overflow: hidden; }
+  @supports (font-variation-settings: normal) { html, body { font-family: "Inter var", var(--font-sans); } }
+
+  /* ===================== stage: devbar (left) + onboarding (right) ===================== */
+  .stage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: center center;
+    width: var(--stage-w);
+    height: var(--stage-h);
+    box-sizing: border-box;
+  }
+
+  /* Demo dock — Play/Pause for the autoplay walkthrough. Mirrored to the
+     bottom-right because the devbar panel sits on the left (opposite the Parametric demo). */
+  .rc-playbar {
+    position: fixed; right: 24px; bottom: 24px; z-index: 40;
+    display: none;   /* home embed: no transport — walkthrough auto-runs */
+    align-items: center; gap: 8px;
+    background: #ffffff; border: 1px solid rgba(20,16,40,0.08); border-radius: 24px;
+    padding: 9px 14px;
+    box-shadow: 0 8px 24px rgba(20,16,40,0.18), 0 1px 3px rgba(20,16,40,0.10);
+  }
+  .rc-playbar button {
+    font: inherit; font-size: 13px; font-weight: 500; color: #4a4a52;
+    background: none; border: 0; border-radius: 16px; padding: 7px 15px; cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+  .rc-playbar button:hover { background: rgba(20,16,40,0.06); color: #1a1a1f; }
+  .rc-playbar button.on { background: none; color: #5e6ad2; }
+  .rc-playbar button.on:hover { background: rgba(94,106,210,0.08); color: #5e6ad2; }
+
+  /* ===================== DEVBAR (rounded floating card) ===================== */
+  .devbar {
+    position: absolute;
+    left: var(--m); top: var(--m);
+    width: var(--devbar-w);
+    height: var(--devbar-h);           /* full devbar height — shows every step + mocks + footer */
+    z-index: 2;                        /* layered on top of the card at the overlap */
+    background: var(--bg-2);
+    border: 1px solid var(--border-2);
+    border-radius: var(--radius);      /* keep rounded shell */
+    /* the only shadow in the composition — sized to fit within the --m margin */
+    box-shadow: 0 6px 34px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  /* subtle dotted grid, faded toward the bottom */
+  .devbar::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 14px 14px;
+    pointer-events: none;
+    opacity: 0.55;
+    mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 100%);
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 100%);
+  }
+
+  .devbar__header {
+    position: relative;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--s-4) var(--s-4) var(--s-3);
+    border-bottom: 1px solid var(--divider);
+  }
+  .devbar__title { display: flex; align-items: center; gap: var(--s-2); }
+  .devbar__dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+    box-shadow: 0 0 0 2px rgba(124,92,255,0.16), 0 0 12px rgba(124,92,255,0.45);
+  }
+  .devbar__brand { font-family: var(--font-mono); font-size: var(--t-md); font-weight: 500; color: var(--text); letter-spacing: -0.01em; }
+  .devbar__meta  { font-family: var(--font-mono); font-size: var(--t-xs); color: var(--text-dim); letter-spacing: 0.01em; }
+  .kbd {
+    font-family: var(--font-mono); font-size: 10px; color: var(--text-dim);
+    background: transparent; border: 1px solid var(--border-2); border-radius: 4px;
+    padding: 0 4px; height: 18px; display: inline-flex; align-items: center; gap: 2px;
+    letter-spacing: 0.02em; cursor: pointer; line-height: 1;
+    transition: color 120ms ease, border-color 120ms ease, background 120ms ease;
+  }
+  .kbd__k { font-size: 10px; display: inline-block; min-width: 8px; text-align: center; }
+  .kbd:hover { color: var(--text); border-color: #2f2f37; background: var(--surface-hover); }
+
+  .group { position: relative; padding: var(--s-4) 0 var(--s-3); border-bottom: 1px solid var(--divider); }
+  /* mocks group flex-fills the remaining height + scrolls, so the bar stays fixed-height
+     and the Replay footer pins to the bottom regardless of how many mocks a step has. */
+  .group:last-of-type { border-bottom: none; flex: 1; min-height: 0; overflow-y: auto; }
+  .group::-webkit-scrollbar { width: 6px; }
+  .group::-webkit-scrollbar-track { background: transparent; }
+  .group::-webkit-scrollbar-thumb { background: #24242a; border-radius: 999px; }
+  .group__head { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--s-4); margin-bottom: var(--s-2); }
+  .group__title { margin: 0; font-family: var(--font-mono); font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-dim); }
+
+  .steps { list-style: none; padding: 0 var(--s-2); margin: 0; display: flex; flex-direction: column; gap: 1px; }
+  .step {
+    position: relative; display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: var(--s-2);
+    padding: 8px var(--s-3) 8px 10px; border-radius: var(--radius-md); cursor: pointer; user-select: none;
+    transition: background 140ms ease; border: 0; background: transparent; text-align: left; width: 100%;
+  }
+  .step:hover:not(.step--active) { background: var(--surface); }
+  .step__dot { width: 7px; height: 7px; border-radius: 50%; background: var(--dot-future); margin-left: 4px; transition: background 160ms ease, box-shadow 160ms ease; }
+  .step--past .step__dot { background: var(--dot-past); }
+  .step--active .step__dot { background: var(--dot-active); box-shadow: 0 0 0 3px rgba(124,92,255,0.12), 0 0 10px rgba(124,92,255,0.5); }
+  .step__id { font-family: var(--font-mono); font-size: 13.5px; color: #c7c7d0; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; }
+  .step--active .step__id { color: var(--text); font-weight: 500; }
+  .step--past .step__id { color: #a0a0ac; }
+  .step__index { font-family: var(--font-mono); font-size: 11.5px; color: #8a8a95; font-variant-numeric: tabular-nums; }
+  .step--active { background: var(--accent-12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), inset 0 0 0 1px rgba(124,92,255,0.16); }
+  .step--active .step__index { color: var(--accent-soft); }
+
+  .mocks { padding: 0 var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); }
+  .mock { display: flex; flex-direction: column; gap: var(--s-2); }
+  .mock__head { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
+  .mock__label { font-size: var(--t-md); color: var(--text); font-weight: 450; letter-spacing: -0.005em; }
+  .mock__current { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); }
+  .mock__current .v { color: var(--text-mute); }
+
+  .opts { display: flex; flex-direction: column; gap: 1px; padding: var(--s-1); background: rgba(255,255,255,0.012); border: 1px solid var(--border); border-radius: var(--radius-md); }
+  .opt { display: flex; align-items: center; gap: var(--s-2); padding: 6px 8px; border-radius: var(--radius-sm); cursor: pointer; user-select: none; transition: background 120ms ease; border: 0; background: transparent; width: 100%; text-align: left; }
+  .opt:hover { background: rgba(255,255,255,0.022); }
+  .opt__circle { width: 12px; height: 12px; border-radius: 50%; border: 1px solid var(--border-2); background: var(--bg-3); flex-shrink: 0; display: grid; place-items: center; transition: all 140ms ease; }
+  .opt__circle::after { content: ""; width: 5px; height: 5px; border-radius: 50%; background: transparent; transition: background 140ms ease; }
+  .opt--on .opt__circle { border-color: var(--accent); background: rgba(124,92,255,0.08); box-shadow: 0 0 0 2px rgba(124,92,255,0.08); }
+  .opt--on .opt__circle::after { background: var(--accent); }
+  .opt__value { font-family: var(--font-mono); font-size: var(--t-sm); color: var(--text-mute); letter-spacing: -0.005em; }
+  .opt--on .opt__value { color: var(--text); }
+  .opt__hint { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); }
+  .mock--bool .opts { flex-direction: row; padding: 3px; gap: 2px; }
+  .mock--bool .opt { flex: 1; justify-content: flex-start; padding: 5px 8px; }
+  .mock--bool .opt__hint { display: none; }
+
+  .devbar__footer { padding: var(--s-3) var(--s-3) var(--s-4); border-top: 1px solid var(--divider); background: linear-gradient(180deg, transparent, rgba(0,0,0,0.25)); }
+  .replay {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: var(--s-2);
+    padding: 9px var(--s-3); border-radius: var(--radius-md); background: var(--accent); color: #fff;
+    font-family: var(--font-mono); font-size: var(--t-sm); font-weight: 500; letter-spacing: 0.01em;
+    border: none; cursor: pointer; position: relative;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(0,0,0,0.15), 0 1px 0 rgba(0,0,0,0.4), 0 0 0 1px rgba(124,92,255,0.5), 0 6px 18px -8px rgba(124,92,255,0.5);
+    transition: transform 90ms ease, filter 120ms ease;
+  }
+  .replay:hover { filter: brightness(1.08); }
+  .replay:active { transform: translateY(1px); filter: brightness(0.95); }
+  .replay__icon { display: inline-flex; width: 12px; height: 12px; align-items: center; justify-content: center; opacity: 0.95; }
+  .replay__hint { position: absolute; right: 10px; font-size: 10px; opacity: 0.6; font-weight: 400; }
+
+  /* End — secondary variant of the footer button (shown while in-flow; becomes Replay at "closed") */
+  .replay.end {
+    background: var(--bg-3); color: var(--text-mute);
+    box-shadow: inset 0 0 0 1px var(--border-2);
+    transition: color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+  }
+  .replay.end:hover { filter: none; color: #fff;
+    background: color-mix(in srgb, var(--danger) 16%, var(--bg-3));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--danger) 55%, var(--border-2)); }
+
+  /* reset (↻) button in the STEPS header — "reset to new user" */
+  .steps-reset { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+                 background: transparent; border: 0; border-radius: 4px; color: var(--accent); cursor: pointer;
+                 transition: background 120ms ease; }
+  .steps-reset:hover { background: rgba(124, 92, 255, 0.18); }
+  .steps-reset svg { width: 12px; height: 12px; }
+
+  /* closed (onboarding dismissed → main app) screen */
+  .onb-screen.full { grid-template-columns: 1fr; place-items: center; }
+  .onb-closed { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; max-width: 26em; padding: 40px; }
+  .closed-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600;
+                  color: #2e9e6b; background: #e8f6ef; border: 1px solid #c7e9d8; border-radius: 20px; padding: 4px 11px; }
+  .closed-badge .d { width: 6px; height: 6px; border-radius: 50%; background: #2e9e6b; }
+
+  /* ===================== onboarding card (Bebop Slate) ===================== */
+  .onb-card {
+    position: absolute;
+    left: calc(var(--m) + var(--devbar-w) - var(--overlap));
+    top: calc((var(--stage-h) - var(--card-h)) / 2);
+    width: var(--card-w); height: var(--card-h);
+    z-index: 1;
+    border-radius: 24px; overflow: hidden;       /* real card radius */
+    background: var(--onb-bg); border: 1px solid rgba(0,0,0,0.04);
+    color: var(--onb-text);
+  }
+  /* split pane: left copy 458 + right canvas 542 (real proportions) */
+  .onb-screen { position: absolute; inset: 0; display: none; grid-template-columns: 458px 1fr; align-items: stretch; opacity: 0; transition: opacity 220ms ease; }
+  .onb-screen.active { display: grid; opacity: 1; }
+  .onb-screen.full { grid-template-columns: 1fr; }   /* welcome / done / closed */
+
+  /* left pane: nav-rail (top) → vertically-centered content → footer buttons */
+  .onb-copy { padding: 24px 36px 28px 44px; display: flex; flex-direction: column; box-sizing: border-box; }
+  .onb-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 28px; }
+  .onb-back { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 500; color: var(--onb-mute);
+              background: transparent; border: 0; cursor: pointer; padding: 6px 10px 6px 8px; border-radius: 8px; }
+  .onb-back:hover { background: rgba(0,0,0,0.05); }
+  .onb-dots { display: flex; align-items: center; gap: 6px; }
+  .onb-dots .dot { width: 6px; height: 6px; border-radius: 3px; background: rgba(0,0,0,0.12); transition: width 360ms cubic-bezier(.22,1,.36,1); }
+  .onb-dots .dot.done { background: color-mix(in srgb, var(--onb-ink) 50%, transparent); }
+  .onb-dots .dot.on { width: 22px; background: var(--onb-ink); }
+  .onb-mid { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
+
+  .onb-eyebrow { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start;
+                 font-size: 11px; font-weight: 600; letter-spacing: 0.11em; text-transform: uppercase; color: var(--onb-ink); margin-bottom: 14px; }
+  .onb-eyebrow .gl { width: 13px; height: 13px; }
+  .onb-title { font-family: var(--onb-serif); font-size: 28px; line-height: 1.18; font-weight: 500; letter-spacing: -0.01em; color: var(--onb-text); margin: 0; }
+  .onb-title.lg { font-size: 32px; }
+  .onb-title .muted { color: var(--onb-dim); }
+  .onb-body { font-size: 14.5px; line-height: 1.6; color: var(--onb-mute); margin: 14px 0 0; max-width: 420px; }
+  .onb-spacer { flex: 1; }
+  .onb-cta-row { margin-top: 24px; justify-content: flex-end; }
+
+  /* primary (ink) + secondary (outline) buttons — normalized line-height + block
+     svg so the icon never adds extra height (keeps every button the same height) */
+  .onb-cta { align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; background: var(--onb-ink); color: #fff; border: 0; border-radius: 16px; padding: 12px 22px; font-size: 15px; font-weight: 500; line-height: 1.2; cursor: pointer; }
+  .onb-cta svg { display: block; flex-shrink: 0; }
+  .onb-cta:hover { background: var(--onb-ink-hover); }
+  .onb-cta.ghost { background: transparent; color: var(--onb-text); border: 1px solid rgba(0,0,0,0.14); border-radius: 12px; padding: 12px 22px; font-size: 15px; }
+  .onb-cta-row { display: flex; gap: 10px; align-items: center; }
+
+  /* feature bullets (welcome) */
+  .feat { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+  .feat .fi { width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+              background: color-mix(in srgb, var(--onb-ink) 10%, transparent); color: var(--onb-ink); }
+  .feat .fi svg { width: 13px; height: 13px; }
+  .feat .ft { font-size: 14px; color: var(--onb-text); }
+
+  /* right visual canvas — neutral gray (#EBEBEB) + barely-visible cool-blue grid
+     (slate-90 #D7DEEF, 24px cells), matching the real GridPattern. */
+  .onb-visual { position: relative;
+    background:
+      repeating-linear-gradient(0deg,  rgba(215,222,239,0.7) 0 1px, transparent 1px 24px),
+      repeating-linear-gradient(90deg, rgba(215,222,239,0.7) 0 1px, transparent 1px 24px),
+      var(--onb-right);
+    border-left: 1px solid color-mix(in srgb, var(--onb-line) 50%, transparent);
+    display: flex; align-items: center; justify-content: center; padding: 36px; box-sizing: border-box; overflow: hidden; }
+  /* welcome hero: same gray + grid, with a soft radial highlight on top */
+  .onb-visual.hero { background:
+      radial-gradient(60% 60% at 50% 45%, rgba(148,168,192,0.28), transparent 70%),
+      repeating-linear-gradient(0deg,  rgba(215,222,239,0.7) 0 1px, transparent 1px 24px),
+      repeating-linear-gradient(90deg, rgba(215,222,239,0.7) 0 1px, transparent 1px 24px),
+      var(--onb-right); border-left: 0; }
+
+  /* notification cards (welcome) */
+  .notif-stack { display: flex; flex-direction: column; gap: 14px; width: 220px; }
+  .notif { display: flex; gap: 10px; align-items: center; background: rgba(255,255,255,0.96); border: 1px solid rgba(0,0,0,0.06);
+           border-radius: 12px; padding: 11px 13px; box-shadow: 0 4px 10px -4px rgba(0,0,0,0.12); }
+  .notif .ic { width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: #fff; }
+  .notif .ic svg { width: 13px; height: 13px; }
+  .notif .ln1 { height: 7px; width: 56%; border-radius: 4px; background: var(--onb-mute); opacity: 0.75; }
+  .notif .ln2 { height: 6px; width: 88%; border-radius: 4px; background: rgba(0,0,0,0.08); margin-top: 6px; }
+
+  /* permission cards (setup) */
+  .perm-list { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 340px; }
+  .perm { display: flex; align-items: flex-start; gap: 12px; background: rgba(0,0,0,0.04); border: 1px solid color-mix(in srgb, var(--onb-line) 50%, transparent); border-radius: 12px; padding: 14px 16px; }
+  .perm .pic { width: 16px; height: 16px; color: var(--onb-text); flex-shrink: 0; margin-top: 1px; }
+  .perm .pbody { flex: 1; }
+  .perm .lbl { font-size: 14px; font-weight: 600; color: var(--onb-text); }
+  .perm .sub { font-size: 12px; color: var(--onb-mute); margin-top: 3px; line-height: 1.4; }
+  .perm .pstate { flex-shrink: 0; align-self: center; }
+  .perm .chk { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.14); display: flex; align-items: center; justify-content: center; }
+  .perm .chk svg { display: none; width: 12px; height: 12px; color: #fff; }
+  .perm.done .chk { background: var(--onb-ink); border-color: var(--onb-ink); }
+  .perm.done .chk svg { display: block; }
+  .perm.locked { opacity: 0.5; }
+  .perm.denied .chk { border-color: #A8341F; background: rgba(168,52,31,0.1); }
+
+  /* system-settings mock (setup right) */
+  .sysmock { width: 300px; height: 210px; background: #fff; border-radius: 12px; border: 1px solid rgba(0,0,0,0.06);
+             box-shadow: 0 18px 40px -18px rgba(0,0,0,0.4); overflow: hidden; display: grid; grid-template-columns: 116px 1fr; }
+  .sysmock .lights { display: flex; gap: 6px; padding: 9px 10px; }
+  .sysmock .lights span { width: 9px; height: 9px; border-radius: 50%; }
+  .sysmock .side { background: #fff; border-right: 1px solid rgba(0,0,0,0.06); }
+  .sysmock .side .pill { height: 9px; margin: 8px 10px; border-radius: 5px; background: rgba(0,0,0,0.07); }
+  .sysmock .side .pill.sel { background: rgba(10,132,255,0.18); }
+  .sysmock .main .pill { height: 11px; margin: 9px 12px; border-radius: 5px; background: rgba(0,0,0,0.06); }
+  .sysmock .main .pill.hl { background: rgba(10,132,255,0.85); width: 55%; }
+
+  /* spring pill (mic test) */
+  .spring-wrap { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .spring-pill { background: var(--onb-ink); border-radius: 16px; padding: 12px 16px; box-shadow: 0 3px 8px rgba(0,0,0,0.18); }
+  .spring-pill svg { width: 115px; height: 30px; display: block; }
+  .spring-pill .bg { stroke: rgba(255,255,255,0.18); }
+  .spring-pill .fg { stroke: #ffffff; stroke-dasharray: 110 400; }
+  .mic-status { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--onb-mute); }
+  .mic-status .live { width: 6px; height: 6px; border-radius: 50%; background: var(--onb-live); animation: blink 0.7s ease-in-out infinite; }
+
+  /* keyboard mock (hotkey) — dark chrome with a few keys */
+  .kbd-chrome { background: #242424; border-radius: 16px; padding: 13px; box-shadow: 0 14px 34px -14px rgba(0,0,0,0.55); }
+  .kbd-rows { display: flex; flex-direction: column; gap: 5px; }
+  .kbd-row { display: flex; gap: 5px; }
+  .kc { height: 28px; min-width: 28px; padding: 0 7px; border-radius: 6px; background: #2E2E2E; color: #DEDEDE;
+        display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 500; }
+  .kc.wide { min-width: 43px; }      /* tab  — 28 base, staircase */
+  .kc.w-caps { min-width: 59px; }    /* caps */
+  .kc.w-shift { min-width: 76px; }   /* shift */
+  .kc.lbl-l { justify-content: flex-start; }   /* left-align the label so tab/caps/shift line up */
+  .kc.hint { background: #1B428A; color: #E5EBFA; box-shadow: 0 0 0 2px rgba(35,86,176,0.5); }
+  .kc.pressed { background: #2356B0; color: #fff; box-shadow: 0 0 12px rgba(35,86,176,0.55); }
+  .kbd-status { display: inline-flex; align-items: center; gap: 7px; margin-top: 16px; font-size: 12px; color: var(--onb-mute); }
+  /* hotkey keyboard 2× — anchored at its (centered) left edge, grows rightward (clipped) */
+  .onb-screen[data-step="hotkey"] .kbd-chrome { transform: scale(2); transform-origin: left center; }
+
+  /* email / teams mock (practice) */
+  .mock-card { width: 340px; background: #fff; border-radius: 16px; border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 12px 28px -14px rgba(0,0,0,0.25); overflow: hidden; }
+  .mock-head { padding: 12px 16px; font-size: 12px; color: var(--onb-mute); border-bottom: 1px solid rgba(0,0,0,0.05); }
+  .mock-head b { color: var(--onb-text); font-weight: 600; }
+  .mock-body { padding: 16px; min-height: 120px; display: flex; flex-direction: column; gap: 8px; }
+  .bubble { max-width: 82%; padding: 9px 12px; border-radius: 12px; font-size: 12.5px; line-height: 1.4; }
+  .bubble.in  { align-self: flex-start; background: color-mix(in srgb, var(--onb-ink) 10%, transparent); color: var(--onb-text); border-bottom-left-radius: 4px; }
+  .bubble.out { align-self: flex-end; background: var(--onb-ink); color: #fff; border-bottom-right-radius: 4px; }
+  .mock-input { display: flex; align-items: center; gap: 8px; margin: 4px 16px 16px; background: #fff; border: 1.2px solid color-mix(in srgb, var(--onb-ink) 35%, transparent); border-radius: 10px; padding: 9px 12px; }
+  .mock-input .caret { width: 1.5px; height: 15px; background: var(--onb-ink); animation: blink 1s steps(2) infinite; }
+  .mock-input .ph { font-size: 13px; font-style: italic; color: var(--onb-mute); flex: 1; }
+  .mock-input .send { color: var(--onb-ink); }
+  .mock-input .send svg { width: 15px; height: 15px; display: block; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* "try saying" sample card (practice left) */
+  .say-card { background: #fff; border: 1px solid var(--onb-line); border-radius: 12px; padding: 16px 18px; margin-top: 18px; }
+  .say-card .tag { font-size: 10px; font-weight: 600; letter-spacing: 0.12em; color: var(--onb-ink); display: block; margin-bottom: 8px; }
+  .say-card .sample { font-size: 14px; font-style: italic; line-height: 1.5; color: var(--onb-text); }
+
+  /* done cheatsheet */
+  .cheat { display: flex; flex-direction: column; gap: 20px; align-items: flex-start; }
+  .cheat-row { display: flex; align-items: center; gap: 24px; }
+  .cheat-row .chord { display: flex; align-items: center; gap: 6px; }
+  .cheat-row .desc .t { font-size: 14px; font-weight: 600; color: var(--onb-text); }
+  .cheat-row .desc .d { font-size: 12px; color: var(--onb-mute); margin-top: 2px; }
+  /* outlined keycap (cheatsheet) */
+  .okey { min-width: 34px; height: 34px; padding: 0 9px; border-radius: 6px; background: var(--onb-right);
+          border: 2px solid color-mix(in srgb, var(--onb-ink) 78%, transparent); color: var(--onb-text);
+          display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; }
+  .cheat-row .plus { color: var(--onb-dim); font-size: 13px; }
+
+  /* hotkey hot keys (used inline in the hotkey cards' chord text) */
+  .ikey { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 4px;
+          border-radius: 4px; border: 1px solid color-mix(in srgb, var(--onb-ink) 60%, transparent); font-size: 11px; color: var(--onb-text); }
+
+  /* hotkey try-cards (left) */
+  .try-card { display: flex; align-items: flex-start; gap: 12px; background: rgba(0,0,0,0.04); border: 1px solid color-mix(in srgb, var(--onb-line) 50%, transparent); border-radius: 12px; padding: 14px 16px; }
+  .try-card.locked { opacity: 0.4; }
+  .try-card .tbody { flex: 1; }
+  .try-card .tt { font-size: 14px; font-weight: 600; color: var(--onb-text); }
+  .try-card .td { font-size: 12px; color: var(--onb-mute); margin-top: 2px; }
+  .try-card .tc { font-size: 11.5px; color: var(--onb-dim); margin-top: 8px; display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+  .try-card .chk { width: 22px; height: 22px; border-radius: 50%; border: 2px solid rgba(0,0,0,0.14); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .try-card .chk svg { display: none; width: 12px; height: 12px; color: #fff; }
+  .try-card.done .chk { background: var(--onb-ink); border-color: var(--onb-ink); }
+  .try-card.done .chk svg { display: block; }
+
+  .onb-err { display: none; align-self: flex-start; margin-top: 14px; font-size: 12px; color: #A8341F; line-height: 1.4; background: rgba(168,52,31,0.08); border-radius: 8px; padding: 9px 12px; max-width: 30em; }
+  .onb-err.show { display: block; }
+
+  /* closed (dismissed) screen */
+  .onb-closed { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; height: 100%; padding: 40px; }
+  .closed-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: #2E9E6B; background: #e8f6ef; border: 1px solid #c7e9d8; border-radius: 20px; padding: 4px 11px; }
+  .closed-badge .d { width: 6px; height: 6px; border-radius: 50%; background: #2E9E6B; }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage">
+
+    <!-- Left: the devbar / state-jumper remote (rounded card) -->
+    <aside class="devbar" aria-label="Onboarding devbar">
+      <header class="devbar__header">
+        <div class="devbar__title">
+          <span class="devbar__dot" aria-hidden="true"></span>
+          <span class="devbar__brand">devbar</span>
+          <span class="devbar__meta">onboarding</span>
+        </div>
+        <button class="kbd" title="Toggle devbar (⌘D)" aria-label="Toggle devbar">
+          <span class="kbd__k">⌘</span><span class="kbd__k">D</span>
+        </button>
+      </header>
+
+      <section class="group" aria-labelledby="steps-heading">
+        <div class="group__head">
+          <h2 id="steps-heading" class="group__title">Steps</h2>
+          <button class="steps-reset" id="resetBtn" title="Reset to new user" aria-label="Reset to new user">
+            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6a4 4 0 1 0 1.2-2.85" /><path d="M2 2v2.2h2.2" /></svg>
+          </button>
+        </div>
+        <ul class="steps" id="steps" role="list"></ul>
+      </section>
+
+      <section class="group" aria-labelledby="mocks-heading">
+        <div class="group__head">
+          <h2 id="mocks-heading" class="group__title">Mock states</h2>
+        </div>
+        <div class="mocks" id="mocks"></div>
+      </section>
+
+      <footer class="devbar__footer">
+        <button class="replay" id="footerBtn"><!-- End / Replay, filled by JS --></button>
+      </footer>
+    </aside>
+
+    <!-- Right: real onboarding UI (Bebop Slate), recreated from OnboardingWindowController.swift -->
+    <div class="onb-card" id="onbCard">
+
+      <!-- welcome -->
+      <section class="onb-screen" data-step="welcome">
+        <div class="onb-copy">
+          <div class="onb-nav">
+            <div style="display:inline-flex;align-items:center;gap:8px"><span style="width:18px;height:18px;border-radius:5px;background:var(--onb-ink)"></span><span style="font-weight:600;font-size:14px;color:var(--onb-text)">Looop</span></div>
+          </div>
+          <div class="onb-mid">
+            <span class="onb-eyebrow"><svg class="gl" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.6 3.8L13.5 6 9.6 7.2 8 11 6.4 7.2 2.5 6l3.9-1.2z"/></svg>Welcome</span>
+            <h1 class="onb-title lg">Speak your mind.<br><span class="muted">Write it the way you mean it.</span></h1>
+            <p class="onb-body">Looop turns your voice into clean, ready-to-send text in any Mac app — without leaving your typing flow.</p>
+            <div style="margin-top:26px">
+              <div class="feat"><span class="fi"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="6" y="2" width="4" height="7" rx="2"/><path d="M4 8a4 4 0 0 0 8 0M8 11v3" stroke="currentColor" stroke-width="1.3" fill="none"/></svg></span><span class="ft">Voice to clean text</span></div>
+              <div class="feat"><span class="fi"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="6"/><path d="M2 8h12M8 2c2 2 2 10 0 12M8 2c-2 2-2 10 0 12"/></svg></span><span class="ft">Speak Chinese, write in English</span></div>
+              <div class="feat"><span class="fi"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.4 3.4L13 6 9.4 7.2 8 11 6.6 7.2 3 6l3.6-1.2z"/></svg></span><span class="ft">Turn rough thoughts into ready-to-send text</span></div>
+            </div>
+          </div>
+          <div class="onb-cta-row"><button class="onb-cta">Let's set you up <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9M8 4l4 4-4 4"/></svg></button></div>
+        </div>
+        <div class="onb-visual hero">
+          <div class="notif-stack">
+            <div class="notif"><span class="ic" style="background:#0078D4"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12v8H2z" opacity=".25"/><path d="M2 4l6 4 6-4" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></span><div style="flex:1"><div class="ln1"></div><div class="ln2"></div></div></div>
+            <div class="notif"><span class="ic" style="background:#6264A7"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="6" cy="6" r="2.4"/><circle cx="11" cy="7" r="1.8"/><path d="M2 13c0-2.2 1.8-3.4 4-3.4s4 1.2 4 3.4z"/></svg></span><div style="flex:1"><div class="ln1"></div><div class="ln2"></div></div></div>
+            <div class="notif"><span class="ic" style="background:#21B34D"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 3h10a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H6l-3 2V4a1 1 0 0 1 1-1z"/></svg></span><div style="flex:1"><div class="ln1"></div><div class="ln2"></div></div></div>
+            <div class="notif"><span class="ic" style="background:#6B4FC7"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.4 3.4L13 6 9.4 7.2 8 11 6.6 7.2 3 6l3.6-1.2z"/></svg></span><div style="flex:1"><div class="ln1"></div><div class="ln2"></div></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- setup -->
+      <section class="onb-screen" data-step="setup">
+        <div class="onb-copy">
+          <div class="onb-nav"><button class="onb-back"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3l-5 5 5 5"/></svg>Back</button><div class="onb-dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
+          <div class="onb-mid">
+          <span class="onb-eyebrow"><svg class="gl" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l5 2v4c0 3-2 5.5-5 7-3-1.5-5-4-5-7V3z"/></svg>Setup</span>
+          <h1 class="onb-title">Set up Looop on your Mac.</h1>
+          <p class="onb-body">Two quick permissions before you can dictate into any app.</p>
+          <div style="margin-top:22px">
+            <div class="perm-list">
+              <div class="perm done" id="permAx">
+                <svg class="pic" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="2" y="4" width="12" height="8" rx="1.5"/><path d="M5 7h.01M8 7h.01M11 7h.01M5 9.5h6"/></svg>
+                <div class="pbody"><div class="lbl">Allow Looop to type into any app</div><div class="sub">Needed to detect your cursor and insert text into other apps.</div></div>
+                <span class="pstate"><span class="chk"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2 L4.8 8.5 L9.5 3.5"/></svg></span></span>
+              </div>
+              <div class="perm locked" id="permMic">
+                <svg class="pic" viewBox="0 0 16 16" fill="currentColor"><rect x="6" y="2" width="4" height="7" rx="2"/><path d="M4 8a4 4 0 0 0 8 0M8 11v3" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>
+                <div class="pbody"><div class="lbl">Allow Looop to use your microphone</div><div class="sub">Your voice is sent to a transcription service and discarded after.</div></div>
+                <span class="pstate"><span class="chk"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2 L4.8 8.5 L9.5 3.5"/></svg></span></span>
+              </div>
+            </div>
+          </div>
+          </div>
+          <div class="onb-cta-row"><button class="onb-cta">Continue</button></div>
+        </div>
+        <div class="onb-visual">
+          <div class="sysmock">
+            <div class="side"><div class="lights"><span style="background:#FC5F54"></span><span style="background:#FDB937"></span><span style="background:#45CA45"></span></div><div class="pill"></div><div class="pill"></div><div class="pill sel"></div><div class="pill"></div><div class="pill"></div></div>
+            <div class="main"><div class="lights" style="visibility:hidden"><span></span></div><div class="pill"></div><div class="pill hl"></div><div class="pill"></div><div class="pill"></div><div class="pill"></div><div class="pill"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- micTest -->
+      <section class="onb-screen" data-step="micTest">
+        <div class="onb-copy">
+          <div class="onb-nav"><button class="onb-back"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3l-5 5 5 5"/></svg>Back</button><div class="onb-dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div></div>
+          <div class="onb-mid">
+          <span class="onb-eyebrow"><svg class="gl" viewBox="0 0 16 16" fill="currentColor"><rect x="6" y="2" width="4" height="7" rx="2"/><path d="M4 8a4 4 0 0 0 8 0M8 11v3" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>Microphone check</span>
+          <h1 class="onb-title">Speak into your mic.</h1>
+          <p class="onb-body">The bars on the right should move with your voice. If they don't, switch to a different microphone in System Settings.</p>
+          <div style="margin-top:24px;font-size:13.5px;font-weight:500;color:var(--onb-text);line-height:1.5;padding:12px 14px;background:rgba(31,36,49,0.04);border-radius:10px;max-width:380px">Do the bars react when you talk?</div>
+          </div>
+          <div class="onb-cta-row" style="display:flex;gap:10px"><button class="onb-cta ghost">No, change microphone</button><button class="onb-cta">Yes, continue</button></div>
+        </div>
+        <div class="onb-visual">
+          <div class="spring-wrap">
+            <div class="spring-pill">
+              <svg viewBox="0 0 115 30" preserveAspectRatio="none">
+                <path class="bg" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M5 15 C9 27 16 27 20 15 C24 3 31 3 35 15 C39 27 46 27 50 15 C54 3 61 3 65 15 C69 27 76 27 80 15 C84 3 91 3 95 15 C99 27 106 27 110 15"/>
+                <path class="fg" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M5 15 C9 27 16 27 20 15 C24 3 31 3 35 15 C39 27 46 27 50 15 C54 3 61 3 65 15 C69 27 76 27 80 15 C84 3 91 3 95 15 C99 27 106 27 110 15"/>
+              </svg>
+            </div>
+            <div class="mic-status"><span class="live"></span>Listening</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- hotkey -->
+      <section class="onb-screen" data-step="hotkey">
+        <div class="onb-copy">
+          <div class="onb-nav"><button class="onb-back"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3l-5 5 5 5"/></svg>Back</button><div class="onb-dots"><span class="dot done"></span><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div></div>
+          <div class="onb-mid">
+          <span class="onb-eyebrow"><svg class="gl" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M5 3a2 2 0 1 0-2 2h2zm0 0v8m0 0a2 2 0 1 1-2-2h2zm6-8a2 2 0 1 1 2 2h-2zm0 0v8m0 0a2 2 0 1 0 2-2h-2z"/></svg>Two shortcuts</span>
+          <h1 class="onb-title">Talk, or translate.</h1>
+          <p class="onb-body">Tap each one once to feel the difference — they work anywhere on your Mac.</p>
+          <div style="margin-top:20px;display:flex;flex-direction:column;gap:12px">
+            <div class="try-card done">
+              <div class="tbody"><div class="tt">Transcribe</div><div class="td">Speak. Words appear as-is.</div><div class="tc">Press <span class="ikey">⌥</span> to start and stop dictation.</div></div>
+              <span class="chk"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2 L4.8 8.5 L9.5 3.5"/></svg></span>
+            </div>
+            <div class="try-card locked">
+              <div class="tbody"><div class="tt">Translate</div><div class="td">Speak Chinese. English appears.</div><div class="tc">Press <span class="ikey">⌥</span> + <span class="ikey">T</span> to start and stop translation.</div></div>
+              <span class="chk"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2 L4.8 8.5 L9.5 3.5"/></svg></span>
+            </div>
+          </div>
+          <div class="onb-err" id="hotkeyErr">⌥ conflicts with another app's shortcut. Try a different key.</div>
+          </div>
+          <div class="onb-cta-row" style="display:flex;gap:10px"><button class="onb-cta ghost">Try again</button><button class="onb-cta">Next</button></div>
+        </div>
+        <div class="onb-visual">
+          <div class="kbd-chrome">
+            <div class="kbd-rows">
+              <div class="kbd-row"><div class="kc wide lbl-l">tab</div><div class="kc">Q</div><div class="kc">W</div><div class="kc">E</div><div class="kc">R</div><div class="kc hint" id="keyOptT">T</div><div class="kc">Y</div><div class="kc">U</div><div class="kc">I</div><div class="kc">O</div><div class="kc">P</div></div>
+              <div class="kbd-row"><div class="kc w-caps lbl-l">caps</div><div class="kc">A</div><div class="kc">S</div><div class="kc">D</div><div class="kc">F</div><div class="kc">G</div><div class="kc">H</div><div class="kc">J</div><div class="kc">K</div><div class="kc">L</div></div>
+              <div class="kbd-row"><div class="kc w-shift lbl-l">shift</div><div class="kc">Z</div><div class="kc">X</div><div class="kc">C</div><div class="kc">V</div><div class="kc">B</div><div class="kc">N</div><div class="kc">M</div></div>
+              <div class="kbd-row"><div class="kc">fn</div><div class="kc">⌃</div><div class="kc hint" id="keyOpt">⌥</div><div class="kc">⌘</div><div class="kc" style="min-width:99px">&nbsp;</div><div class="kc">⌘</div><div class="kc">⌥</div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- practice -->
+      <section class="onb-screen" data-step="practice">
+        <div class="onb-copy">
+          <div class="onb-nav"><button class="onb-back"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3l-5 5 5 5"/></svg>Back</button><div class="onb-dots"><span class="dot done"></span><span class="dot done"></span><span class="dot on"></span><span class="dot"></span></div></div>
+          <div class="onb-mid">
+          <span class="onb-eyebrow"><svg class="gl" viewBox="0 0 16 16" fill="currentColor"><rect x="6" y="2" width="4" height="7" rx="2"/><path d="M4 8a4 4 0 0 0 8 0M8 11v3" stroke="currentColor" stroke-width="1.3" fill="none"/></svg>Try transcribing</span>
+          <h1 class="onb-title lg">Write an email — by voice.</h1>
+          <p class="onb-body">Tap Option and read one of these aloud. Your words land in the email on the right.</p>
+          <div class="say-card"><span class="tag">TRY SAYING</span><span class="sample">"Quick project update — first, the design is locked. Second, beta kicks off Monday. Third, we still need legal sign-off."</span></div>
+          <div class="onb-err">Didn't catch that — tap Option and try reading it again.</div>
+          </div>
+          <div class="onb-cta-row" style="display:flex;gap:10px"><button class="onb-cta ghost">Skip</button><button class="onb-cta">Next: try translation</button></div>
+        </div>
+        <div class="onb-visual">
+          <div class="mock-card">
+            <div class="mock-head">To: <b>john@example.com</b></div>
+            <div class="mock-head">Subject: <b>Project update</b></div>
+            <div class="mock-body"><div style="display:flex;align-items:flex-start;gap:6px"><span class="caret" style="display:inline-block;width:1.5px;height:15px;background:var(--onb-ink);margin-top:2px"></span><span style="font-size:13px;font-style:italic;color:var(--onb-mute)">Start dictating to fill the email body…</span></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- practiceTranslate -->
+      <section class="onb-screen" data-step="practiceTranslate">
+        <div class="onb-copy">
+          <div class="onb-nav"><button class="onb-back"><svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3l-5 5 5 5"/></svg>Back</button><div class="onb-dots"><span class="dot done"></span><span class="dot done"></span><span class="dot done"></span><span class="dot on"></span></div></div>
+          <div class="onb-mid">
+          <span class="onb-eyebrow"><svg class="gl" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="8" cy="8" r="6"/><path d="M2 8h12M8 2c2 2 2 10 0 12M8 2c-2 2-2 10 0 12"/></svg>Try translating</span>
+          <h1 class="onb-title lg">Speak Chinese, get English.</h1>
+          <p class="onb-body">Tap Option+T and say a sentence in Chinese. We'll translate it into English.</p>
+          <div class="say-card"><span class="tag">TRY SAYING</span><span class="sample">"项目最近进展不错，设计已经定稿，下周一开始公测，最后还差法务签字。"</span></div>
+          <div class="onb-err">Didn't catch that — tap Option+T and try again.</div>
+          </div>
+          <div class="onb-cta-row" style="display:flex;gap:10px"><button class="onb-cta ghost">Skip</button><button class="onb-cta">Finish</button></div>
+        </div>
+        <div class="onb-visual">
+          <div class="mock-card">
+            <div class="mock-body">
+              <div class="bubble in">项目进展怎么样？</div>
+              <div class="bubble out">The project is going well — the design is finalized…</div>
+            </div>
+            <div class="mock-input"><span class="caret"></span><span class="ph">Type a message</span><span class="send"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 8l12-5-5 12-2-5z"/></svg></span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- done -->
+      <section class="onb-screen full" data-step="done">
+        <div class="onb-closed" style="gap:14px;max-width:none">
+          <span class="onb-eyebrow" style="align-self:center"><svg class="gl" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5 L6.5 12 L13 4.5"/></svg>You're all set</span>
+          <h1 class="onb-title lg" style="text-align:center;margin-top:6px">Your two shortcuts.<br><span class="muted">In any app, anywhere.</span></h1>
+          <p class="onb-body" style="text-align:center;max-width:34em">Slack, Gmail, Notion, your terminal — wherever you can type, you can now talk. Looop runs quietly in the background.</p>
+          <div class="cheat" style="align-items:center;margin:10px 0 6px">
+            <div class="cheat-row"><div class="chord"><span class="okey">⌥</span></div><div class="desc"><div class="t">Transcribe</div><div class="d">Speak. Words appear as-is.</div></div></div>
+            <div class="cheat-row"><div class="chord"><span class="okey">⌥</span><span class="plus">+</span><span class="okey">T</span></div><div class="desc"><div class="t">Translate</div><div class="d">Speak Chinese. English appears.</div></div></div>
+          </div>
+          <button class="onb-cta">Got it, close this window</button>
+          <p style="font-size:12px;color:var(--onb-dim);margin:2px 0 0">You can change the shortcut later in Looop → Preferences.</p>
+        </div>
+      </section>
+
+      <!-- closed — onboarding dismissed, main app running -->
+      <section class="onb-screen full" data-step="closed">
+        <div class="onb-closed">
+          <span class="closed-badge"><span class="d"></span>Looop is running</span>
+          <h1 class="onb-title">Onboarding closed.</h1>
+          <p class="onb-body" style="text-align:center">It's tucked in the menu bar now. Press ⌥ anywhere to start talking — or hit Replay to walk the flow again.</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="rc-playbar" id="rcPlay">
+    <button id="rcPlayBtn" type="button">⏸ Pause</button>
+  </div>
+
+<script>
+  // Real onboarding step ids (mirror the Swift OnboardStep enum) — shown mono in the devbar.
+  const STEPS = [
+    { id: "welcome" },
+    { id: "setup" },
+    { id: "micTest" },
+    { id: "hotkey" },
+    { id: "practice" },
+    { id: "practiceTranslate" },
+    { id: "done" },
+    { id: "closed" },   // synthetic: onboarding dismissed, main app showing
+  ];
+
+  // Per-step mock states (mirror the real OnboardingDevbar mocks). Drive the
+  // onboarding screens directly, so toggling reproduces hidden/one-shot states.
+  const MOCKS_BY_STEP = {
+    welcome: [],
+    setup: [
+      { key: "accessibility", label: "Accessibility", kind: "enum", options: ["notGranted", "waiting", "granted"], value: "granted" },
+      { key: "micPermission", label: "Mic permission", kind: "enum", options: ["notAsked", "waiting", "granted", "denied"], value: "notAsked" },
+    ],
+    micTest: [],
+    hotkey: [
+      { key: "optPressed",  label: "⌥ pressed",   kind: "bool", options: ["false", "true"], value: "false" },
+      { key: "optTPressed", label: "⌥+T pressed", kind: "bool", options: ["false", "true"], value: "false" },
+      { key: "conflict",    label: "Conflict",    kind: "bool", options: ["false", "true"], value: "false" },
+    ],
+    practice:          [ { key: "practiceError", label: "Practice error", kind: "bool", options: ["false", "true"], value: "false" } ],
+    practiceTranslate: [ { key: "practiceError", label: "Practice error", kind: "bool", options: ["false", "true"], value: "false" } ],
+    done: [],
+    closed: [],
+  };
+
+  // ---------- autoplay timeline ----------
+  // Walks the steps in order; steps with sub-options (mock states) get those
+  // sub-tabs selected in sequence, so the devbar visibly "drives" the right pane.
+  // `set` fully specifies which sub-option is active for that frame (rest reset to base).
+  const TIMELINE = [
+    { step: "welcome", hold: 1700 },
+    { step: "setup",   set: { accessibility: "granted", micPermission: "notAsked" }, hold: 1150 },
+    { step: "setup",   set: { accessibility: "granted", micPermission: "waiting"  }, hold: 1150 },
+    { step: "setup",   set: { accessibility: "granted", micPermission: "granted"  }, hold: 1350 },
+    { step: "micTest", hold: 1700 },
+    { step: "hotkey",  set: { optPressed: "true" },                       hold: 1150 },
+    { step: "hotkey",  set: { optPressed: "false", optTPressed: "true" }, hold: 1150 },
+    { step: "hotkey",  set: { conflict: "true" },                         hold: 1300 },
+    { step: "hotkey",  set: { conflict: "false" },                        hold: 800  },
+    { step: "practice",          set: { practiceError: "false" }, hold: 1450 },
+    { step: "practice",          set: { practiceError: "true"  }, hold: 1250 },
+    { step: "practiceTranslate", set: { practiceError: "false" }, hold: 1700 },
+    { step: "done",   hold: 1900 },
+    { step: "closed", hold: 1900 },
+  ];
+
+  const state = {
+    currentStepId: "welcome",
+    mocks: structuredClone(MOCKS_BY_STEP),
+  };
+
+  const $steps = document.getElementById("steps");
+  const $mocks = document.getElementById("mocks");
+  const $footerBtn = document.getElementById("footerBtn");
+  const $resetBtn = document.getElementById("resetBtn");
+  const onbCard = document.getElementById("onbCard");
+  const screens = [...onbCard.querySelectorAll(".onb-screen")];
+
+  const ICON_REPLAY = '<path d="M2 6a4 4 0 1 0 1.2-2.85" /><path d="M2 2v2.2h2.2" />';
+  const ICON_END = '<path d="M3 3 L9 9 M9 3 L3 9" />';
+
+  function el(tag, cls, attrs = {}) {
+    const n = document.createElement(tag);
+    if (cls) n.className = cls;
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "text") n.textContent = v;
+      else if (k === "html") n.innerHTML = v;
+      else if (k.startsWith("on") && typeof v === "function") n.addEventListener(k.slice(2).toLowerCase(), v);
+      else n.setAttribute(k, v);
+    }
+    return n;
+  }
+  function escape(s) {
+    return String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  }
+
+  function renderSteps() {
+    $steps.replaceChildren();
+    const activeIndex = STEPS.findIndex((s) => s.id === state.currentStepId);
+    STEPS.forEach((step, i) => {
+      const isActive = i === activeIndex, isPast = i < activeIndex;
+      const li = el("li", `step ${isActive ? "step--active" : isPast ? "step--past" : "step--future"}`, { role: "button", tabindex: "0" });
+      li.append(
+        el("span", "step__dot"),
+        el("span", "step__id", { text: step.id }),
+        el("span", "step__index", { text: String(i + 1).padStart(2, "0") })
+      );
+      li.addEventListener("click", () => { pauseAuto(); state.currentStepId = step.id; render(); });
+      $steps.append(li);
+    });
+  }
+
+  function renderMocks() {
+    $mocks.replaceChildren();
+    const mocks = state.mocks[state.currentStepId] || [];
+    if (mocks.length === 0) return;   // empty step → leave the mocks area blank (no placeholder text)
+    mocks.forEach((mock) => {
+      const block = el("div", `mock ${mock.kind === "bool" ? "mock--bool" : ""}`);
+      const head = el("div", "mock__head");
+      head.append(
+        el("span", "mock__label", { text: mock.label }),
+        el("span", "mock__current", { html: `<span class="v">${escape(mock.kind === "bool" ? (mock.value === "true" ? "on" : "off") : mock.value)}</span>` })
+      );
+      const opts = el("div", "opts");
+      mock.options.forEach((option) => {
+        const isOn = option === mock.value;
+        const row = el("div", `opt ${isOn ? "opt--on" : ""}`, { role: "radio", tabindex: "0", "aria-checked": String(isOn) });
+        row.append(
+          el("span", "opt__circle"),
+          el("span", "opt__value", { text: mock.kind === "bool" ? (option === "true" ? "on" : "off") : option })
+        );
+        if (isOn) row.append(el("span", "opt__hint", { text: "current" }));
+        row.addEventListener("click", () => { pauseAuto(); mock.value = option; render(); });
+        opts.append(row);
+      });
+      block.append(head, opts);
+      $mocks.append(block);
+    });
+  }
+
+  // Mock value lookup helper.
+  function mockVal(stepId, key) {
+    const m = (state.mocks[stepId] || []).find((x) => x.key === key);
+    return m ? m.value : undefined;
+  }
+
+  // Apply every step's mock state to its onboarding screen, so the preview always
+  // reflects the remote — this is the "reproduce hidden states" payoff.
+  function applyMocks() {
+    // setup
+    const permAx = document.getElementById("permAx");
+    const permMic = document.getElementById("permMic");
+    if (permAx) permAx.classList.toggle("done", mockVal("setup", "accessibility") === "granted");
+    if (permMic) {
+      permMic.classList.remove("done", "denied", "locked");
+      const mic = mockVal("setup", "micPermission");
+      if (mic === "granted") permMic.classList.add("done");
+      else if (mic === "denied") permMic.classList.add("denied");
+      else permMic.classList.add("locked");
+    }
+    // hotkey
+    const keyOpt = document.getElementById("keyOpt");
+    const keyOptT = document.getElementById("keyOptT");
+    const hotkeyErr = document.getElementById("hotkeyErr");
+    if (keyOpt) keyOpt.classList.toggle("pressed", mockVal("hotkey", "optPressed") === "true");
+    if (keyOptT) keyOptT.classList.toggle("pressed", mockVal("hotkey", "optTPressed") === "true");
+    if (hotkeyErr) hotkeyErr.classList.toggle("show", mockVal("hotkey", "conflict") === "true");
+    // practice / practiceTranslate
+    ["practice", "practiceTranslate"].forEach((sid) => {
+      const screen = onbCard.querySelector(`.onb-screen[data-step="${sid}"] .onb-err`);
+      if (screen) screen.classList.toggle("show", mockVal(sid, "practiceError") === "true");
+    });
+  }
+
+  function showScreen() {
+    screens.forEach((s) => s.classList.toggle("active", s.dataset.step === state.currentStepId));
+  }
+
+  // Footer button toggles by state: in-flow → "End" (secondary, jumps to closed);
+  // at "closed" → "Replay" (primary violet, walks the flow again from welcome).
+  function renderFooter() {
+    const atClosed = state.currentStepId === "closed";
+    $footerBtn.className = atClosed ? "replay" : "replay end";
+    $footerBtn.innerHTML = atClosed
+      ? `<span class="replay__icon" aria-hidden="true"><svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${ICON_REPLAY}</svg></span><span class="replay__label">Replay</span><span class="replay__hint">↵</span>`
+      : `<span class="replay__icon" aria-hidden="true"><svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${ICON_END}</svg></span><span class="replay__label">End</span>`;
+  }
+
+  function render() {
+    renderSteps();
+    renderMocks();
+    showScreen();
+    applyMocks();
+    renderFooter();
+  }
+
+  // Footer: End → jump to "closed"; Replay → resume autoplay from the top.
+  $footerBtn.addEventListener("click", () => {
+    if (state.currentStepId === "closed") {
+      startAuto();                       // Replay → re-engage autoplay
+    } else {
+      pauseAuto();                       // End → stop + park on closed
+      state.currentStepId = "closed";
+      render();
+    }
+    $footerBtn.animate(
+      [{ transform: "translateY(0)", filter: "brightness(1.18)" },
+       { transform: "translateY(1px)", filter: "brightness(0.95)" },
+       { transform: "translateY(0)", filter: "brightness(1)" }],
+      { duration: 220, easing: "cubic-bezier(.2,.7,.3,1)" }
+    );
+  });
+
+  // Reset (↻) → fresh new-user state + re-engage autoplay from the top.
+  $resetBtn.addEventListener("click", () => {
+    state.mocks = structuredClone(MOCKS_BY_STEP);
+    startAuto();
+  });
+
+  // ---------- autoplay driver ----------
+  const auto = { i: 0, timer: null, on: true };
+
+  function applyFrame(frame) {
+    state.currentStepId = frame.step;
+    const base = structuredClone(MOCKS_BY_STEP[frame.step] || []);
+    if (frame.set) base.forEach((m) => { if (frame.set[m.key] !== undefined) m.value = frame.set[m.key]; });
+    state.mocks[frame.step] = base;
+    render();
+  }
+  function autoTick() {
+    if (!auto.on) return;
+    const frame = TIMELINE[auto.i];
+    applyFrame(frame);
+    auto.i = (auto.i + 1) % TIMELINE.length;
+    auto.timer = setTimeout(autoTick, frame.hold || 1400);
+  }
+  function startAuto() {
+    if (auto.timer) clearTimeout(auto.timer);
+    auto.on = true; auto.i = 0;
+    autoTick();
+    syncPlayBtn();
+  }
+  function pauseAuto() {
+    auto.on = false;
+    if (auto.timer) { clearTimeout(auto.timer); auto.timer = null; }
+    syncPlayBtn();
+  }
+  // Pause while the tab/iframe is hidden; resume from the top when it returns.
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) { if (auto.timer) { clearTimeout(auto.timer); auto.timer = null; } }
+    else if (auto.on) autoTick();
+  });
+
+  const $rcPlayBtn = document.getElementById("rcPlayBtn");
+  function syncPlayBtn() {
+    if (!$rcPlayBtn) return;
+    $rcPlayBtn.textContent = auto.on ? "⏸ Pause" : "▶ Play";
+    $rcPlayBtn.classList.toggle("on", auto.on);
+  }
+  if ($rcPlayBtn) $rcPlayBtn.addEventListener("click", () => {
+    if (auto.on) pauseAuto(); else startAuto();
+  });
+
+  // Scale the fixed-size stage (1324×784) to fit the iframe viewport, so it fills
+  // the embed instead of being clipped or shrunk into a corner.
+  const $stage = document.getElementById("stage");
+  function fitStage() {
+    // Home embed: zoom past width-fit and anchor top-left so the devbar's upper
+    // half reads large; the End bar + right-side whitespace crop out of frame.
+    const Z = 1.45;
+    const k = (window.innerWidth / 1324) * Z;
+    $stage.style.left = "0";
+    $stage.style.top = "0";
+    $stage.style.transformOrigin = "top left";
+    $stage.style.transform = "scale(" + k + ")";
+  }
+  fitStage();
+  window.addEventListener("resize", fitStage);
+
+  startAuto();
+
+</script>
+</body>
+</html>

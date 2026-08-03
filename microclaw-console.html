@@ -1,0 +1,1390 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>MicroClaw — Timeline Console v6</title>
+<style>
+/* ==========================================================================
+   Chrome copied verbatim from the portfolio's Background-workbench mock
+   from-fomo-to-trust-5890889/portfolio-template-第四轮-v2.html
+     .app-shell  956×760 · grid 52px | 240px | 1fr
+     --mc-*      = the real MAI tokens
+   ========================================================================== */
+:root {
+  --mc-bg:        #f8f4f1;
+  --mc-paper:     #ffffff;
+  --mc-text:      #272320;
+  --mc-text-2:    #4c4642;
+  --mc-text-muted:#b3ada8;
+  --mc-border:    rgba(0,0,0,0.12);
+  --mc-border-row:rgba(0,0,0,0.10);
+  --mc-border-lt: #efeae7;
+  /* Brand accent is black. Nothing here carries meaning by hue any more —
+     emphasis comes from fill, weight and form. The old amber tints are gone;
+     the neutrals above do the quiet work. Red and green stay: they are status
+     colours (destructive / complete), not brand. */
+  --mc-accent:    #272320;
+  /* Status tints, taken from the app's own recipe rather than mixed by eye:
+     every coloured chip is tint-background + full-strength foreground, and
+     black is expressed through the *informative* pair, not a made-up grey.
+     Source: For-Claude-Design/styles/mai-tokens/default.light.css
+       --smtc-status-{danger,success,informative}-tint-{background,foreground,stroke}
+       --smtc-ctrl-list-background-selected-rest */
+  --mc-success:      #01712b;    /* success-tint-foreground / -stroke */
+  --mc-success-tint: #97dfa133;  /* success-tint-background  → #eaf9ec on paper */
+  --mc-danger:       #ac1922;    /* danger-tint-foreground  / -stroke */
+  --mc-danger-tint:  #ffb5ae33;  /* danger-tint-background   → #fff0ef on paper */
+  --mc-info-tint:    #efeae7;    /* informative-tint-background */
+  --mc-info-stroke:  #e2ddd9;    /* informative-tint-stroke */
+  --mc-list-sel:     #00000008;  /* ctrl-list-background-selected-rest */
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+/* ==========================================================================
+   KNOWN DEVIATIONS from For-Claude-Design (desktop_backup_20260505_英文版)
+   Recorded so nobody "corrects" them back. Everything not listed here should
+   match the app; if you find another gap, it's a bug, not a choice.
+
+   1. .tl-badge text — DEVIATION, deliberate.
+      The informative-tint recipe pairs #efeae7 with foreground #272320
+      (13.06:1). We use --mc-text-2 #4c4642 (7.78:1) instead. "you changed
+      this" is a trace of something already done, not a call to action, and
+      at full strength it out-shouted the step titles it annotates. Every
+      value is still a system token — only the pairing differs.
+
+   2. .tl-dot.done ring — DEVIATION, deliberate.
+      The success-tint recipe includes a full-strength #01712b stroke. We
+      drop the stroke and keep tint fill + dark glyph, which is exactly how
+      .tl-tag.confirm renders the danger tint. Finished steps and the step
+      that is waiting then share one shape language, and at 16px that ring
+      was the heaviest mark on a card whose whole argument is that completed
+      work should recede. Fill and glyph are still the system's values.
+
+   3. --mc-text-muted #b3ada8 — DEVIATION, inherited.
+      The app's --text-muted is #cfc9c5, which is a *placeholder* colour and
+      lands at 1.64:1 on paper. This mock spends the token on real secondary
+      copy (step meta, sub-labels, hints), where that would be unreadable;
+      #b3ada8 (2.22:1) is the existing compromise and is shared with
+      microclaw-steps / -demo / portfolio-template, so it is not ours alone
+      to change. Fix by giving those uses a proper text token, not by
+      re-tinting this one.
+   ========================================================================== */
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  background: #fafafa;
+  font-family: var(--sans);
+  font-feature-settings: "cv11", "ss01", "ss03";
+  font-size: 14px;
+  line-height: 1.6;
+  color: #303035;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+button { font: inherit; border: none; background: none; color: inherit; cursor: pointer; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.10); border-radius: 10px; }
+
+/* ── app shell ───────────────────────────────────────────────────────── */
+.app-shell {
+  width: 956px;
+  height: 760px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  background: #f8f4f1;
+  border: 1px solid var(--mc-border);
+  border-radius: 14px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 52px 240px 1fr;
+  grid-template-rows: 1fr;
+  position: relative;
+  font-family: var(--sans);
+  text-align: left;
+}
+
+/* primary nav rail — 52px, icons only */
+.app-pnav {
+  grid-column: 1;
+  background: #efeae7;
+  border-right: 0.5px solid var(--mc-border-row);
+  display: flex; flex-direction: column; align-items: center;
+}
+.app-pnav-drag { height: 8px; flex-shrink: 0; width: 100%; }
+.app-pnav-avatar { padding: 6px 0 12px; display: flex; justify-content: center; flex-shrink: 0; }
+.app-pnav-avatar-dot {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: radial-gradient(circle at 30% 28%, #80e8d8, #40c8f0, #60a0f8);
+  color: rgba(255,255,255,0.88);
+  font-size: 13px; font-weight: 650; letter-spacing: -0.01em;
+}
+.app-pnav-items, .app-pnav-utilities {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 2px; width: 100%; padding: 0 4px;
+}
+.app-pnav-utilities { padding: 0 4px 14px; }
+.app-pnav-spacer { flex: 1; }
+.app-pnav-item {
+  width: 100%; display: flex; align-items: center; justify-content: center;
+  padding: 10px 4px; border-radius: 8px; color: var(--mc-text-muted);
+}
+.app-pnav-item.active { color: var(--mc-text); }
+.app-pnav-utilities .app-pnav-item { color: var(--mc-text-2); }
+.app-pnav-item svg { width: 22px; height: 22px; display: block; }
+
+/* agent sidebar — 240px */
+.app-sidebar {
+  grid-column: 2;
+  background: #fdfaf8;
+  border-right: 0.5px solid var(--mc-border-row);
+  display: flex; flex-direction: column; min-height: 0;
+}
+.app-sidebar-drag { height: 8px; flex-shrink: 0; }
+.app-sidebar-search {
+  margin: 4px 14px 12px; padding: 8px 12px;
+  background: rgba(0,0,0,0.045); border-radius: 20px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--mc-text-muted); flex-shrink: 0;
+}
+.app-sidebar-search-icon { width: 14px; height: 14px; flex-shrink: 0; display: grid; place-items: center; }
+.app-sidebar-search-icon svg { width: 14px; height: 14px; }
+.app-sidebar-new {
+  margin: 0 14px 10px; padding: 8px 14px;
+  color: var(--mc-text-2);
+  border: 1px solid var(--mc-border-row); border-radius: 20px;
+  font-size: 13px; font-weight: 450;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  flex-shrink: 0;
+}
+.app-sidebar-section { margin-top: 4px; }
+.app-sidebar-section-head {
+  padding: 6px 18px 4px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+  text-transform: uppercase; color: var(--mc-text-muted);
+}
+.app-sidebar-list { padding: 0 8px; display: flex; flex-direction: column; }
+.app-agent-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 10px; border-radius: 10px; position: relative;
+}
+.app-agent-row.selected { background: var(--mc-bg); }   /* .agent-header.selected → --bg-tertiary */
+.app-agent-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  flex-shrink: 0; overflow: hidden; background: #ddd;
+}
+.app-agent-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.app-agent-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.app-agent-name {
+  font-size: 13px; font-weight: 500; color: var(--mc-text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3;
+}
+.app-agent-desc {
+  font-size: 11px; font-weight: 400; color: var(--mc-text-muted);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3;
+}
+/* A session hangs off its agent, so its label starts where the agent's name
+   does: list padding 8 + row padding 10 + avatar 36 + gap 10 = 56px. The chip
+   keeps the row's full width so the two cards still share an edge. */
+.app-session-item {
+  margin: 2px 8px 0 8px;
+  padding: 7px 10px 7px 56px;
+  border-radius: 8px;
+  font-size: 12px; color: var(--mc-text-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+/* Selection belongs to whatever is open in the main pane — that's the session.
+   The agent above it is context, not a second selected thing. */
+.app-session-item.selected { background: var(--mc-list-sel); color: var(--mc-text); font-weight: 600; }
+
+/* main column */
+.app-main {
+  grid-column: 3; background: var(--mc-paper);
+  display: flex; flex-direction: column; min-height: 0; position: relative;
+}
+.app-titlebar {
+  height: 44px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding-left: 28px;
+  border-bottom: 1px solid var(--mc-border-lt);
+  background: var(--mc-paper);
+}
+.app-titlebar-title { font-size: 15px; font-weight: 600; color: var(--mc-text); letter-spacing: -0.01em; }
+.app-titlebar-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.app-titlebar-controls { display: flex; align-items: stretch; height: 44px; }
+.win-btn { width: 46px; height: 100%; display: grid; place-items: center; color: var(--mc-text-2); }
+.win-btn svg { width: 10px; height: 10px; }
+.win-btn--close-icon line { stroke-width: 1.2; }
+
+.app-main-body { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
+
+/* ── chat ────────────────────────────────────────────────────────────── */
+.chat-view { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--mc-paper); }
+.chat-thread { flex: 1; overflow-y: auto; padding: 28px 32px; scroll-behavior: smooth; }
+
+/* render() rebuilds the whole thread on every beat, so an entry animation
+   attached to the element itself replays on each one — the card appears to
+   flash even when only a button inside it changed. .is-new is added by
+   render() to the things that genuinely just arrived. */
+.chat-group { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; }
+.chat-group.is-new { animation: grp-in 260ms ease-out; }
+.chat-group.user { justify-content: flex-end; }
+@keyframes grp-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.chat-group-messages { display: flex; flex-direction: column; gap: 4px; max-width: min(720px, 85%); }
+.chat-group.user .chat-group-messages { align-items: flex-end; }
+.chat-agent-avatar { width: 30px; height: 30px; border-radius: 50%; overflow: hidden; flex-shrink: 0; margin-top: 2px; }
+.chat-agent-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.chat-bubble.user {
+  display: inline-block;
+  background: var(--mc-text); color: #e2ddd9;
+  border-radius: 18px; padding: 12px 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  font-size: 14px; line-height: 1.55;
+}
+.chat-bubble.assistant {
+  background: var(--mc-bg); border: 0.5px solid var(--mc-border);
+  border-radius: 18px; padding: 12px 18px;
+  font-size: 14px; line-height: 1.65; color: var(--mc-text);
+}
+
+/* ==========================================================================
+   TIMELINE CONSOLE — same card language as .phone-auth-card
+   The thesis: an agent's plan is a timeline you can rewrite and rewind,
+   not a progress bar you watch.
+   ========================================================================== */
+.tl-card {
+  margin-top: 10px;
+  background: var(--mc-paper);
+  border: 1px solid var(--mc-border);
+  border-radius: 14px;
+  /* Bottom runs deeper than the other three: the footer ends in a 22px
+     button, and a round mark that close to the edge reads as crowded even
+     when the measured gap matches the top. */
+  padding: 14px 16px 20px;
+  width: 100%;
+  max-width: 430px;          /* compact panel — not the full chat column */
+}
+.tl-card.is-new { animation: grp-in 300ms ease-out; }
+
+.tl-head {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px;
+}
+.tl-head-label { font-size: 12px; font-weight: 600; color: var(--mc-text-2); letter-spacing: 0.02em; }
+/* Progress belongs on the right, where every step row already keeps its
+   "Step 1/6 · 2.1s" — the header then reads as the same two-column shape as
+   the list under it. It also means the label can change width ("Working" →
+   "Paused") without anything sliding. Pill dropped: a tint that faint left
+   the count at 2:1, and the count is not a chip. */
+.tl-head-count {
+  margin-left: auto;
+  font-size: 11px; color: var(--mc-text-2);
+  font-variant-numeric: tabular-nums;
+}
+/* the plan changing itself is news, not a call to action — neutral chip */
+.tl-replan {
+  font-size: 11px; font-weight: 600;
+  background: var(--mc-bg); color: var(--mc-text);
+  padding: 2px 9px; border-radius: 10px;
+  animation: grp-in 300ms ease-out;
+}
+
+/* step rows */
+.tl-steps { display: flex; flex-direction: column; }
+
+.tl-step {
+  position: relative;
+  display: flex; align-items: flex-start; gap: 9px;
+  padding: 6px;
+  margin: 0 -6px;
+  border-radius: 8px;
+  transition: background 150ms ease-out, opacity 300ms ease-out;
+}
+/* Both states are neutral now, so they're told apart by direction: the live
+   row sits a shade *lighter* than the canvas hover, and the spinner plus the
+   bolder title carry the rest. Pointing at a row must still darken it. */
+.tl-step:hover { background: var(--mc-border-lt); }
+.tl-step.ghost { opacity: 0.3; }
+.tl-step.ghost:hover { background: transparent; }
+.tl-step.running { background: var(--mc-bg); }
+.tl-step.running:hover { background: var(--mc-border-lt); }
+
+/* trust tag — says in words why a step pauses, so no legend is needed.
+   Outline = you may act (notify) · filled tint = you must (confirm). */
+.tl-tag {
+  flex-shrink: 0; white-space: nowrap;
+  padding: 2px 9px; border-radius: 10px;
+  font-size: 10px; font-weight: 400; letter-spacing: 0.02em;
+}
+.tl-tag.notify  { background: var(--mc-paper); color: var(--mc-text-2); box-shadow: inset 0 0 0 1px var(--mc-info-stroke); }
+.tl-tag.confirm { background: var(--mc-danger-tint); color: var(--mc-danger); }
+
+/* status dot */
+.tl-dot {
+  width: 16px; height: 16px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 2px;
+  display: grid; place-items: center; position: relative;
+}
+.tl-dot.pending { border: 1.5px solid var(--mc-text-muted); }
+.tl-dot.ghost   { border: 1.5px solid var(--mc-text-muted); }
+/* Done is the least actionable row on the card, so it stops being the
+   loudest mark on it: tint fill, dark glyph, no ring — the same shape
+   .tl-tag.confirm makes out of the danger tint. */
+.tl-dot.done    { background: var(--mc-success-tint); color: var(--mc-success); }
+.tl-dot.running { border: 1.5px solid var(--mc-border); }
+.tl-dot.running::after {
+  content: ""; position: absolute; inset: -1.5px;
+  border-radius: 50%; border: 1.5px solid transparent;
+  border-top-color: var(--mc-accent);
+  animation: spin 800ms linear infinite;
+}
+.tl-dot.asking { border: 1.5px solid var(--mc-danger); color: var(--mc-danger); }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* two columns: what the step is on the left, where it stands on the right */
+.tl-body { flex: 1; min-width: 0; display: flex; align-items: flex-start; gap: 10px; }
+.tl-main { flex: 1; min-width: 0; }
+.tl-right {
+  flex-shrink: 0; padding-top: 1px;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+}
+.tl-title {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 13px; font-weight: 450; color: var(--mc-text); line-height: 1.5;
+}
+.tl-step.running .tl-title { font-weight: 600; }
+.tl-step.done .tl-title { color: var(--mc-text-2); }
+.tl-meta {
+  font-size: 11px; color: var(--mc-text-muted);
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+.tl-sub { font-size: 11px; color: var(--mc-text-muted); line-height: 1.45; }
+
+/* rewrite trace — struck-out original stays on the left, its badge sits in
+   the right column alongside the other step-status chips */
+.tl-was {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 11px; color: var(--mc-text-muted); text-decoration: line-through;
+}
+/* The one chip that records something the *user* did. Filled rather than
+   outlined so it still reads differently from the trust tags beside it, but
+   kept quiet — it's a trace of what happened, not a thing to go press. */
+.tl-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 9px; border-radius: 10px;
+  background: var(--mc-info-tint); color: var(--mc-text-2);
+  font-size: 10px; font-weight: 400; letter-spacing: 0.02em;
+  flex-shrink: 0; white-space: nowrap;
+}
+
+/* hover actions — absolutely placed so they claim no width while hidden */
+.tl-actions {
+  position: absolute; right: 6px; top: 5px;
+  display: flex; gap: 4px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 140ms ease-out;
+}
+.tl-step:hover .tl-actions { opacity: 1; pointer-events: auto; }
+.tl-step:hover .tl-right { visibility: hidden; }
+.tl-act {
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 500;
+  color: var(--mc-text-2); background: var(--mc-paper);
+  border: 0.5px solid var(--mc-border);
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.tl-act:hover { background: var(--mc-text); color: #fff; border-color: var(--mc-text); }
+
+/* inline notify / confirm — indent 25px = dot(16) + gap(9), aligns with titles */
+.tl-inline { margin: 2px 0 6px 25px; animation: grp-in 240ms ease-out; }
+/* Both inline blocks are one shape: a filled panel hanging off the step above.
+   Only the rail colour says how serious it is. */
+.tl-note, .tl-confirm {
+  padding: 10px 12px;
+  background: var(--mc-bg);
+  border-radius: 8px;
+  border-left: 2px solid;
+  font-size: 12.5px; color: var(--mc-text); line-height: 1.5;
+}
+.tl-note {
+  border-left-color: var(--mc-accent);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 9px;
+}
+
+/* countdown — the notify step proceeds on its own unless you stop it */
+.tl-note-head { display: flex; align-items: center; gap: 8px; }
+.tl-ring { width: 16px; height: 16px; flex-shrink: 0; transform: rotate(-90deg); }
+.tl-ring circle { fill: none; stroke-width: 2.5; }
+.tl-ring-bg { stroke: rgba(0,0,0,0.10); }
+.tl-ring-fg {
+  stroke: var(--mc-accent);
+  stroke-dasharray: 50.3;
+  animation: countdown 6s linear forwards;
+}
+@keyframes countdown { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 50.3; } }
+.tl-cd-num {
+  font-size: 11px; font-weight: 700; color: var(--mc-accent);
+  font-variant-numeric: tabular-nums; flex-shrink: 0; min-width: 16px;
+}
+.tl-note-sub { font-size: 11px; color: var(--mc-text-muted); }
+.tl-confirm { border-left-color: var(--mc-danger); }
+.tl-confirm-q { font-weight: 600; color: var(--mc-text); margin-bottom: 8px; }
+.tl-filelist {
+  background: var(--mc-paper); border-radius: 6px;
+  padding: 8px 12px; margin-bottom: 10px;
+  font-size: 11.5px; color: var(--mc-text-2); line-height: 1.8;
+}
+.tl-btnrow { display: flex; gap: 8px; }
+
+/* buttons — .phone-auth-btn, scaled to the compact card */
+.btn { padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; transition: filter 0.15s; }
+.btn--deny { background: #ffffff; color: var(--mc-text-2); border: 0.5px solid var(--mc-border); }
+.btn--confirm { background: var(--mc-text); color: #fff; }
+.btn:hover { filter: brightness(1.06); }
+.btn--deny:hover { background: var(--mc-bg); filter: none; }
+
+/* footer */
+.tl-foot { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.tl-foot-hint { font-size: 11px; color: var(--mc-text-muted); }
+
+/* pause — the one control that's always there, because "I can stop this"
+   shouldn't be something you have to hover a row to discover.
+   Icon-only, so it sits at the head of the footer without competing with
+   the hint text for the eye. */
+.tl-pause {
+  position: relative;
+  flex-shrink: 0;
+  width: 22px; height: 22px; border-radius: 50%;
+  display: inline-grid; place-items: center;
+  color: var(--mc-text-2); background: var(--mc-paper);
+  border: 0.5px solid var(--mc-border);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.tl-pause svg { width: 9px; height: 9px; display: block; }
+/* Hover stays a quiet tint rather than the usual ink fill — ink is spent on
+   the halted state below, and a hover that previewed it would read as "already
+   paused". */
+.tl-pause:hover { background: var(--mc-bg); color: var(--mc-text); border-color: var(--mc-border-row); }
+/* Halted = ink, the same weight this file gives a primary action. The button
+   is the only way out of the state, so it should read as the thing to press,
+   not as a status chip. */
+.tl-pause.is-paused { background: var(--mc-text); color: #fff; border-color: var(--mc-text); }
+.tl-pause.is-paused:hover { background: var(--mc-text-2); color: #fff; border-color: var(--mc-text-2); }
+/* the play triangle reads left-heavy in a circle — nudge it back to centre */
+.tl-pause.is-paused svg { margin-left: 1px; }
+/* ring that fires once under the scripted pointer, so the press is visible */
+.tl-pause.pressed::after {
+  content: ""; position: absolute; inset: -3px;
+  border-radius: 50%; border: 1.5px solid var(--mc-text);
+  animation: tl-press 460ms ease-out forwards;
+}
+@keyframes tl-press {
+  from { opacity: 0.75; transform: scale(0.75); }
+  to   { opacity: 0;    transform: scale(1.65); }
+}
+
+/* nothing may keep spinning while the plan is halted — a live spinner or a
+   draining ring would say the opposite of what the button says */
+.tl-card.paused .tl-dot.running::after,
+.tl-card.paused .tl-ring-fg { animation-play-state: paused; }
+
+/* ── scripted pointer ────────────────────────────────────────────────────
+   Every other intervention in this demo leaves a mark on the card. Pressing
+   pause leaves none — so the pointer is drawn doing it, or the halt looks
+   like something the agent decided on its own.
+   Wrapper carries the travel, the img carries the click dip, so the two
+   transforms never overwrite each other. */
+.tl-cursor {
+  position: absolute; left: 0; top: 0;
+  z-index: 60; pointer-events: none;
+  opacity: 0; transform: translate(-80px, -80px);
+  transition: opacity 200ms ease-out;
+}
+.tl-cursor.show { opacity: 1; }
+/* The one journey the pointer makes: button → composer, where it becomes a
+   caret. Nothing else on screen changes while it travels, so this motion
+   can't be mistaken for the pointer chasing a state change. */
+.tl-cursor.moving { transition: opacity 200ms ease-out, transform 520ms cubic-bezier(0.32, 0.04, 0.18, 1); }
+.tl-cursor img { width: 26px; height: 29px; display: block; transition: transform 110ms ease-out; }
+.tl-cursor.click img { transform: scale(0.8); }
+
+/* completion */
+.tl-done-head { font-size: 13px; font-weight: 600; color: var(--mc-text); margin: 12px 0 7px; }
+.tl-summary { background: var(--mc-bg); border-radius: 10px; padding: 12px 14px; }
+.tl-summary-main { font-size: 13px; font-weight: 600; color: var(--mc-text); }
+/* "what you held back" vs "what ran anyway" — one line is inked and weighted,
+   the other stays secondary text. Same job the amber used to do, by value. */
+.tl-summary-kept { font-size: 12px; font-weight: 500; color: var(--mc-text); margin-top: 4px; line-height: 1.5; }
+.tl-summary-moved { font-size: 12px; color: var(--mc-text-2); margin-top: 4px; line-height: 1.5; }
+.tl-summary-sub {
+  font-size: 11px; color: var(--mc-text-muted); margin-top: 5px;
+  font-variant-numeric: tabular-nums; line-height: 1.5;
+}
+
+/* ── composer ──────────────────────────────────────────────────────────
+   Dimensions taken from the first-run mock in microclaw-steps.html so the
+   two screens read as the same app: 20px radius, hairline border, 52px
+   input row, 30px icon buttons, 40px send. */
+.chat-compose { flex-shrink: 0; padding: 0 28px 18px; }
+.compose-wrapper {
+  display: flex; flex-direction: column;
+  border: 0.5px solid var(--mc-border); border-radius: 20px;
+  padding: 8px 16px; background: var(--mc-paper);
+}
+.compose-input-row {
+  box-sizing: border-box;
+  min-height: 52px;              /* two lines at 15px / 1.6 plus padding */
+  padding: 4px 0 12px;
+  font-size: 15px; line-height: 1.6; color: var(--mc-text);
+}
+.compose-placeholder { color: var(--mc-text-muted); }
+/* The pointer hands off to a caret here: same idea, different tool. Once the
+   field is focused the placeholder goes, so the caret is the only mark in an
+   empty box and stays readable. */
+.compose-draft { color: var(--mc-text); }
+.compose-caret {
+  display: inline-block; width: 1.5px; height: 1.05em;
+  background: var(--mc-text); vertical-align: -0.16em; margin-left: 1px;
+  animation: caret-blink 1.1s steps(1, end) infinite;
+}
+@keyframes caret-blink { 0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; } }
+.compose-bottom { display: flex; align-items: center; }
+.compose-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: grid; place-items: center; color: var(--mc-text-2);
+}
+.compose-icon svg { width: 18px; height: 18px; }
+.compose-spacer { flex: 1; }
+.compose-send {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--mc-border); color: var(--mc-text-muted);
+  display: grid; place-items: center; flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+}
+.compose-send svg { width: 16px; height: 16px; }
+/* A draft outranks the run: with something typed, the button goes ink */
+.compose-send.is-send { background: var(--mc-text); color: var(--mc-paper); }
+.chat-disclaimer {
+  margin-top: 8px; font-size: 10.5px; color: var(--mc-text-muted); text-align: center;
+}
+
+/* ── demo bar (presentation only — press H to hide) ──────────────────── */
+.demo {
+  position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(28,25,22,0.92); backdrop-filter: blur(12px);
+  border-radius: 22px; padding: 7px 10px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.22);
+  z-index: 100; transition: opacity 200ms, transform 200ms;
+}
+.demo.hidden { opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(12px); }
+.demo button {
+  padding: 5px 12px; border-radius: 16px; font-size: 12px;
+  color: rgba(255,255,255,0.75); white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+.demo button:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.demo button.on { background: #fff; color: #272320; }
+.demo .sep { width: 1px; height: 18px; background: rgba(255,255,255,0.18); margin: 0 3px; }
+.demo .beat {
+  font-size: 11px; color: rgba(255,255,255,0.5);
+  font-variant-numeric: tabular-nums; padding: 0 6px;
+  min-width: 150px; text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ══ primary nav (52px) ══ -->
+  <div class="app-pnav">
+    <div class="app-pnav-drag"></div>
+    <div class="app-pnav-avatar"><div class="app-pnav-avatar-dot">B</div></div>
+    <div class="app-pnav-items">
+      <div class="app-pnav-item active">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M10 2a8 8 0 1 1-3.61 15.14l-.12-.07-3.65.92a.5.5 0 0 1-.62-.45v-.08l.01-.08.92-3.64-.07-.12a7.95 7.95 0 0 1-.83-2.9l-.02-.37L2 10a8 8 0 0 1 8-8Zm.5 9H7.41a.5.5 0 0 0 0 1H10.59a.5.5 0 0 0 0-1h-.09Zm2-3H7.41a.5.5 0 0 0 0 1h5.18a.5.5 0 0 0 0-1h-.09Z"/></svg>
+      </div>
+      <div class="app-pnav-item">
+        <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
+          <path d="M11.5 2C12.8807 2 14 3.11929 14 4.5V8.67188C13.9999 9.33481 13.7363 9.97068 13.2676 10.4395L10.4395 13.2676C9.97068 13.7363 9.33481 13.9999 8.67188 14H4.5C3.11929 14 2 12.8807 2 11.5V4.5C2 3.11929 3.11929 2 4.5 2H11.5ZM4.5 3C3.67157 3 3 3.67157 3 4.5V11.5C3 12.3284 3.67157 13 4.5 13H8.67188C8.78325 13 8.893 12.986 9 12.9619V10.4229C9.0008 10.4189 9.00291 10.4045 9.00586 10.3701C9.07171 9.60251 9.71534 9 10.5 9H12.9619C12.986 8.893 13 8.78325 13 8.67188V4.5C13 3.67157 12.3284 3 11.5 3H4.5ZM10.5 10C10.2239 10 10 10.2239 10 10.5V12.293L12.293 10H10.5Z" fill="currentColor"/>
+          <line x1="5.5" y1="5.5" x2="10.5" y2="5.5" stroke="currentColor" stroke-linecap="round"/>
+          <line x1="5.5" y1="7.5" x2="10.5" y2="7.5" stroke="currentColor" stroke-linecap="round"/>
+          <line x1="5.5" y1="9.5" x2="7.5" y2="9.5" stroke="currentColor" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="app-pnav-item">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M7.4 12.8a1.04 1.04 0 0 0 1.59-.51l.45-1.37a2.34 2.34 0 0 1 1.47-1.48l1.4-.45A1.04 1.04 0 0 0 12.25 7l-1.37-.45A2.34 2.34 0 0 1 9.4 5.08L8.95 3.7a1.03 1.03 0 0 0-.82-.68 1.04 1.04 0 0 0-1.15.7l-.46 1.4a2.34 2.34 0 0 1-1.44 1.45L3.7 7a1.04 1.04 0 0 0 .02 1.97l1.37.45a2.33 2.33 0 0 1 1.48 1.48l.46 1.4c.07.2.2.37.38.5Zm.08-7.4.53-1.38.44 1.37a3.33 3.33 0 0 0 2.12 2.12l1.4.53-1.38.45a3.34 3.34 0 0 0-2.11 2.11l-.53 1.38-.45-1.38a3.34 3.34 0 0 0-2.1-2.12L4 7.96 5.4 7.5a3.36 3.36 0 0 0 2.08-2.12Zm6.06 11.45a.8.8 0 0 0 1.22-.4l.25-.76a1.09 1.09 0 0 1 .68-.68l.77-.25a.8.8 0 0 0-.02-1.52l-.77-.25a1.08 1.08 0 0 1-.68-.68l-.25-.77a.8.8 0 0 0-1.52.01l-.24.76a1.1 1.1 0 0 1-.67.68l-.77.25a.8.8 0 0 0 0 1.52l.77.25a1.09 1.09 0 0 1 .68.68l.25.77c.06.16.16.3.3.4Zm-.92-2.8-.18-.05.19-.06a2.09 2.09 0 0 0 1.3-1.32l.06-.18.05.18a2.08 2.08 0 0 0 1.32 1.32l.2.06-.18.06a2.08 2.08 0 0 0-1.32 1.32l-.06.18-.06-.18a2.07 2.07 0 0 0-1.32-1.32Z"/></svg>
+      </div>
+    </div>
+    <div class="app-pnav-spacer"></div>
+    <div class="app-pnav-utilities">
+      <div class="app-pnav-item">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 14a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1H9ZM7 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h6a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H7ZM6 4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4Z"/></svg>
+      </div>
+      <div class="app-pnav-item">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M1.91 7.38A8.5 8.5 0 0 1 3.7 4.3a.5.5 0 0 1 .54-.13l1.92.68a1 1 0 0 0 1.32-.76l.36-2a.5.5 0 0 1 .4-.4 8.53 8.53 0 0 1 3.55 0c.2.04.35.2.38.4l.37 2a1 1 0 0 0 1.32.76l1.92-.68a.5.5 0 0 1 .54.13 8.5 8.5 0 0 1 1.78 3.08c.06.2 0 .4-.15.54l-1.56 1.32a1 1 0 0 0 0 1.52l1.56 1.32a.5.5 0 0 1 .15.54 8.5 8.5 0 0 1-1.78 3.08.5.5 0 0 1-.54.13l-1.92-.68a1 1 0 0 0-1.32.76l-.37 2a.5.5 0 0 1-.38.4 8.53 8.53 0 0 1-3.56 0 .5.5 0 0 1-.39-.4l-.36-2a1 1 0 0 0-1.32-.76l-1.92.68a.5.5 0 0 1-.54-.13 8.5 8.5 0 0 1-1.78-3.08.5.5 0 0 1 .15-.54l1.56-1.32a1 1 0 0 0 0-1.52L2.06 7.92a.5.5 0 0 1-.15-.54Zm1.06 0 1.3 1.1a2 2 0 0 1 0 3.04l-1.3 1.1c.3.79.72 1.51 1.25 2.16l1.6-.58a2 2 0 0 1 2.63 1.53l.3 1.67a7.56 7.56 0 0 0 2.5 0l.3-1.67a2 2 0 0 1 2.64-1.53l1.6.58a7.5 7.5 0 0 0 1.24-2.16l-1.3-1.1a2 2 0 0 1 0-3.04l1.3-1.1a7.5 7.5 0 0 0-1.25-2.16l-1.6.58a2 2 0 0 1-2.63-1.53l-.3-1.67a7.55 7.55 0 0 0-2.5 0l-.3 1.67A2 2 0 0 1 5.81 5.8l-1.6-.58a7.5 7.5 0 0 0-1.24 2.16ZM7.5 10a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0Zm1 0a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ agent sidebar (240px) ══ -->
+  <div class="app-sidebar">
+    <div class="app-sidebar-drag"></div>
+    <div class="app-sidebar-search">
+      <span class="app-sidebar-search-icon">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.73 14.44a6.5 6.5 0 1 1 .7-.7l3.42 3.4a.5.5 0 0 1-.63.77l-.07-.06-3.42-3.41Zm-.71-.71A5.54 5.54 0 0 0 15 9.5a5.5 5.5 0 1 0-1.98 4.23Z"/></svg>
+      </span>
+      <span>Search</span>
+    </div>
+    <div class="app-sidebar-new">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Agent
+    </div>
+    <div class="app-sidebar-section">
+      <div class="app-sidebar-section-head">Agent</div>
+      <div class="app-sidebar-list">
+        <div class="app-agent-row" id="agentRow">
+          <div class="app-agent-avatar"><img src="assets/microclaw.png" alt="" /></div>
+          <div class="app-agent-info">
+            <span class="app-agent-name">MicroClaw</span>
+            <span class="app-agent-desc">Your AI sidekick</span>
+          </div>
+        </div>
+      </div>
+      <div class="app-session-item" id="sessionItem">Tidy up my desktop</div>
+    </div>
+  </div>
+
+  <!-- ══ main ══ -->
+  <div class="app-main">
+    <div class="app-titlebar">
+      <div class="app-titlebar-left"><span class="app-titlebar-title">MicroClaw</span></div>
+      <div class="app-titlebar-controls">
+        <div class="win-btn"><svg viewBox="0 0 10 1"><rect width="10" height="1" fill="currentColor"/></svg></div>
+        <div class="win-btn"><svg viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1"/></svg></div>
+        <div class="win-btn win-btn--close-icon"><svg viewBox="0 0 10 10"><line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" stroke-linecap="round"/><line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" stroke-linecap="round"/></svg></div>
+      </div>
+    </div>
+
+    <div class="app-main-body">
+      <div class="chat-view">
+        <div class="chat-thread" id="thread"></div>
+        <div class="chat-compose">
+          <div class="compose-wrapper">
+            <div class="compose-input-row" id="composeRow"></div>
+            <div class="compose-bottom">
+              <div class="compose-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              </div>
+              <div class="compose-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>
+              </div>
+              <div class="compose-spacer"></div>
+              <div class="compose-send" id="composeSend" title="Send" aria-label="Send">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="chat-disclaimer">AI-generated content may be incorrect. AI is not a person. Microsoft is not responsible for AI-generated content.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- scripted pointer — lives on the shell, not in the thread, so render()
+       rebuilding the chat never interrupts its travel -->
+  <div class="tl-cursor" id="tlCursor" aria-hidden="true"><img src="assets/Cursor.svg" alt="" /></div>
+
+</div>
+
+<div class="demo" id="demoBar">
+  <button id="playBtn">▶ Play</button>
+  <button id="nextBtn">Next →</button>
+  <button id="resetBtn">Reset</button>
+  <div class="sep"></div>
+  <span class="beat" id="beatLabel">0 / 11 · Idle</span>
+  <div class="sep"></div>
+  <button id="hideBtn" title="press H">Hide</button>
+</div>
+
+<script>
+/* ==========================================================================
+   MicroClaw · Timeline Console v6
+   --------------------------------------------------------------------------
+   Thesis: an agent's plan is a timeline you can rewrite and rewind —
+   not a progress bar you watch.
+
+   Three moves carry it:
+     1. Rewrite  — change a step that hasn't run, and leave the old one visible
+     2. Rewind   — jump back to a finished step; everything downstream is dropped
+     3. Self-stop— the destructive step halts itself (trust: confirm)
+
+   The closing summary reports what was done AND what the user held back.
+   Every number on screen is derived from the step data, so it can't drift.
+   ========================================================================== */
+
+const AVATAR = "assets/microclaw.png";
+
+/* A notify step goes ahead on its own once its window closes. That default —
+   proceed unless stopped — is the only thing separating it from a confirm
+   step, which does nothing until you answer. */
+const NOTIFY_SECONDS = 6;
+let branch = "edited";          // "edited" = you stopped it · "auto" = timer won
+let cdTimer = null, cdEnd = 0, cdLeft = NOTIFY_SECONDS * 1000;
+
+function startCountdown() {
+  if (cdTimer) return;
+  cdEnd = Date.now() + cdLeft;
+  cdTimer = setInterval(() => {
+    const left = Math.max(0, cdEnd - Date.now());
+    const n = document.getElementById("cdNum");
+    if (n) n.textContent = `${Math.ceil(left / 1000)}s`;
+    if (left <= 0) { clearCountdown(); branch = "auto"; goto(5); }
+  }, 100);
+}
+/* Pause banks the time that's left; clear throws it away and rearms the
+   window. Pausing must not quietly spend the window you were given. */
+function pauseCountdown() {
+  if (!cdTimer) return;
+  cdLeft = Math.max(0, cdEnd - Date.now());
+  clearInterval(cdTimer); cdTimer = null;
+}
+function clearCountdown() {
+  clearInterval(cdTimer); cdTimer = null;
+  cdLeft = NOTIFY_SECONDS * 1000;
+}
+
+/* Called after every render so the timer only lives while its block is on screen */
+function syncCountdown() {
+  const live = state.beat === NOTIFY_BEAT && state.inline && state.inline.kind === "notify";
+  if (live && !state.paused) startCountdown();
+  else if (live) pauseCountdown();
+  else clearCountdown();
+}
+
+/* 47 desktop files = 8 screenshots + 14 images + 12 PDFs + 9 docs + 4 empties */
+
+function mk(o) {
+  return Object.assign({ status: "pending", trust: "auto", was: null, edited: false, sub: "" }, o);
+}
+
+function planA() {
+  return [
+    mk({ id: "s1", title: "Scan desktop files",            sub: "47 files",              dur: 2.1 }),
+    mk({ id: "s2", title: "Group by file type",            sub: "images / PDFs / docs",  dur: 3.4 }),
+    mk({ id: "s3", title: "Move screenshots to Screenshots/", sub: "8 screenshots",      dur: 4.6 }),
+    mk({ id: "s4", title: "Move PDFs to Finance/",         sub: "12 PDFs",  dur: 5.2, trust: "notify" }),
+    mk({ id: "s5", title: "Move images to Media/",         sub: "14 images",             dur: 6.1 }),
+    mk({ id: "s6", title: "Delete 4 duplicate empty files", sub: "",        dur: 1.8, trust: "confirm" }),
+  ];
+}
+
+const state = {
+  beat: 0, msgs: [], steps: [],
+  planNote: null, cardVisible: false, cardState: "idle",
+  spent: 0, interventions: 0, inline: null, summary: null, paused: false,
+  draft: null,          // null = unfocused · string = focused, holding this text
+};
+
+const REDIRECT = "Hold on — group by date on step 2, not by type.";
+const TYPE_LEAD = 640, TYPE_STEP = 17;   // wait for the pointer, then ~17ms/char
+
+const BEATS = [
+  { name: "Idle", run() {} },
+
+  { name: "User asks", run() {
+      state.msgs.push({ role: "user", text: "Tidy up my desktop for me." });
+  }},
+
+  { name: "MicroClaw proposes a plan", run() {
+      state.msgs.push({ role: "assistant",
+        text: "47 files on your desktop. Here's what I'm planning — you can change any step, or jump back to one." });
+      state.steps = planA();
+      state.cardVisible = true;
+      state.cardState = "working";
+  }},
+
+  { name: "Steps 1–3 run clean", run() {
+      ["s1", "s2", "s3"].forEach(done);
+  }},
+
+  { name: "Step 4 gives you a window", run() {
+      find("s4").status = "running";
+      state.inline = { stepId: "s4", kind: "notify" };
+  }},
+
+  { name: "Step 4 resolves", run() {
+      const s = find("s4");
+      if (branch === "edited") {
+        s.was = s.title;
+        s.title = "Just list the PDFs — I'll decide";
+        s.sub = "12 PDFs · listed, not moved";
+        s.edited = true;
+        state.interventions++;
+      }
+      state.inline = null;
+      done("s4");
+  }},
+
+  { name: "Step 5 finishes", run() { done("s5"); }},
+
+  /* Pause before speaking, not after. While the plan is still moving, "step 2"
+     is a moving target — a step can finish between typing it and sending it.
+     Halting first is what makes the next message unambiguous. */
+  { name: "User halts the run", run() {
+      state.paused = true;
+  }},
+
+  /* Typed before it is sent, because that is the order it happens in — and
+     because the composer staying a composer through all of this is the point:
+     you never lose the ability to say something. */
+  { name: "User types the redirect", run() {
+      state.draft = REDIRECT;
+  }},
+
+  { name: "User rewinds to step 2", run() {
+      state.interventions++;
+      const s2 = find("s2");
+      s2.was = s2.title;
+      s2.title = "Group by date";
+      s2.sub = "last 30 days / earlier";
+      s2.edited = true;
+      s2.status = "pending";
+      ["s3", "s4", "s5"].forEach(id => { find(id).status = "ghost"; });
+      state.msgs.push({ role: "user", text: REDIRECT });
+      state.draft = "";        // sent — box is empty but the caret stays in it
+  }},
+
+  { name: "Plan re-plans itself", run() {
+      /* screenshots + images + docs collapse into one date archive: 8 + 14 + 9 = 31 */
+      state.steps = [
+        Object.assign(find("s1"), { status: "done" }),
+        Object.assign(find("s2"), { status: "pending", dur: 3.8 }),
+        mk({ id: "s3b", title: "Archive into 2026-07/ and Earlier/", sub: "31 files", dur: 32.4 }),
+        Object.assign(find("s4"), { status: "pending", dur: 5.2, trust: "notify" }),
+        find("s6"),
+      ];
+      state.planNote = "Plan updated · 6 steps → 5";
+  }},
+
+  { name: "Re-run up to the delete", run() {
+      state.planNote = null;
+      state.paused = false;          // the held breath is released here
+      ["s2", "s3b", "s4"].forEach(done);
+  }},
+
+  { name: "MicroClaw stops itself", run() {
+      find("s6").status = "asking";
+      state.inline = { stepId: "s6", kind: "confirm" };
+  }},
+
+  { name: "Confirmed · all done", run() {
+      state.inline = null;
+      done("s6");
+      state.cardState = "done";
+      const kept = find("s4").edited;
+      state.summary = {
+        main:  "Archived 31 files into 2 folders",
+        kept:  kept ? "12 PDFs left exactly where they were, as you asked" : null,
+        moved: kept ? null : "12 PDFs went to Finance/ — you let the timer run out",
+        sub:   `${fmtTotal(state.spent)} · 4 empty files deleted · you stepped in ${state.interventions} ${state.interventions === 1 ? "time" : "times"}`,
+      };
+      state.msgs.push({ role: "assistant", text: kept
+        ? "Done. The PDF list is up there whenever you want to deal with it."
+        : "Done. The PDFs are in Finance/ — say the word and I'll put them back." });
+  }},
+];
+
+/* Beat positions by name. Inserting a beat has silently broken hard-coded
+   indices twice already — the deck is edited far more often than it is read,
+   so nothing downstream may hold a number. */
+const beatAt     = name => BEATS.findIndex(b => b.name === name);
+const NOTIFY_BEAT = beatAt("Step 4 gives you a window");
+const READY_BEAT  = beatAt("Step 5 finishes");
+const HALT_BEAT   = beatAt("User halts the run");
+const TYPE_BEAT   = beatAt("User types the redirect");
+const REWIND_BEAT = beatAt("User rewinds to step 2");
+const ASK_BEAT    = beatAt("MicroClaw stops itself");
+const DONE_BEAT   = beatAt("Confirmed · all done");
+
+/* ---------- helpers ---------- */
+function find(id) { return state.steps.find(s => s.id === id); }
+function done(id) {
+  const s = find(id);
+  if (!s) return;
+  s.status = "done";
+  state.spent += s.dur;
+}
+function fmtDur(sec)  { return sec >= 60 ? `${Math.floor(sec/60)}m ${Math.round(sec%60)}s` : `${sec.toFixed(1)}s`; }
+function fmtTotal(sec){ const m = Math.floor(sec/60), s = Math.round(sec%60);
+                        return m ? `${m}m ${String(s).padStart(2,"0")}s` : `${s}s`; }
+
+function el(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
+}
+
+/* ---------- render ---------- */
+const thread = document.getElementById("thread");
+
+/* What the last frame actually had on screen. The thread is rebuilt from
+   scratch every beat, so this is the only way to tell "just arrived" from
+   "was already here" — without it every element replays its entry. */
+let shownMsgs = 0, shownCard = false;
+
+function render() {
+  thread.innerHTML = "";
+  const newMsg  = state.msgs.length > shownMsgs;
+  const newCard = state.cardVisible && !shownCard;
+
+  state.msgs.forEach((m, i) => {
+    const fresh = newMsg && i === state.msgs.length - 1;
+    const g = el("div", `chat-group${m.role === "user" ? " user" : ""}${fresh ? " is-new" : ""}`);
+    if (m.role === "assistant") {
+      const av = el("div", "chat-agent-avatar");
+      const img = document.createElement("img"); img.src = AVATAR;
+      av.appendChild(img); g.appendChild(av);
+    }
+    const msgs = el("div", "chat-group-messages");
+    const b = el("div", `chat-bubble ${m.role}`, m.text);
+    msgs.appendChild(b);
+    if (m.role === "assistant" && i === 1 && state.cardVisible) msgs.appendChild(renderCard(newCard));
+    g.appendChild(msgs);
+    thread.appendChild(g);
+  });
+
+  shownMsgs = state.msgs.length;
+  shownCard = state.cardVisible;
+
+  thread.scrollTop = thread.scrollHeight;
+  document.getElementById("beatLabel").textContent =
+    `${state.beat} / ${BEATS.length - 1} · ${BEATS[state.beat].name}`;
+  syncCountdown();
+  syncComposer();
+  syncSession();
+  syncCursor();
+}
+
+/* A session doesn't exist until something has been said in it. Before the
+   first message the sidebar has only the agent — and the agent is what the
+   main pane has open, so the selection sits there. The moment the message
+   lands, the session appears and takes the selection over. */
+function syncSession() {
+  const row = document.getElementById("agentRow");
+  const item = document.getElementById("sessionItem");
+  if (!row || !item) return;
+  const started = state.msgs.length > 0;
+  item.hidden = !started;
+  item.classList.toggle("selected", started);
+  row.classList.toggle("selected", !started);
+}
+
+/* ---------- scripted pointer ----------
+   Three beats, three frames — approach on 6, press on 7, leave on 8. The
+   press is a beat boundary rather than a timer, so replaying the deck with
+   goto() lands on exactly the same picture. */
+const cursorEl = document.getElementById("tlCursor");
+let cursorTimers = [];
+const cursorAt = (ms, fn) => cursorTimers.push(setTimeout(fn, ms));
+
+/* fitShell() scales the whole window, so a screen-space rect has to be
+   divided back into the shell's own coordinates or the pointer misses. */
+function shellXY(node, dx, dy) {
+  const shell = document.querySelector(".app-shell");
+  const sr = shell.getBoundingClientRect();
+  const nr = node.getBoundingClientRect();
+  const s  = sr.width / shell.offsetWidth || 1;
+  return { x: (nr.left + nr.width  / 2 - sr.left) / s + dx,
+           y: (nr.top  + nr.height / 2 - sr.top ) / s + dy };
+}
+function cursorTo(node, dx, dy, glide) {
+  const p = shellXY(node, dx, dy);
+  cursorEl.classList.toggle("moving", !!glide);
+  cursorEl.style.transform = `translate(${p.x}px, ${p.y}px)`;
+}
+
+/* The pointer sits still while the button changes under it — any motion
+   there overlapped the state flip and read as the pointer chasing the change
+   instead of causing it. Its one journey comes after: down to the composer,
+   where it hands off to a caret and leaves. */
+const CURSOR_CLICK = [-2, -1];     // tip on the pause button
+
+function syncCursor() {
+  cursorTimers.forEach(clearTimeout); cursorTimers = [];
+  cursorEl.classList.remove("click");
+  const btn = document.querySelector(".tl-pause");
+
+  if ((state.beat === READY_BEAT || state.beat === HALT_BEAT) && btn) {
+    cursorTo(btn, ...CURSOR_CLICK, false);
+    cursorEl.classList.add("show");
+    if (state.beat === HALT_BEAT) {
+      btn.classList.add("pressed");
+      cursorEl.classList.add("click");
+      cursorAt(200, () => cursorEl.classList.remove("click"));
+    }
+  } else if (state.beat === TYPE_BEAT) {
+    /* Aim at the caret itself rather than at the box: it's already in the DOM
+       (syncComposer ran first) and sits exactly where the typing begins, so
+       the handoff needs no measuring. */
+    const caret = document.querySelector(".compose-caret");
+    if (caret) cursorTo(caret, 0, -1, true);
+    cursorEl.classList.add("show");
+    cursorAt(560, () => cursorEl.classList.remove("show"));
+  } else {
+    cursorEl.classList.remove("show", "moving");
+  }
+}
+
+/* The composer never becomes a stop button. Sending a message mid-run is how
+   you redirect this agent — swapping ↑ for ■ would remove that exactly when
+   it matters, leaving you able to type but not to send. Halting lives on the
+   card's ‖, which is resumable and doesn't touch the conversation. */
+let typeTimers = [];
+function syncComposer() {
+  typeTimers.forEach(clearTimeout); typeTimers = [];
+  const row = document.getElementById("composeRow");
+  const btn = document.getElementById("composeSend");
+  if (!row || !btn) return;
+
+  row.innerHTML = "";
+  if (state.draft === null) {
+    row.appendChild(el("span", "compose-placeholder", "Reply to MicroClaw…"));
+  } else {
+    const text = el("span", "compose-draft", state.draft);
+    row.appendChild(text);
+    row.appendChild(el("span", "compose-caret"));
+    /* Type it out only on the beat that writes it. Reach this beat any other
+       way — a goto() replay, a later frame — and the draft is simply already
+       in the box, so every route to a beat still shows the same picture. */
+    if (state.beat === TYPE_BEAT && state.draft) {
+      const full = state.draft;
+      text.textContent = "";
+      for (let i = 1; i <= full.length; i++) {
+        typeTimers.push(setTimeout(() => { text.textContent = full.slice(0, i); },
+                                   TYPE_LEAD + TYPE_STEP * i));
+      }
+    }
+  }
+
+  btn.classList.toggle("is-send", !!state.draft);
+}
+
+function renderCard(fresh) {
+  const card = el("div", `tl-card${state.paused ? " paused" : ""}${fresh ? " is-new" : ""}`);
+
+  const live  = state.steps.filter(s => s.status !== "ghost");
+  const total = live.length;
+  const fin   = state.steps.filter(s => s.status === "done").length;
+
+  const head = el("div", "tl-head");
+  head.appendChild(el("span", "tl-head-label",
+    state.cardState === "done" ? "Timeline" : state.paused ? "Paused" : "Working"));
+  if (state.planNote) head.appendChild(el("span", "tl-replan", state.planNote));
+  head.appendChild(el("span", "tl-head-count",
+    state.cardState === "done" ? `${total} steps · complete` : `${fin} / ${total}`));
+  card.appendChild(head);
+
+  const list = el("div", "tl-steps");
+  state.steps.forEach((s, i) => {
+    list.appendChild(renderStep(s, i, total));
+    if (state.inline && state.inline.stepId === s.id) list.appendChild(renderInline(state.inline.kind));
+  });
+  card.appendChild(list);
+
+  if (state.cardState === "done") {
+    card.appendChild(el("div", "tl-done-head", "All done"));
+    const sum = el("div", "tl-summary");
+    sum.appendChild(el("div", "tl-summary-main", state.summary.main));
+    if (state.summary.kept)  sum.appendChild(el("div", "tl-summary-kept",  `↩ ${state.summary.kept}`));
+    if (state.summary.moved) sum.appendChild(el("div", "tl-summary-moved", `→ ${state.summary.moved}`));
+    sum.appendChild(el("div", "tl-summary-sub", state.summary.sub));
+    card.appendChild(sum);
+  } else {
+    const foot = el("div", "tl-foot");
+    foot.appendChild(renderPause());
+    foot.appendChild(el("span", "tl-foot-hint", state.paused
+      ? "Nothing is running."
+      : "Hover a step to edit it."));
+    card.appendChild(foot);
+  }
+  return card;
+}
+
+const ICON_PAUSE = `<svg viewBox="0 0 10 10" fill="currentColor" aria-hidden="true">` +
+                   `<rect x="1" y="1" width="2.6" height="8" rx="0.8"/>` +
+                   `<rect x="6.4" y="1" width="2.6" height="8" rx="0.8"/></svg>`;
+const ICON_PLAY  = `<svg viewBox="0 0 10 10" fill="currentColor" aria-hidden="true">` +
+                   `<path d="M2 1.4v7.2a.6.6 0 0 0 .92.5l5.6-3.6a.6.6 0 0 0 0-1L2.92.9A.6.6 0 0 0 2 1.4Z"/></svg>`;
+/* ■ stop (composer) vs ‖ pause (card) — filled square reads as terminate,
+   double bars as suspend; the two glyphs carry the distinction on their own. */
+const ICON_SEND = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>`;
+
+/* Halting is a state of the plan, not of the presentation: it freezes the
+   running step and banks the notify window instead of letting it drain.
+   Icon-only, so the label moves to title/aria-label. */
+function renderPause() {
+  const b = el("button", `tl-pause${state.paused ? " is-paused" : ""}`);
+  b.innerHTML = state.paused ? ICON_PLAY : ICON_PAUSE;
+  b.title = state.paused ? "Resume" : "Pause";
+  b.setAttribute("aria-label", b.title);
+  b.onclick = () => {
+    state.paused = !state.paused;
+    userPaused = state.paused;
+    if (state.paused) pauseCountdown();   // bank the time before the DOM is rebuilt
+    render();
+  };
+  return b;
+}
+
+/* The deck halts itself as part of the story (beat "User halts the run"), and
+   a viewer can also halt it by pressing ‖. Autoplay must only wait for the
+   second kind — gating on state.paused alone left the run stuck at beat 7
+   forever, because the script never presses resume. */
+let userPaused = false;
+
+function renderStep(s, idx, total) {
+  const n = el("div", `tl-step ${s.status}`);
+
+  const dot = el("div", `tl-dot ${s.status}`);
+  if (s.status === "done") {
+    dot.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  } else if (s.status === "asking") {
+    dot.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="6" x2="12" y2="13"/><line x1="12" y1="18" x2="12" y2="18"/></svg>`;
+  }
+  n.appendChild(dot);
+
+  const body = el("div", "tl-body");
+
+  /* left column — what the step is */
+  const main = el("div", "tl-main");
+  main.appendChild(el("div", "tl-title", s.title));
+  if (s.was) main.appendChild(el("div", "tl-was", s.was));
+  if (s.sub) main.appendChild(el("div", "tl-sub", s.sub));
+  body.appendChild(main);
+
+  /* right column — position in the plan, then the step's status chips */
+  const right = el("div", "tl-right");
+  const no = idx + 1;
+  right.appendChild(el("span", "tl-meta",
+    s.status === "done"  ? `Step ${no}/${total} · ${fmtDur(s.dur)}` :
+    s.status === "ghost" ? "Dropped" : `Step ${no}/${total}`));
+  if (s.trust !== "auto" && s.status !== "done" && s.status !== "ghost") {
+    right.appendChild(el("span", `tl-tag ${s.trust}`,
+      s.trust === "notify" ? "you can stop it" : "waits for you"));
+  }
+  if (s.edited) right.appendChild(el("span", "tl-badge", "you changed this"));
+  body.appendChild(right);
+  n.appendChild(body);
+
+  const acts = el("div", "tl-actions");
+  if (s.status === "done") {
+    const b = el("button", "tl-act", "↩ Jump back here");
+    b.onclick = () => { if (s.id === "s2") goto(REWIND_BEAT); };
+    acts.appendChild(b);
+  } else if (s.status === "pending" || s.status === "running") {
+    const b = el("button", "tl-act", "Change approach");
+    b.onclick = () => { if (s.id === "s4") { clearCountdown(); branch = "edited"; goto(5); } };
+    acts.appendChild(b);
+  }
+  if (acts.children.length) n.appendChild(acts);
+
+  return n;
+}
+
+function renderInline(kind) {
+  const wrap = el("div", "tl-inline");
+
+  if (kind === "notify") {
+    const note = el("div", "tl-note");
+
+    const head = el("div", "tl-note-head");
+    const ring = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    ring.setAttribute("class", "tl-ring");
+    ring.setAttribute("viewBox", "0 0 20 20");
+    ring.innerHTML = `<circle class="tl-ring-bg" cx="10" cy="10" r="8"/>` +
+                     `<circle class="tl-ring-fg" cx="10" cy="10" r="8"/>`;
+    /* render() rebuilds this node, which would restart the CSS animation from
+       full. A negative delay drops it back to however much window is left. */
+    ring.querySelector(".tl-ring-fg").style.animationDelay =
+      `-${NOTIFY_SECONDS * 1000 - cdLeft}ms`;
+    head.appendChild(ring);
+    const num = el("span", "tl-cd-num", `${Math.ceil(cdLeft / 1000)}s`);
+    num.id = "cdNum";
+    head.appendChild(num);
+    head.appendChild(el("span", null, "12 PDFs are headed to Finance/."));
+    note.appendChild(head);
+
+    note.appendChild(el("div", "tl-note-sub",
+      "I'll go ahead when the timer runs out — stop me if you'd rather I didn't."));
+
+    const row = el("div", "tl-btnrow");
+    const alt = el("button", "btn btn--deny", "Change approach");
+    alt.onclick = () => { clearCountdown(); branch = "edited"; goto(5); };
+    const ok = el("button", "btn btn--confirm", "Go ahead now");
+    ok.onclick  = () => { clearCountdown(); branch = "auto";   goto(5); };
+    row.appendChild(alt); row.appendChild(ok);
+    note.appendChild(row);
+    wrap.appendChild(note);
+  }
+
+  if (kind === "confirm") {
+    const c = el("div", "tl-confirm");
+    c.appendChild(el("div", "tl-confirm-q", "Delete these 4 empty files?"));
+    const fl = el("div", "tl-filelist");
+    ["Untitled.txt", "Document (2).docx", "Screen Shot copy.png", "temp.zip"]
+      .forEach(f => fl.appendChild(el("div", null, f)));
+    c.appendChild(fl);
+    const row = el("div", "tl-btnrow");
+    row.appendChild(el("button", "btn btn--deny", "Try another way"));
+    const ok = el("button", "btn btn--confirm", "Yes, delete");
+    ok.onclick = () => goto(DONE_BEAT);
+    row.appendChild(ok);
+    c.appendChild(row);
+    wrap.appendChild(c);
+  }
+  return wrap;
+}
+
+/* ---------- driver ---------- */
+function reset() {
+  Object.assign(state, {
+    beat: 0, msgs: [], steps: [], planNote: null,
+    cardVisible: false, cardState: "idle",
+    spent: 0, interventions: 0, inline: null, summary: null, paused: false,
+    draft: null,
+  });
+  userPaused = false;
+  render();
+}
+
+function next() {
+  if (state.beat >= BEATS.length - 1) return;
+  state.beat++;
+  BEATS[state.beat].run();
+  render();
+}
+
+function goto(target) {
+  reset();
+  for (let i = 1; i <= target && i < BEATS.length; i++) { state.beat = i; BEATS[i].run(); }
+  render();
+}
+
+/* autoplay pauses at the three interaction points so the presenter clicks */
+const PAUSE_AT = new Set([NOTIFY_BEAT, REWIND_BEAT, ASK_BEAT]);
+let playing = false, timer = null;
+
+function play() {
+  if (playing) return stop();
+  playing = true;
+  const b = document.getElementById("playBtn");
+  b.classList.add("on"); b.textContent = "⏸ Pause";
+  const tick = () => {
+    if (!playing) return;
+    if (state.beat >= BEATS.length - 1) return stop();
+    if (userPaused) { timer = setTimeout(tick, 300); return; }  // hold, don't drop the chain
+    next();
+    if (PAUSE_AT.has(state.beat)) return stop();
+    timer = setTimeout(tick, (state.beat === 3 || state.beat === TYPE_BEAT) ? 1900 : 1250);
+  };
+  timer = setTimeout(tick, 400);
+}
+function stop() {
+  playing = false; clearTimeout(timer);
+  const b = document.getElementById("playBtn");
+  b.classList.remove("on"); b.textContent = "▶ Play";
+}
+
+document.getElementById("playBtn").onclick  = play;
+document.getElementById("nextBtn").onclick  = () => { stop(); next(); };
+document.getElementById("resetBtn").onclick = () => { stop(); reset(); };
+
+const demoBar = document.getElementById("demoBar");
+document.getElementById("hideBtn").onclick = () => demoBar.classList.add("hidden");
+document.addEventListener("keydown", (e) => {
+  if (e.key === "h" || e.key === "H") demoBar.classList.toggle("hidden");
+  if (e.key === "ArrowRight") { stop(); next(); }
+  if (e.key === " ") { e.preventDefault(); play(); }
+});
+
+reset();
+
+/* ── embedded playback ───────────────────────────────────────────────────
+   The shell is a fixed-size desktop mock (956×760). Inside a case-study
+   card it must (a) shrink to fit the frame instead of overflowing, and
+   (b) run on its own — no presenter bar, no clicks. Both kick in only when
+   we're inside an <iframe>; opened on its own the console keeps its natural
+   size and the interactive Play/Next/Reset bar.
+
+   ?clip=pause narrows that loop to one moment for the home-page card, where
+   the full twelve beats are too long to land: the pointer arriving, the
+   halt, and the redirect that follows. */
+const EMBED = window.self !== window.top;
+const CLIP  = new URLSearchParams(location.search).get("clip") === "pause";
+
+/* Scale the whole window down to fit the frame (never up past 1:1) and
+   center it, measuring from the top-left so nothing clips off the bottom. */
+function fitShell() {
+  const shell = document.querySelector(".app-shell");
+  if (!shell) return;
+  const W = 956, H = 760;
+  const s = Math.min(1, window.innerWidth / W, window.innerHeight / H);
+  const x = Math.max(0, (window.innerWidth - W * s) / 2);
+  const y = Math.max(0, (window.innerHeight - H * s) / 2);
+  shell.style.transform = "translate(" + x + "px, " + y + "px) scale(" + s + ")";
+}
+fitShell();
+window.addEventListener("resize", fitShell);
+
+if (CLIP) {
+  demoBar.classList.add("hidden");
+  /* Four beats on repeat: the pointer waiting on the button, the halt, the
+     redirect being typed, and the redirect landing. goto() rebuilds the run
+     up to "step 5 finished" in one frame — that part is only the setting.
+     Holds are long because a card is read at a glance, not watched; the
+     typing beat also has to outlast the pointer's trip plus ~46 characters. */
+  const CLIP_BEATS = [READY_BEAT, HALT_BEAT, TYPE_BEAT, REWIND_BEAT];
+  const CLIP_HOLD  = [1500, 2200, 2500, 3600];
+  (function clipLoop(i) {
+    if (i === 0) goto(CLIP_BEATS[0]); else next();
+    setTimeout(() => {
+      if (i < CLIP_BEATS.length - 1) return clipLoop(i + 1);
+      reset();
+      setTimeout(() => clipLoop(0), 700);
+    }, CLIP_HOLD[i]);
+  })(0);
+} else if (EMBED) {
+  demoBar.classList.add("hidden");
+  /* Drive the timeline on a loop, auto-passing the three interaction beats
+     (notify window / rewind / delete-confirm) a presenter would click. */
+  const A_SEG = 1300, A_SLOW = 1800, A_PAUSE = 1900, A_END = 3800, A_GAP = 1000;
+  (function autoTick() {
+    if (userPaused) { setTimeout(autoTick, 300); return; }
+    if (state.beat >= BEATS.length - 1) {
+      setTimeout(() => { reset(); setTimeout(autoTick, A_GAP); }, A_END);
+      return;
+    }
+    next();
+    let d = A_SEG;
+    if (state.beat === 3 || state.beat === TYPE_BEAT) d = A_SLOW;
+    if (PAUSE_AT.has(state.beat)) d = A_PAUSE;
+    setTimeout(autoTick, d);
+  })();
+}
+</script>
+</body>
+</html>

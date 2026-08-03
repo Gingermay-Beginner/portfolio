@@ -1,0 +1,3626 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MicroClaw — First-run journey (embed)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #fafafa;
+      --paper: #ffffff;
+      --ink: #0a0a0a;
+      --ink-2: #1a1a1a;
+      --text: #303035;
+      --muted: #71717a;
+      --muted-2: #a1a1aa;
+      --line: #e6e6ea;
+      --line-2: #efeff2;
+      --accent: #10b981;
+      --accent-hover: #0ea371;
+      --accent-soft: rgba(16, 185, 129, 0.10);
+      --accent-line: rgba(16, 185, 129, 0.28);
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      font-feature-settings: "cv11", "ss01", "ss03";
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    ::selection { background: var(--accent-soft); color: var(--ink); }
+
+    button { font: inherit; }
+    a { color: inherit; }
+
+    .num, .tabular { font-variant-numeric: tabular-nums; }
+    .mono { font-family: var(--mono); font-feature-settings: normal; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      transition: grid-template-columns 180ms ease;
+    }
+
+    .app.nav-collapsed { grid-template-columns: 64px 1fr; }
+
+    /* ============== SIDEBAR ============== */
+    .side {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      padding: 28px 24px;
+      border-right: 1px solid var(--line);
+      background: var(--bg);
+      z-index: 5;
+      overflow: hidden;
+      transition: padding 180ms ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .app.nav-collapsed .side { padding: 24px 14px; }
+
+    .side-toggle {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      margin: 0 0 28px auto;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--paper);
+      color: var(--muted);
+      cursor: pointer;
+      transition: 120ms ease;
+      padding: 0;
+    }
+
+    .side-toggle:hover { color: var(--ink); border-color: var(--ink-2); }
+
+    .side-toggle-icon {
+      display: block;
+      font-size: 14px;
+      line-height: 1;
+      transform: rotate(180deg);
+      transition: transform 180ms ease;
+    }
+
+    .app.nav-collapsed .side-toggle { margin: 0 auto 28px; }
+    .app.nav-collapsed .side-toggle-icon { transform: rotate(0deg); }
+
+    .side-content {
+      opacity: 1;
+      transform: translateX(0);
+      transition: opacity 140ms ease, transform 180ms ease;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .app.nav-collapsed .side-content {
+      pointer-events: none;
+      opacity: 0;
+      transform: translateX(-8px);
+    }
+
+    .collapsed-label {
+      display: none;
+      margin: 4px auto 0;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      line-height: 1;
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+    }
+
+    .app.nav-collapsed .collapsed-label { display: block; }
+
+    .side-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 20px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 120ms ease;
+    }
+    .side-back:hover { color: var(--ink); }
+    .side-back-arw { transition: transform 160ms ease; }
+    .side-back:hover .side-back-arw { transform: translateX(-3px); }
+
+    .side-kicker {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .side h1 {
+      margin: 14px 0 6px;
+      font-size: 19px;
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+
+    .side p {
+      margin: 0 0 28px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .nav {
+      display: grid;
+      gap: 1px;
+      margin-top: 4px;
+    }
+
+    .nav-label {
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0 10px 8px;
+    }
+
+    .nav a {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px 7px 14px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 4px;
+      transition: 120ms ease;
+    }
+
+    .nav a::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      border-radius: 1px;
+      background: transparent;
+      transition: 120ms ease;
+    }
+
+    .nav a:hover { color: var(--ink); }
+
+    .nav a.active {
+      color: var(--ink);
+      background: var(--accent-soft);
+    }
+
+    .nav a.active::before { background: var(--accent); }
+
+    .nav-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted-2);
+      letter-spacing: 0;
+      min-width: 18px;
+    }
+
+    .nav a.active .nav-num { color: var(--accent); }
+
+    .side-footer {
+      margin-top: auto;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    /* ============== MAIN ============== */
+    main {
+      padding: 48px clamp(20px, 4vw, 72px) 96px;
+      overflow: hidden;
+      max-width: 100%;
+    }
+
+    .main-inner {
+      max-width: 1232px;
+      margin: 0 auto;
+    }
+
+    /* ============== HERO ============== */
+    .hero {
+      min-height: calc(100vh - 96px);
+      display: grid;
+      align-content: center;
+      padding-bottom: 64px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 0;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: max-content;
+      max-width: 100%;
+      padding: 5px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--paper);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .hero-title {
+      max-width: 1020px;
+      margin: 28px 0 20px;
+      font-size: clamp(48px, 8.2vw, 96px);
+      font-weight: 600;
+      line-height: 0.96;
+      letter-spacing: -0.04em;
+      color: var(--ink);
+    }
+
+    .hero-subtitle {
+      margin: 0;
+      max-width: 720px;
+      color: var(--muted);
+      font-size: clamp(18px, 2.2vw, 24px);
+      line-height: 1.32;
+      letter-spacing: -0.012em;
+      font-weight: 400;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 40px;
+      max-width: 900px;
+    }
+
+    .tag {
+      padding: 4px 9px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: var(--paper);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11.5px;
+      font-weight: 500;
+      letter-spacing: 0;
+      transition: 120ms ease;
+    }
+
+    .tag:hover { border-color: var(--ink-2); color: var(--ink); }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 36px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 9px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 120ms ease;
+      letter-spacing: -0.005em;
+    }
+
+    .btn.primary {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+
+    .btn.primary:hover { background: var(--ink-2); }
+
+    .btn.secondary {
+      background: var(--paper);
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    .btn.secondary:hover { border-color: var(--ink-2); }
+
+    .btn::after {
+      content: "→";
+      font-family: var(--mono);
+      font-size: 12px;
+      opacity: 0.7;
+      transition: 120ms ease;
+    }
+
+    .btn:hover::after { transform: translateX(2px); opacity: 1; }
+
+    /* ============== HERO META STRIP ============== */
+    .hero-meta {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      margin-top: 56px;
+      padding-top: 28px;
+      border-top: 1px solid var(--line);
+    }
+
+    .hero-meta-cell {
+      padding: 0 24px;
+      border-right: 1px solid var(--line);
+    }
+    .hero-meta-cell:first-child { padding-left: 0; }
+    .hero-meta-cell:last-child { border-right: 0; padding-right: 0; }
+
+    .hero-meta-label {
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .hero-meta-value {
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: -0.005em;
+    }
+
+    /* ============== SECTIONS ============== */
+    .section {
+      display: grid;
+      grid-template-columns: minmax(220px, 0.85fr) minmax(420px, 2.15fr);
+      gap: 56px;
+      padding: 80px 0;
+      border-bottom: 1px solid var(--line);
+      scroll-margin-top: 28px;
+    }
+
+    .section.full-width-section,
+    .section.challenge-section {
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    .section.full-width-section .section-intro,
+    .section.challenge-section .section-intro {
+      position: relative;
+      top: auto;
+      max-width: 760px;
+    }
+
+    .section-intro {
+      position: sticky;
+      top: 40px;
+      align-self: start;
+    }
+
+    .section-num {
+      display: inline-block;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 18px;
+    }
+
+    .section h2 {
+      margin: 0 0 14px;
+      font-size: clamp(28px, 3.4vw, 40px);
+      font-weight: 600;
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      color: var(--ink);
+    }
+
+    .section-intro p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14.5px;
+      line-height: 1.62;
+      max-width: 380px;
+    }
+
+    .section.full-width-section .section-intro p,
+    .section.challenge-section .section-intro p {
+      max-width: 720px;
+      font-size: 16px;
+    }
+
+    /* ============== CARDS ============== */
+    .content-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      overflow: hidden;
+    }
+
+    .big-copy {
+      padding: clamp(20px, 3vw, 32px);
+      font-size: clamp(18px, 1.8vw, 22px);
+      line-height: 1.42;
+      letter-spacing: -0.018em;
+      color: var(--ink);
+      font-weight: 500;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .muted-block {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line-2);
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      letter-spacing: 0;
+      font-weight: 400;
+    }
+
+    /* role grid: flat tiles separated by 1px */
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0;
+    }
+
+    .role-card {
+      padding: 24px clamp(20px, 3vw, 28px);
+      border-right: 1px solid var(--line);
+      transition: 120ms ease;
+    }
+    .role-card:last-child { border-right: 0; }
+
+    .role-card:hover { background: var(--bg); }
+
+    .role-card strong {
+      display: block;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .role-card span {
+      display: block;
+      margin-top: 12px;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ============== CHALLENGE BREAKS ============== */
+    .break-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0;
+    }
+
+    .break-card {
+      position: relative;
+      padding: 28px 22px;
+      border-right: 1px solid var(--line);
+      min-height: 180px;
+      display: grid;
+      align-content: start;
+      gap: 12px;
+      transition: 120ms ease;
+    }
+
+    .break-card:last-child { border-right: 0; }
+    .break-card:hover { background: var(--bg); }
+
+    .break-card::before {
+      content: attr(data-step);
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    .break-card strong {
+      display: block;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.012em;
+      color: var(--ink);
+      line-height: 1.3;
+    }
+
+    .break-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.58;
+    }
+
+    /* ============== MAP (Journey × Belief × Capability) ============== */
+    .map-wrap { padding: clamp(24px, 3vw, 36px); }
+
+    .map-header {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 32px;
+      max-width: 760px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .map-header h3 {
+      margin: 0;
+      font-size: clamp(22px, 2.4vw, 28px);
+      font-weight: 600;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: var(--ink);
+    }
+
+    .map-theme-label {
+      width: max-content;
+      max-width: 100%;
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    .map-caption {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.55;
+      margin-top: 4px;
+    }
+
+    .map-caption div {
+      display: flex;
+      gap: 10px;
+      align-items: baseline;
+    }
+
+    .map-caption strong {
+      color: var(--ink);
+      font-weight: 600;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      min-width: 100px;
+    }
+
+    .relation-map {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) minmax(180px, 0.5fr) minmax(280px, 1fr);
+      gap: clamp(20px, 3vw, 40px);
+      align-items: stretch;
+      min-height: 720px;
+    }
+
+    .map-column {
+      display: grid;
+      grid-template-rows: repeat(5, 1fr);
+      gap: 8px;
+      z-index: 2;
+    }
+
+    .capability-column { grid-template-rows: repeat(7, 1fr); }
+
+    .stage-node, .capability-node {
+      position: relative;
+      z-index: 3;
+      border: 1px solid var(--line);
+      background: var(--paper);
+      border-radius: 6px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: 120ms ease;
+    }
+
+    .stage-node:hover, .stage-node.active,
+    .capability-node:hover, .capability-node.active {
+      z-index: 20;
+      border-color: var(--ink-2);
+      background: var(--paper);
+    }
+
+    .stage-node.pinned, .capability-node.pinned {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
+    .stage-node.locked-out, .capability-node.locked-out { cursor: default; }
+
+    .stage-node.dim, .capability-node.dim {
+      opacity: 0.4;
+      filter: none;
+    }
+
+    .stage-node.dim:hover, .capability-node.dim:hover {
+      border-color: var(--line);
+    }
+
+    .node-kicker {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .node-kicker::before {
+      content: "";
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--muted-2);
+    }
+
+    .stage-node.active .node-kicker::before,
+    .stage-node.pinned .node-kicker::before,
+    .capability-node.active .node-kicker::before,
+    .capability-node.pinned .node-kicker::before {
+      background: var(--accent);
+    }
+
+    .stage-index {
+      position: absolute;
+      top: 12px;
+      right: 14px;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0;
+      pointer-events: none;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stage-node.active .stage-index,
+    .stage-node.pinned .stage-index {
+      color: var(--accent);
+    }
+
+    .stage-node strong, .capability-node strong {
+      display: block;
+      margin-top: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      line-height: 1.22;
+      letter-spacing: -0.015em;
+      color: var(--ink);
+    }
+
+    .belief {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+
+    .belief em {
+      color: var(--ink);
+      font-style: normal;
+      font-weight: 500;
+    }
+
+    .capability-node span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12.5px;
+      line-height: 1.5;
+    }
+
+    .map-center {
+      position: relative;
+      z-index: 1;
+      border-radius: 8px;
+      background: transparent;
+      border: 0;
+      overflow: visible;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+    }
+
+    .map-center-label {
+      display: block;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      text-align: center;
+    }
+
+    .map-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .map-line {
+      fill: none;
+      stroke: var(--line);
+      stroke-width: 1;
+      transition: 120ms ease;
+    }
+
+    .map-line.active {
+      stroke: var(--accent);
+      stroke-width: 1.5;
+    }
+
+    .map-line.dim { opacity: 0.3; }
+
+    /* ============== EXPERIENCE ============== */
+    .experience-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+
+    .experience-card {
+      display: grid;
+      gap: 28px;
+      cursor: default;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      padding: clamp(24px, 3vw, 36px);
+      margin-bottom: 16px;
+    }
+
+    .experience-card.featured-experience {
+      grid-column: 1 / -1;
+      min-height: auto;
+    }
+
+    .experience-card-header {
+      display: grid;
+      gap: 10px;
+      align-items: start;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .experience-card-header strong {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      font-size: clamp(20px, 2.4vw, 28px);
+      font-weight: 600;
+      line-height: 1.15;
+      letter-spacing: -0.022em;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .experience-card-header strong::first-letter {
+      color: var(--muted-2);
+    }
+
+    .experience-detail {
+      display: grid;
+      gap: 14px;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .experience-detail p { margin: 0; }
+
+    .experience-detail strong {
+      display: inline;
+      font-size: inherit;
+      color: var(--ink);
+      font-weight: 600;
+      letter-spacing: 0;
+    }
+
+    .decision-callout {
+      margin: 0;
+      padding: 16px 18px;
+      border: 1px solid var(--accent-line);
+      border-left: 2px solid var(--accent);
+      border-radius: 4px;
+      background: var(--accent-soft);
+      color: var(--ink) !important;
+      font-size: 15px !important;
+      font-weight: 500;
+      line-height: 1.5 !important;
+      letter-spacing: -0.01em;
+    }
+
+    .decision-callout strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--accent) !important;
+      font-family: var(--mono);
+      font-size: 10.5px !important;
+      font-weight: 500;
+      letter-spacing: 0.08em !important;
+      text-transform: uppercase;
+    }
+
+    .experience-visual-placeholder {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      padding: 0;
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .visual-state {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0;
+      align-items: stretch;
+      border-bottom: 1px solid var(--line);
+    }
+    .visual-state:last-child { border-bottom: 0; }
+
+    .visual-media-box {
+      aspect-ratio: 4 / 3;
+      min-height: 0;
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg);
+      background-image:
+        linear-gradient(var(--line-2) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line-2) 1px, transparent 1px);
+      background-size: 24px 24px;
+      background-position: -1px -1px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 24px;
+      color: var(--muted-2);
+    }
+
+    .visual-media-box strong {
+      display: block;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .visual-copy {
+      display: grid;
+      align-content: start;
+      gap: 10px;
+      padding: 24px 26px;
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.62;
+    }
+
+    .visual-copy strong {
+      display: block;
+      color: var(--ink);
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.25;
+      letter-spacing: -0.015em;
+    }
+
+    .visual-copy-split {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr;
+      align-items: stretch;
+    }
+    .visual-copy-divider {
+      background: var(--line);
+    }
+
+    /* ============== APP PALETTE (MicroClaw warm stone) ============== */
+    :root {
+      --mc-bg:        #f8f4f1;
+      --mc-paper:     #ffffff;
+      --mc-text:      #272320;
+      --mc-text-2:    #4c4642;
+      --mc-text-muted:#b3ada8;
+      --mc-border:    rgba(0,0,0,0.12);  /* --border (compose-wrapper)  */
+      --mc-border-row:rgba(0,0,0,0.10);  /* --border-row (sidebar/pnav dividers, new-agent-btn) */
+      --mc-border-lt: #efeae7;           /* --border-light (titlebar bottom only) */
+      --mc-accent:    #a25a02;
+      --mc-accent-lt: #fee6d4;
+    }
+
+    /* ============== INSTALL MOCKUP ============== */
+    .install-dual {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+    /* Card 01 dual frame uses a tighter aspect ratio than the 4/3 default */
+    .visual-media-box:has(.install-dual) { aspect-ratio: 29 / 14; }
+    /* Card 02 keeps the default 4/3 ratio (1160 × 870) — gives chat-thread room for 2-3 line heading + cards without overlap */
+    .install-mock {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+    }
+    .install-window {
+      width: min(360px, 100%);
+      height: 360px;
+      background: var(--mc-bg);
+      border: 1px solid var(--mc-border);
+      border-radius: 16px;
+      padding: 24px 28px 22px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .iw-confetti-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .install-window .iw-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--mc-text-muted);
+      line-height: 1;
+      z-index: 6;
+    }
+    .install-window .iw-close svg { width: 12px; height: 12px; }
+    /* Shared bottom slot keeps notice/buttons (welcome) and desc/progress
+       (installing) at the same vertical zone — mirrors original .welcome-bottom */
+    .install-window .iw-bottom {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 132px;
+      width: 100%;
+    }
+    .install-window .iw-mascot {
+      width: 168px;
+      height: 168px;
+      object-fit: contain;
+      margin-top: 4px;
+      margin-bottom: -10px;
+    }
+    .install-window .iw-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--mc-text);
+      letter-spacing: -0.025em;
+      line-height: 1.25;
+      margin: 4px 0 6px;
+      text-align: center;
+    }
+    .install-window .iw-notice {
+      font-size: 10.5px;
+      color: var(--mc-text-muted);
+      text-align: center;
+      line-height: 1.7;
+      margin: 4px 0 14px;
+      max-width: 240px;
+    }
+    .install-window .iw-notice a {
+      color: var(--mc-text-2);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .install-window .iw-desc {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--mc-text-2);
+      margin: 6px 0 14px;
+      letter-spacing: 0.01em;
+    }
+    .install-window .iw-progress {
+      width: 168px;
+      height: 5px;
+      background: rgba(0,0,0,0.08);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+    .install-window .iw-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--mc-text);
+      border-radius: 99px;
+      animation: iw-progress-fill 6s linear infinite;
+    }
+    @keyframes iw-progress-fill {
+      0%   { width: 0%; }
+      95%  { width: 100%; }
+      100% { width: 100%; }
+    }
+
+    /* Cycling title (Intuitive / Trustworthy / Built for you) */
+    .iw-cycle {
+      position: relative;
+      width: 100%;
+      text-align: center;
+      height: 22px;
+      margin: 4px 0 6px;
+    }
+    .iw-cycle .iw-cycle-item {
+      position: absolute;
+      inset: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--mc-text);
+      letter-spacing: -0.025em;
+      line-height: 1.25;
+      opacity: 0;
+      animation: iw-cycle-fade 6s ease-in-out infinite;
+    }
+    .iw-cycle .iw-cycle-item:nth-child(1) { animation-delay: 0s; }
+    .iw-cycle .iw-cycle-item:nth-child(2) { animation-delay: 2s; }
+    .iw-cycle .iw-cycle-item:nth-child(3) { animation-delay: 4s; }
+
+    .iw-cycle-desc {
+      position: relative;
+      width: 100%;
+      text-align: center;
+      height: 18px;
+      margin: 6px 0 14px;
+    }
+    .iw-cycle-desc .iw-cycle-desc-item {
+      position: absolute;
+      inset: 0;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--mc-text-2);
+      letter-spacing: 0.01em;
+      opacity: 0;
+      animation: iw-cycle-fade 6s ease-in-out infinite;
+    }
+    .iw-cycle-desc .iw-cycle-desc-item:nth-child(1) { animation-delay: 0s; }
+    .iw-cycle-desc .iw-cycle-desc-item:nth-child(2) { animation-delay: 2s; }
+    .iw-cycle-desc .iw-cycle-desc-item:nth-child(3) { animation-delay: 4s; }
+
+    @keyframes iw-cycle-fade {
+      0%   { opacity: 0; }
+      4%   { opacity: 1; }
+      30%  { opacity: 1; }
+      34%  { opacity: 0; }
+      100% { opacity: 0; }
+    }
+
+    /* Cycling mascot images (paired with phrase) */
+    .iw-mascot-cycle {
+      position: relative;
+      width: 168px;
+      height: 168px;
+      margin-top: 4px;
+      margin-bottom: -10px;
+      animation: iw-mascot-bob 2.6s ease-in-out infinite;
+    }
+    .iw-mascot-cycle .iw-mascot-item {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      opacity: 0;
+      animation: iw-cycle-fade 6s ease-in-out infinite;
+    }
+    .iw-mascot-cycle .iw-mascot-item:nth-child(1) { animation-delay: 0s; }
+    .iw-mascot-cycle .iw-mascot-item:nth-child(2) { animation-delay: 2s; }
+    .iw-mascot-cycle .iw-mascot-item:nth-child(3) { animation-delay: 4s; }
+
+    @keyframes iw-mascot-bob {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-4px); }
+    }
+
+    /* Welcome state: fold ↔ expand toggle (auto-loop, mirrors original 400ms expand → settle behavior) */
+    .iw-mascot-toggle {
+      position: relative;
+      width: 168px;
+      height: 168px;
+      margin-top: 4px;
+      margin-bottom: -10px;
+    }
+    .iw-mascot-toggle .iw-mascot-fold,
+    .iw-mascot-toggle .iw-mascot-expand {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .iw-mascot-toggle .iw-mascot-fold {
+      animation: iw-toggle-fold 4s ease-in-out infinite;
+    }
+    .iw-mascot-toggle .iw-mascot-expand {
+      animation: iw-toggle-expand 4s ease-in-out infinite;
+    }
+    @keyframes iw-toggle-fold {
+      0%   { opacity: 1; }
+      18%  { opacity: 1; }
+      24%  { opacity: 0; }
+      88%  { opacity: 0; }
+      94%  { opacity: 1; }
+      100% { opacity: 1; }
+    }
+    @keyframes iw-toggle-expand {
+      0%   { opacity: 0; }
+      18%  { opacity: 0; }
+      24%  { opacity: 1; transform: translateY(0) scale(1); }
+      30%  { transform: translateY(-2px) scale(1.04); }
+      40%  { transform: translateY(0) scale(1); }
+      88%  { opacity: 1; }
+      94%  { opacity: 0; }
+      100% { opacity: 0; }
+    }
+    .install-window .iw-btn-primary {
+      width: auto;
+      padding: 8px 26px;
+      border-radius: 20px;
+      background: var(--mc-text);
+      color: #fff;
+      font-size: 11.5px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      margin-bottom: 4px;
+    }
+    .install-window .iw-btn-ghost {
+      width: 100%;
+      height: 32px;
+      background: transparent;
+      color: var(--mc-text-2);
+      font-size: 11.5px;
+      font-weight: 500;
+      display: grid;
+      place-items: center;
+    }
+
+    /* ============== APP SHELL (matches latest MicroClaw layout) ============== */
+    /* No-sidebar variant for New Agent page (only level-1 pnav, main fills the rest).
+       Use double-class to win over .app-shell { grid-template-columns } defined later in source. */
+    .app-shell.app-shell--no-sidebar {
+      grid-template-columns: 52px 1fr;
+    }
+    .app-shell.app-shell--no-sidebar .app-main {
+      grid-column: 2;
+    }
+
+    /* ============== NEW AGENT PAGE (mirrors NewAgentView.vue) ============== */
+    .new-agent-view {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--mc-paper);
+      overflow: hidden;
+      padding: 28px 36px 40px;
+    }
+    .new-agent-topbar {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+      flex-shrink: 0;
+    }
+    .new-agent-topbar__title {
+      flex: 1;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--mc-text);
+      letter-spacing: -0.025em;
+      line-height: 1.2;
+      margin: 0;
+    }
+    .customize-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--mc-border);
+      background: var(--mc-paper);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--mc-text-2);
+      flex-shrink: 0;
+    }
+    .customize-btn svg { width: 13px; height: 13px; }
+
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 16px;
+    }
+    .agent-card {
+      border-radius: 18px;
+      border: 0.5px solid var(--mc-border);
+      background: var(--mc-bg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .agent-card__img-area {
+      position: relative;
+      height: 200px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .agent-card__img {
+      width: 200px;
+      height: 200px;
+      object-fit: contain;
+      object-position: bottom center;
+      flex-shrink: 0;
+    }
+    .agent-card__body {
+      padding: 12px 16px 8px;
+      margin-top: -20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      position: relative;
+      z-index: 1;
+    }
+    .agent-card__name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--mc-text);
+      letter-spacing: -0.01em;
+    }
+    .agent-card__desc {
+      font-size: 12px;
+      color: var(--mc-text-2);
+      line-height: 1.5;
+    }
+    .agent-card__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+    .agent-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      color: var(--mc-text-muted);
+      background: rgba(18, 24, 32, 0.05);
+      border: 1px solid var(--mc-border);
+    }
+    .agent-card__footer {
+      padding: 10px 16px 16px;
+    }
+    .agent-card__btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 500;
+      border: 1px solid transparent;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    .agent-card__btn svg { width: 12px; height: 12px; }
+    /* Each label sizes to its own text. Hidden one collapses via max-width + overflow:hidden. */
+    .agent-card__btn-label {
+      display: inline-flex;
+    }
+    .agent-card__btn-label .lbl-add,
+    .agent-card__btn-label .lbl-rem {
+      display: inline-block;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    /* Default (no animation): show Add, hide Remove */
+    .agent-card__btn-label .lbl-add { max-width: 100px; }
+    .agent-card__btn-label .lbl-rem { max-width: 0; }
+
+    /* ============== CHAT THINKING (Background workbench) ============== */
+    .chat-view-mock {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--mc-paper);
+    }
+    .chat-thread-mock--demo {
+      flex: 1;
+      overflow: hidden;
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .chat-group.user { justify-content: flex-end; }
+    .chat-group-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-width: min(720px, 85%);
+    }
+    .chat-group.user .chat-group-messages { align-items: flex-end; }
+    .chat-agent-avatar {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .chat-agent-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .chat-bubble.user {
+      display: inline-block;             /* size to content so right side isn't blank */
+      background: var(--mc-text);
+      color: #e2ddd9;
+      border-radius: 18px;
+      padding: 12px 18px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    /* Emoji reaction — 4 cycling GIFs (240×240 to match chat-view feel) */
+    .emoji-reaction-mock {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      padding: 4px 0 8px 0;
+    }
+    .emoji-reaction-mock .emoji-gif {
+      position: absolute;
+      top: 4px; left: 0;
+      width: 240px;
+      height: 240px;
+      object-fit: contain;
+      border-radius: 8px;
+      opacity: 0;
+    }
+    /* GIF cycling: 4 of them visible in sequence from 5-45% of the cycle */
+    .emoji-gif--search { animation: emoji-cycle-1 12s ease-in-out infinite; }
+    .emoji-gif--book   { animation: emoji-cycle-2 12s ease-in-out infinite; }
+    .emoji-gif--bino   { animation: emoji-cycle-3 12s ease-in-out infinite; }
+    .emoji-gif--map    { animation: emoji-cycle-4 12s ease-in-out infinite; }
+    @keyframes emoji-cycle-1 { 0%, 4%, 14%, 100% { opacity: 0; } 5%, 12% { opacity: 1; } }
+    @keyframes emoji-cycle-2 { 0%, 13%, 23%, 100% { opacity: 0; } 14%, 21% { opacity: 1; } }
+    @keyframes emoji-cycle-3 { 0%, 22%, 32%, 100% { opacity: 0; } 23%, 30% { opacity: 1; } }
+    @keyframes emoji-cycle-4 { 0%, 31%, 41%, 100% { opacity: 0; } 32%, 39% { opacity: 1; } }
+    /* Whole emoji block fades out after cycling */
+    .emoji-reaction-mock { animation: emoji-block-fade 12s ease-in-out infinite; }
+    @keyframes emoji-block-fade {
+      0%, 41% { opacity: 1; max-height: 260px; }
+      44%, 100% { opacity: 0; max-height: 0; padding: 0; overflow: hidden; }
+    }
+
+    /* Thinking panel */
+    .thinking-panel-mock {
+      border-radius: 10px;
+      overflow: hidden;
+      animation: thinking-panel-show 12s ease-in-out infinite;
+      max-height: 0;
+      opacity: 0;
+    }
+    @keyframes thinking-panel-show {
+      0%, 44% { max-height: 0; opacity: 0; }
+      48%, 95% { max-height: 400px; opacity: 1; }
+      100% { max-height: 0; opacity: 0; }
+    }
+    .thinking-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 14px;
+    }
+    .thinking-panel-header .thinking-chevron {
+      color: var(--mc-text-muted);
+      width: 13px; height: 13px;
+      flex-shrink: 0;
+    }
+    .thinking-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--mc-text-2);
+      letter-spacing: 0.02em;
+    }
+    .thinking-duration {
+      font-size: 11px;
+      color: var(--mc-text-muted);
+      background: var(--mc-bg);
+      padding: 1px 7px;
+      border-radius: 10px;
+    }
+    .thinking-body {
+      padding: 4px 16px 10px;
+    }
+    .thinking-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .thinking-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 12.5px;
+      color: var(--mc-text-muted);
+      line-height: 1.65;
+      opacity: 0;
+    }
+    .thinking-step__dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--mc-text-muted);
+      flex-shrink: 0;
+      margin-top: 7px;
+    }
+    .thinking-step__text { flex: 1; }
+
+    /* Each step fades in sequentially */
+    .thinking-step--1 { animation: thinking-step-1 12s ease-in-out infinite; }
+    .thinking-step--2 { animation: thinking-step-2 12s ease-in-out infinite; }
+    .thinking-step--3 { animation: thinking-step-3 12s ease-in-out infinite; }
+    .thinking-step--4 { animation: thinking-step-4 12s ease-in-out infinite; }
+    @keyframes thinking-step-1 { 0%, 48%, 96%, 100% { opacity: 0; } 51%, 92% { opacity: 1; } }
+    @keyframes thinking-step-2 { 0%, 53%, 96%, 100% { opacity: 0; } 56%, 92% { opacity: 1; } }
+    @keyframes thinking-step-3 { 0%, 58%, 96%, 100% { opacity: 0; } 61%, 92% { opacity: 1; } }
+    @keyframes thinking-step-4 { 0%, 63%, 96%, 100% { opacity: 0; } 66%, 92% { opacity: 1; } }
+
+    /* Final result bubble — assistant markdown response, appears after thinking */
+    .chat-bubble--final {
+      background: var(--mc-bg);
+      border: 0.5px solid var(--mc-border);
+      border-radius: 18px;
+      padding: 12px 18px;
+      font-size: 14px;
+      line-height: 1.65;
+      color: var(--mc-text);
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      animation: final-result-show 12s ease-in-out infinite;
+    }
+    .chat-bubble--final p { margin: 0; }
+    .chat-bubble--final p + p { margin-top: 8px; }
+    .chat-bubble--final strong { color: var(--mc-text); font-weight: 600; }
+    @keyframes final-result-show {
+      0%, 70% { max-height: 0; opacity: 0; }
+      74%, 92% { max-height: 600px; opacity: 1; }
+      96%, 100% { max-height: 0; opacity: 0; }
+    }
+
+    /* Phone-auth card (matches original .phone-auth-card) */
+    .phone-auth-card {
+      margin-top: 10px;
+      background: var(--mc-paper);
+      border: 1px solid var(--mc-border);
+      border-radius: 14px;
+      padding: 16px 18px;
+      width: 100%;
+      box-sizing: border-box;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      animation: phone-auth-show 12s ease-in-out infinite;
+    }
+    @keyframes phone-auth-show {
+      0%, 80% { max-height: 0; opacity: 0; }
+      83%, 93% { max-height: 320px; opacity: 1; }
+      96%, 100% { max-height: 0; opacity: 0; }
+    }
+    .phone-auth-card__mascot {
+      display: block;
+      width: 84px;
+      height: 84px;
+      margin: 0 auto 8px;
+      object-fit: contain;
+    }
+    .phone-auth-card__title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--mc-text);
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+    .phone-auth-card__benefits {
+      list-style: none;
+      margin: 0 0 14px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .phone-auth-card__benefits li {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--mc-text-2);
+      line-height: 1.5;
+    }
+    .phone-auth-card__check {
+      flex-shrink: 0;
+      color: var(--mc-text-2);
+    }
+    .phone-auth-card__actions {
+      display: flex;
+      gap: 8px;
+    }
+    .phone-auth-btn {
+      padding: 8px 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .phone-auth-btn--deny {
+      background: #ffffff;
+      color: var(--mc-text-2);
+      border: 0.5px solid var(--mc-border);
+    }
+    .phone-auth-btn--confirm {
+      background: var(--mc-text);
+      color: #fff;
+      border: none;
+    }
+    /* Last (active) step has a pulsing accent dot */
+    .thinking-step--active .thinking-step__dot {
+      background: #e8533a;
+      animation: step-dot-pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes step-dot-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.6); opacity: 0.55; } }
+
+    /* ===== Static end-state (Task-triggered permission) =====
+       Reuses the workbench thread but frozen at its final frame: the result
+       is already out and the thread is pinned to the bottom so scrolling up
+       reveals the phone-auth card as the focus. */
+    .chat-static .chat-thread-mock--demo { justify-content: flex-end; }
+    .chat-static .chat-group { flex-shrink: 0; }
+    /* Drop the pre-result animation phases */
+    .chat-static .emoji-reaction-mock { display: none; }
+    .chat-static .thinking-panel-mock {
+      animation: none;
+      max-height: none;
+      opacity: 1;
+      margin-bottom: 8px;
+    }
+    /* Collapse the thinking panel to a completed "Thought for 3s" header */
+    .chat-static .thinking-body { display: none; }
+    /* Freeze the result + auth card fully open */
+    .chat-static .chat-bubble--final,
+    .chat-static .phone-auth-card {
+      animation: none;
+      max-height: none;
+      opacity: 1;
+      overflow: visible;
+    }
+
+    /* ============== NEW AGENT 10s INTERACTION LOOP ==============
+       Phase markers (% of 10s):
+         0-10  Idle (all cards Add state)
+         10-15 Cursor moves to Growth Hacker; click press
+         15-18 GH card transitions to Added state (opacity 0.65, btn outlined)
+         18-30 Hold
+         30-40 Grid scrolls down -250px to reveal row 2
+         40-45 Cursor moves to Grandmaster; click press
+         45-48 GM card transitions to Added
+         48-78 Hold (both Added visible)
+         78-85 Grid scrolls back to top
+         85-92 Cards reset to Add state
+         92-100 Idle pause */
+
+    /* Whole content scrolls together (topbar + grid) — wrapped in .new-agent-scroll */
+    .app-shell--no-sidebar .new-agent-scroll {
+      animation: agent-grid-scroll 10s ease-in-out infinite;
+    }
+    @keyframes agent-grid-scroll {
+      0%, 30%, 85%, 100% { transform: translateY(0); }
+      40%, 78%           { transform: translateY(-250px); }
+    }
+
+    /* Growth Hacker card → Added at ~15% */
+    .agent-card--gh-anim { animation: card-gh-state 10s ease-in-out infinite; }
+    @keyframes card-gh-state {
+      0%, 13%, 90%, 100% { opacity: 1; }
+      18%, 85%           { opacity: 0.65; }
+    }
+    .agent-card--gh-anim .agent-card__btn { animation: btn-gh-state 10s ease-in-out infinite; }
+    @keyframes btn-gh-state {
+      0%, 13%, 90%, 100% { background: #1a1a1a;    color: #fff;            border-color: transparent; }
+      18%, 85%           { background: transparent; color: var(--mc-text); border-color: var(--mc-border); }
+    }
+    /* Label text swap synced with GH button state */
+    .agent-card--gh-anim .lbl-add { animation: lbl-gh-add 10s steps(1, end) infinite; }
+    .agent-card--gh-anim .lbl-rem { animation: lbl-gh-rem 10s steps(1, end) infinite; }
+    @keyframes lbl-gh-add { 0%, 17.9%, 89.9%, 100% { max-width: 100px; } 18%, 89.89% { max-width: 0; } }
+    @keyframes lbl-gh-rem { 0%, 17.9%, 89.9%, 100% { max-width: 0; } 18%, 89.89% { max-width: 100px; } }
+    /* Icon "+" rotates to "×" when GH is Added */
+    .agent-card--gh-anim .agent-card__btn svg { animation: icon-gh-rotate 10s ease-in-out infinite; transform-origin: center; }
+    @keyframes icon-gh-rotate {
+      0%, 13%, 90%, 100% { transform: rotate(0deg); }
+      18%, 85%           { transform: rotate(45deg); }
+    }
+
+    /* Grandmaster card → Added at ~45% (after scroll) */
+    .agent-card--gm-anim { animation: card-gm-state 10s ease-in-out infinite; }
+    @keyframes card-gm-state {
+      0%, 43%, 90%, 100% { opacity: 1; }
+      48%, 85%           { opacity: 0.65; }
+    }
+    .agent-card--gm-anim .agent-card__btn { animation: btn-gm-state 10s ease-in-out infinite; }
+    @keyframes btn-gm-state {
+      0%, 43%, 90%, 100% { background: #1a1a1a;    color: #fff;            border-color: transparent; }
+      48%, 85%           { background: transparent; color: var(--mc-text); border-color: var(--mc-border); }
+    }
+    /* Label text swap synced with GM button state */
+    .agent-card--gm-anim .lbl-add { animation: lbl-gm-add 10s steps(1, end) infinite; }
+    .agent-card--gm-anim .lbl-rem { animation: lbl-gm-rem 10s steps(1, end) infinite; }
+    @keyframes lbl-gm-add { 0%, 47.9%, 89.9%, 100% { max-width: 100px; } 48%, 89.89% { max-width: 0; } }
+    @keyframes lbl-gm-rem { 0%, 47.9%, 89.9%, 100% { max-width: 0; } 48%, 89.89% { max-width: 100px; } }
+    /* Icon "+" rotates to "×" when GM is Added */
+    .agent-card--gm-anim .agent-card__btn svg { animation: icon-gm-rotate 10s ease-in-out infinite; transform-origin: center; }
+    @keyframes icon-gm-rotate {
+      0%, 43%, 90%, 100% { transform: rotate(0deg); }
+      48%, 85%           { transform: rotate(45deg); }
+    }
+
+    /* Cursor — different tour from Card 02. Scope by app-shell--no-sidebar. */
+    .app-shell.app-shell--no-sidebar .app-cursor {
+      animation: cursor-newagent 10s ease-in-out infinite;
+    }
+    @keyframes cursor-newagent {
+      0%, 8%, 92%, 100% { transform: translate(440px, 680px); }   /* idle bottom-center */
+      14%               { transform: translate(133px, 471px); }   /* hovering GH Add button */
+      16%               { transform: translate(135px, 473px); }   /* click press nudge */
+      20%, 30%          { transform: translate(200px, 510px); }   /* off button, hold */
+      36%, 40%          { transform: translate(360px, 580px); }   /* drifting toward GM area */
+      44%               { transform: translate(387px, 569px); }   /* hovering GM Add button */
+      46%               { transform: translate(389px, 571px); }   /* click press */
+      50%, 78%          { transform: translate(450px, 600px); }   /* hold near GM */
+      85%               { transform: translate(440px, 680px); }   /* back to idle */
+    }
+
+    .app-shell {
+      /* 956 × 760. Chrome:
+         pnav 52 + sidebar 240 + chat 664 = 956w
+         titlebar 44 + body 716 = 760h */
+      width: 956px;
+      height: 760px;
+      max-width: 100%;
+      max-height: 100%;
+      background: #f8f4f1;
+      border: 1px solid var(--mc-border);
+      border-radius: 14px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 52px 240px 1fr;
+      grid-template-rows: 1fr;
+      position: relative;
+      font-family: var(--sans);
+      text-align: left;
+    }
+
+    /* Primary nav rail (52px — icons only, no labels) */
+    .app-pnav {
+      grid-column: 1;
+      background: #efeae7;
+      border-right: 0.5px solid var(--mc-border-row);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .app-pnav-drag { height: 8px; flex-shrink: 0; width: 100%; }
+    .app-pnav-avatar {
+      padding: 6px 0 12px;
+      display: flex;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .app-pnav-avatar-dot {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      position: relative;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 30% 28%, #80e8d8, #40c8f0, #60a0f8);
+      color: rgba(255,255,255,0.88);
+      font-size: 13px;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+    }
+    .app-pnav-items, .app-pnav-utilities {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      width: 100%;
+      padding: 0 4px;
+    }
+    .app-pnav-utilities { padding: 0 4px 14px; }
+    .app-pnav-spacer { flex: 1; }
+    .app-pnav-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 4px;
+      border-radius: 8px;
+      color: var(--mc-text-muted);
+    }
+    .app-pnav-item.active { color: var(--mc-text); }
+    /* Bottom utilities (Phone, Settings) are persistent actions — use normal color (matches commit dddbd07) */
+    .app-pnav-utilities .app-pnav-item { color: var(--mc-text-2); }
+    .app-pnav-item svg { width: 22px; height: 22px; display: block; }
+
+    /* Agent sidebar (240px — single agent variant) */
+    .app-sidebar {
+      grid-column: 2;
+      background: #fdfaf8;
+      border-right: 0.5px solid var(--mc-border-row);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .app-sidebar-drag { height: 8px; flex-shrink: 0; }
+    .app-sidebar-search {
+      margin: 4px 14px 12px;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.045);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--mc-text-muted);
+      flex-shrink: 0;
+    }
+    .app-sidebar-search-icon { width: 14px; height: 14px; flex-shrink: 0; display: grid; place-items: center; color: currentColor; }
+    .app-sidebar-search-icon svg { width: 14px; height: 14px; }
+    .app-sidebar-new {
+      margin: 0 14px 10px;
+      padding: 8px 14px;
+      background: transparent;
+      color: var(--mc-text-2);
+      border: 1px solid var(--mc-border-row);
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 450;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      flex-shrink: 0;
+    }
+    .app-sidebar-section { margin-top: 4px; }
+    .app-sidebar-section-head {
+      /* Match original .side-section__head: padding 6 18 4 → "AGENT" at x=18 (aligns with avatar left edge) */
+      padding: 6px 18px 4px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--mc-text-muted);
+    }
+    .app-sidebar-list {
+      padding: 0 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .app-agent-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      position: relative;
+    }
+    .app-agent-row.selected { background: rgba(0,0,0,0.05); }
+    .app-agent-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      overflow: hidden;
+      background: #ddd;
+    }
+    .app-agent-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .app-agent-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+    .app-agent-name {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--mc-text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 1.3;
+    }
+    .app-agent-desc {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--mc-text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 1.3;
+    }
+
+    /* Projects nested under an agent.
+       Once work is running, the thing the user is looking at is the PROJECT,
+       not the agent that owns it — so the selected background moves down onto
+       the project row and the agent row above it reverts to plain context.
+       Highlighting the agent instead would claim "you are viewing MicroClaw"
+       when the user is actually viewing one specific piece of its work. */
+    .app-project-list {
+      display: flex;
+      flex-direction: column;
+      padding: 2px 0 2px;
+    }
+    .app-project-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      /* Highlight left edge lines up with the agent row / "Agent" label (x=18):
+         margin-left 10 + list padding 8 = 18. The extra left padding (26) keeps
+         the label itself sitting under the agent name, so only the selected
+         background extends leftward, not the text. */
+      margin-left: 10px;
+      padding: 7px 10px 7px 26px;
+      border-radius: 8px;
+      min-width: 0;
+    }
+    .app-project-row.selected { background: rgba(0,0,0,0.05); }
+    .app-project-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      color: var(--mc-text-2);
+    }
+    .app-project-icon svg { width: 15px; height: 15px; display: block; }
+    .app-project-name {
+      flex: 1;
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--mc-text-2);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 1.3;
+    }
+    .app-project-row.selected .app-project-name { color: var(--mc-text); font-weight: 500; }
+
+    /* Main content column */
+    .app-main {
+      grid-column: 3;
+      background: var(--mc-paper);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      position: relative;
+    }
+    .app-titlebar {
+      height: 44px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-left: 28px;
+      border-bottom: 1px solid var(--mc-border-lt);
+      background: var(--mc-paper);
+    }
+    .app-titlebar-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--mc-text);
+      letter-spacing: -0.01em;
+    }
+    .app-titlebar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .app-titlebar-back {
+      width: 26px;
+      height: 26px;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      color: var(--mc-text-2);
+    }
+    .app-titlebar-back svg { width: 14px; height: 14px; }
+    .app-titlebar-controls { display: flex; align-items: stretch; height: 44px; }
+    .win-btn {
+      width: 46px;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      color: var(--mc-text-2);
+    }
+    .win-btn svg { width: 10px; height: 10px; }
+    .win-btn--close-icon line { stroke-width: 1.2; }
+
+    /* Body wrapping ChatView */
+    .app-main-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .chat-thread-mock {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 48px 0;
+      overflow: hidden;
+    }
+    .scenario-heading {
+      text-align: center;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--mc-text);
+      letter-spacing: -0.02em;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+    .scenario-subheading {
+      text-align: center;
+      font-size: 15px;
+      color: var(--mc-text-2);
+      font-weight: 500;
+      margin-bottom: 48px;
+    }
+    .fan-container {
+      position: relative;
+      width: 100%;
+      max-width: 700px;
+      height: 380px;
+      flex-shrink: 0;
+    }
+    .fan-slot {
+      position: absolute;
+      left: 50%;
+      bottom: 40px;
+      margin-left: -130px;
+      width: 260px;
+      height: 340px;
+      border-radius: 24px;
+      overflow: hidden;
+      transform-origin: center bottom;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.11), 0 1px 4px rgba(0, 0, 0, 0.06);
+      cursor: pointer;            /* real mouse turns into a hand on card */
+    }
+    .fan-slot--news   { transform: translateX(55px) rotate(12deg);    z-index: 3; background: #edeae2; }
+    .fan-slot--email  { transform: rotate(0deg);                       z-index: 2; background: #f0e8da; }
+    .fan-slot--travel { transform: translateX(-55px) rotate(-12deg); z-index: 1; background: #eceae8; }
+
+    /* Scenario cards: 8s cycle — rest → news → email → travel → rest */
+    .scenario-mock-inner .fan-slot--news   { animation: fan-lift-news   8s ease-in-out infinite; }
+    .scenario-mock-inner .fan-slot--email  { animation: fan-lift-email  8s ease-in-out infinite; }
+    .scenario-mock-inner .fan-slot--travel { animation: fan-lift-travel 8s ease-in-out infinite; }
+
+    /* Cards lift as soon as cursor enters their bounding area (geometric reverse from cursor-tour timing),
+       stay lifted while cursor is over them, press briefly at click moment, then release when cursor leaves. */
+    @keyframes fan-lift-news {
+      0%, 1%, 49%, 100% { transform: translateX(55px) rotate(12deg) translateY(0); z-index: 3; box-shadow: 0 4px 20px rgba(0,0,0,0.11), 0 1px 4px rgba(0,0,0,0.06); }
+      5%, 22%           { transform: translateX(55px) rotate(12deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
+      24%               { transform: translateX(55px) rotate(12deg) translateY(-30px) scale(0.97); z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
+      25%, 44%          { transform: translateX(55px) rotate(12deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
+    }
+    @keyframes fan-lift-email {
+      0%, 44%, 67%, 100% { transform: rotate(0deg) translateY(0); z-index: 2; box-shadow: 0 4px 20px rgba(0,0,0,0.11), 0 1px 4px rgba(0,0,0,0.06); }
+      47%                { transform: rotate(0deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
+      49%                { transform: rotate(0deg) translateY(-30px) scale(0.97); z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
+      50%, 63%           { transform: rotate(0deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
+    }
+    @keyframes fan-lift-travel {
+      0%, 67%, 88%, 100% { transform: translateX(-55px) rotate(-12deg) translateY(0); z-index: 1; box-shadow: 0 4px 20px rgba(0,0,0,0.11), 0 1px 4px rgba(0,0,0,0.06); }
+      70%                { transform: translateX(-55px) rotate(-12deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
+      74%                { transform: translateX(-55px) rotate(-12deg) translateY(-30px) scale(0.97); z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
+      75%, 83%           { transform: translateX(-55px) rotate(-12deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
+    }
+
+    /* Cursor for the interactive demo */
+    .app-cursor {
+      position: absolute;
+      width: 24px; height: 28px;
+      pointer-events: none;
+      z-index: 200;
+      left: 0; top: 0;
+      animation: cursor-tour 8s ease-in-out infinite;
+    }
+    .app-cursor svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25)); }
+    @keyframes cursor-tour {
+      /* Coords within 956 × 760 app-shell. main col=664, fan-container center x≈624, cards ±55, all shifted -8 from previous 972 layout */
+      0%, 100%   { transform: translate(632px, 600px); }   /* idle over input */
+      18%, 35%   { transform: translate(637px, 240px); }   /* News upper area (safe — top card) */
+      45%, 60%   { transform: translate(547px, 270px); }   /* Email exposed left strip */
+      70%, 85%   { transform: translate(457px, 275px); }   /* Travel exposed leftmost strip */
+    }
+
+    .fan-body {
+      position: absolute;
+      top: 22px;
+      left: 20px;
+      max-width: 60%;
+      z-index: 2;
+    }
+    .fan-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--mc-text);
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    .fan-desc {
+      font-size: 11px;
+      color: var(--mc-text-2);
+      line-height: 1.55;
+    }
+    .fan-img-area {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 68%;
+      overflow: visible;
+    }
+    .fan-slot::before {
+      content: "";
+      position: absolute;
+      left: 0; right: 0;
+      bottom: 48%;
+      height: 110px;
+      background: linear-gradient(to bottom, var(--card-bg, #edeae2) 20%, transparent 100%);
+      z-index: 1;
+      pointer-events: none;
+    }
+    .fan-slot--news   { --card-bg: #edeae2; }
+    .fan-slot--email  { --card-bg: #f0e8da; }
+    .fan-slot--travel { --card-bg: #eceae8; }
+    .fan-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: bottom center;
+      display: block;
+    }
+
+    /* ============== PROMPT SCAFFOLDING ============== */
+    .prompt-mock-inner .fan-container {
+      flex: 1;
+      transform: scale(0.78);
+      transform-origin: center bottom;
+      margin-top: -6px;
+    }
+
+    /* Prompt scaffolding: cycling "selected" highlight (subtle ring) instead of full lift */
+    .prompt-mock-inner .fan-slot::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 18px;
+      box-shadow: 0 0 0 0 rgba(162,90,2,0);
+      opacity: 0;
+      pointer-events: none;
+      transition: none;
+    }
+    .prompt-mock-inner .fan-slot--news::after   { animation: prompt-select 6s ease-in-out infinite; }
+    .prompt-mock-inner .fan-slot--email::after  { animation: prompt-select 6s ease-in-out infinite; animation-delay: -4s; }
+    .prompt-mock-inner .fan-slot--travel::after { animation: prompt-select 6s ease-in-out infinite; animation-delay: -2s; }
+
+    @keyframes prompt-select {
+      0%, 30%, 100% { opacity: 0; box-shadow: 0 0 0 0 rgba(162,90,2,0); }
+      5%, 25%       { opacity: 1; box-shadow: 0 0 0 3px rgba(162,90,2,0.45); }
+    }
+
+    /* Slight scale bump on the selected card */
+    .prompt-mock-inner .fan-slot--news   { animation: prompt-scale-news   6s ease-in-out infinite; }
+    .prompt-mock-inner .fan-slot--email  { animation: prompt-scale-email  6s ease-in-out infinite; animation-delay: -4s; }
+    .prompt-mock-inner .fan-slot--travel { animation: prompt-scale-travel 6s ease-in-out infinite; animation-delay: -2s; }
+
+    @keyframes prompt-scale-news {
+      0%, 30%, 100% { transform: translateX(36px) rotate(12deg) scale(1); z-index: 3; }
+      8%, 22%       { transform: translateX(36px) rotate(12deg) scale(1.06); z-index: 100; }
+    }
+    @keyframes prompt-scale-email {
+      0%, 30%, 100% { transform: rotate(0deg) scale(1); z-index: 2; }
+      8%, 22%       { transform: rotate(0deg) scale(1.06); z-index: 100; }
+    }
+    @keyframes prompt-scale-travel {
+      0%, 30%, 100% { transform: translateX(-36px) rotate(-12deg) scale(1); z-index: 1; }
+      8%, 22%       { transform: translateX(-36px) rotate(-12deg) scale(1.06); z-index: 100; }
+    }
+
+    /* Compose area (matches ChatView.vue .chat-compose) */
+    .chat-compose {
+      flex-shrink: 0;
+      padding: 0 28px 18px;
+    }
+    .compose-wrapper {
+      display: flex;
+      flex-direction: column;
+      background: var(--mc-paper);
+      border: 0.5px solid var(--mc-border);
+      border-radius: 20px;
+      padding: 8px 16px;
+      /* Vertical 8+8=16 gives wrapper outer 108 at 2-line state
+         (8 + 52 input-row + 40 button + 8 = 108) */
+    }
+    .compose-input-row {
+      box-sizing: border-box;    /* match original — min-height includes padding */
+      position: relative;
+      min-height: 52px;          /* fits 2 lines @ 15px / lh 1.6 (≈48) + padding 16 = 52 */
+      padding: 4px 0 12px;
+      line-height: 1.6;
+      font-size: 15px;
+      color: var(--mc-text);
+    }
+    .compose-input-row .compose-placeholder,
+    .compose-input-row .chat-prompt {
+      display: block;
+      white-space: normal;       /* allow wrap */
+      word-break: break-word;
+    }
+    .compose-input-row .compose-placeholder {
+      color: var(--mc-text-muted);
+    }
+    /* Stacked cycling prompts (Prompt scaffolding) */
+    .compose-input-row.cycling {
+      position: relative;
+    }
+    .compose-input-row.cycling .chat-prompt {
+      position: absolute;
+      left: 0; right: 0;
+      top: 4px;
+      opacity: 0;
+    }
+    /* 8s loop synced with fan-lift keyframes: each prompt visible while its card is lifted.
+       Indexes are 2/3/4 because nth-child(1) is the .compose-placeholder rest text. */
+    .compose-input-row.cycling .chat-prompt:nth-child(2) { animation: chat-prompt-news   8s ease-in-out infinite; }
+    .compose-input-row.cycling .chat-prompt:nth-child(3) { animation: chat-prompt-email  8s ease-in-out infinite; }
+    .compose-input-row.cycling .chat-prompt:nth-child(4) { animation: chat-prompt-travel 8s ease-in-out infinite; }
+    /* Prompt appears at click moment (24% / 49% / 74%), not at hover */
+    @keyframes chat-prompt-news   { 0%, 23%, 38%, 100% { opacity: 0; } 25%, 33% { opacity: 1; } }
+    @keyframes chat-prompt-email  { 0%, 48%, 63%, 100% { opacity: 0; } 50%, 58% { opacity: 1; } }
+    @keyframes chat-prompt-travel { 0%, 73%, 88%, 100% { opacity: 0; } 75%, 83% { opacity: 1; } }
+    .compose-placeholder.cycling-rest {
+      animation: chat-rest-show 8s ease-in-out infinite;
+    }
+    @keyframes chat-rest-show {
+      0%, 8%, 92%, 100% { opacity: 1; }
+      14%, 87%          { opacity: 0; }
+    }
+
+    .compose-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .compose-bottom__left {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .compose-bottom__right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .compose-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      color: var(--mc-text-2);
+      display: grid;
+      place-items: center;
+    }
+    .compose-icon svg { width: 18px; height: 18px; }
+    .compose-model {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      height: 30px;
+      padding: 0 8px;
+      border-radius: 8px;
+      color: var(--mc-text-2);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: -0.005em;
+    }
+    .compose-model svg { width: 12px; height: 12px; }
+    .compose-send {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--mc-border);
+      color: var(--mc-text-muted);
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      transition: background 0.15s, color 0.15s;
+    }
+    .compose-send.active {
+      background: var(--mc-text);
+      color: #fff;
+    }
+    .compose-send svg { width: 16px; height: 16px; }
+    /* Animate the send button's active state in sync with the prompt cycle */
+    .compose-send.cycling { animation: compose-send-cycle 8s ease-in-out infinite; }
+    @keyframes compose-send-cycle {
+      0%, 23%, 38%, 48%, 63%, 73%, 88%, 100% { background: var(--mc-border); color: var(--mc-text-muted); }
+      25%, 33%, 50%, 58%, 75%, 83%           { background: var(--mc-text);   color: #fff; }
+    }
+
+    /* ============== TRUST LADDER CHART ============== */
+    .trust-ladder-chart {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 16px;
+      text-align: left;
+    }
+
+    .trust-ladder-title {
+      color: var(--accent);
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .trust-ladder-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      height: 100%;
+    }
+
+    .trust-ladder-axis {
+      display: grid;
+      gap: 4px;
+      align-content: stretch;
+      grid-auto-rows: minmax(0, 1fr);
+    }
+
+    .trust-axis-label {
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 10.5px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .trust-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      border-radius: 4px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 11.5px;
+      line-height: 1.2;
+      font-weight: 500;
+    }
+
+    .trust-step-index {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      background: var(--accent);
+      color: var(--paper);
+      font-family: var(--mono);
+      font-size: 9.5px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ============== IMPACT ============== */
+    .impact-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+    }
+
+    .impact-card {
+      display: grid;
+      grid-template-columns: 56px 1fr;
+      gap: 32px;
+      padding: 28px 28px;
+      border-bottom: 1px solid var(--line);
+      transition: 120ms ease;
+      align-items: start;
+    }
+    .impact-card:last-child { border-bottom: 0; }
+    .impact-card:hover { background: var(--bg); }
+
+    .impact-card::before {
+      content: counter(impact, decimal-leading-zero);
+      counter-increment: impact;
+      color: var(--muted-2);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      padding-top: 3px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .impact-grid { counter-reset: impact; }
+
+    .impact-card-content {
+      display: grid;
+      gap: 6px;
+    }
+
+    .impact-card strong {
+      display: block;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.015em;
+      color: var(--ink);
+      line-height: 1.32;
+    }
+
+    .impact-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.6;
+    }
+
+    /* ============== REFLECTION ============== */
+    .reflection-section { border-bottom: 0; padding-bottom: 32px; }
+
+    .quote {
+      font-size: clamp(22px, 2.8vw, 32px);
+      line-height: 1.32;
+      letter-spacing: -0.022em;
+      color: var(--ink);
+      font-weight: 500;
+      padding: 8px 0 0;
+    }
+
+    .quote span {
+      display: block;
+      color: var(--muted);
+      font-weight: 400;
+      margin-top: 6px;
+    }
+
+    .quote .reflection-support {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      font-size: 14.5px;
+      letter-spacing: 0;
+      line-height: 1.62;
+      max-width: 760px;
+      font-weight: 400;
+    }
+
+    /* ============== FOOTER STRIP ============== */
+    .footer-strip {
+      margin-top: 64px;
+      padding: 32px 0 0;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ============== RESPONSIVE ============== */
+    @media (max-width: 1080px) {
+      .app, .app.nav-collapsed { grid-template-columns: 1fr; }
+      .side, .app.nav-collapsed .side { position: relative; height: auto; padding: 22px 24px; border-right: 0; border-bottom: 1px solid var(--line); flex-direction: row; align-items: center; gap: 16px; }
+      .side-toggle, .collapsed-label, .side-footer { display: none !important; }
+      .app.nav-collapsed .side-content { pointer-events: auto; opacity: 1; transform: none; }
+      .side-content { flex-direction: row; align-items: center; gap: 24px; flex-wrap: wrap; }
+      .side h1 { font-size: 16px; margin: 0; }
+      .side p { display: none; }
+      .side-kicker { display: none; }
+      .nav { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); display: grid; grid-auto-flow: column; grid-auto-columns: max-content; }
+      .nav-label { display: none; }
+      .nav a { padding: 6px 10px; }
+      .nav a::before { display: none; }
+      .section { grid-template-columns: 1fr; gap: 28px; padding: 56px 0; }
+      .section-intro { position: relative; top: auto; }
+      .break-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .break-card { border-right: 0; border-bottom: 1px solid var(--line); }
+      .break-card:nth-child(odd) { border-right: 1px solid var(--line); }
+      .break-card:nth-last-child(-n+2) { border-bottom: 0; }
+      .role-grid { grid-template-columns: 1fr; }
+      .role-card { border-right: 0; border-bottom: 1px solid var(--line); }
+      .role-card:last-child { border-bottom: 0; }
+      .hero-meta { grid-template-columns: repeat(2, 1fr); gap: 20px 0; }
+      .hero-meta-cell:nth-child(2n) { border-right: 0; }
+    }
+
+    @media (max-width: 900px) {
+      .relation-map { grid-template-columns: 1fr; min-height: auto; }
+      .map-column, .capability-column { grid-template-rows: auto; }
+      .map-center, .map-svg { display: none; }
+      .map-caption strong { min-width: 84px; }
+    }
+
+    @media (max-width: 700px) {
+      main { padding: 28px 18px 64px; }
+      .hero { min-height: auto; padding-bottom: 48px; }
+      .hero-meta { grid-template-columns: 1fr; }
+      .hero-meta-cell { border-right: 0; padding: 0; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+      .hero-meta-cell:last-child { border-bottom: 0; padding-bottom: 0; }
+      .break-grid { grid-template-columns: 1fr; }
+      .break-card { border-right: 0 !important; border-bottom: 1px solid var(--line); }
+      .break-card:last-child { border-bottom: 0; }
+      .experience-visual-placeholder { }
+      .visual-state { grid-template-columns: 1fr; }
+      .visual-media-box { border-right: 0; border-bottom: 1px solid var(--line); }
+      .impact-card { grid-template-columns: 1fr; gap: 8px; padding: 22px 18px; }
+      .hero-title { font-size: 44px; }
+    }
+
+    /* ============================================================
+       STEPS EMBED — the five journey steps, fully expanded, one
+       staging canvas per step. No outer card shell (the case-study
+       page already provides the frame) and no deck chrome, so the
+       iframe never reads as shell-in-shell.
+       ============================================================ */
+    html, body { background: transparent; }
+    body { padding: 0; margin: 0; }
+    #root { padding: 4px clamp(4px, 2vw, 18px) 10px; }
+
+    .steps {
+      max-width: 980px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 64px;
+    }
+    .step-head {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .step-num {
+      font-family: var(--mono, monospace);
+      font-size: 12px;
+      letter-spacing: .08em;
+      color: var(--muted-2, #9a9a9a);
+      font-weight: 500;
+    }
+    .step-title {
+      font-family: var(--sans);
+      font-size: 20px;
+      line-height: 1.2;
+      font-weight: 600;
+      color: var(--ink, #18181b);
+      margin: 0;
+      letter-spacing: -0.01em;
+    }
+    /* One plain white frame per step — no grid backdrop. The mock
+       fills the frame edge-to-edge (like the console step), so the
+       frame's own hairline is the single border, never a shell in a
+       shell. */
+    .vstage {
+      aspect-ratio: 4 / 3;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #fff;
+      display: grid;
+      place-items: stretch;
+      padding: 0;
+    }
+    .vstage > * { width: 100%; height: 100%; }
+    /* App-shell mocks: drop their own border/radius so only the
+       frame's border shows, and let them fill the frame. */
+    .vstage .app-shell {
+      width: 100%;
+      height: 100%;
+      max-width: none;
+      max-height: none;
+      border: 0;
+      border-radius: 0;
+    }
+    .vstage:has(.install-dual) { aspect-ratio: 29 / 14; }
+    /* Step 04 — the expert gallery: six real portraits, three per row,
+       two rows fully visible. Compact, square image area (matching the
+       original 1:1 ratio + bottom-anchored position), no auto-scroll. */
+    .vstage:has(.app-shell--no-sidebar) { aspect-ratio: 5 / 4; }
+    .vstage:has(.app-shell--no-sidebar) .new-agent-view { padding: 18px 22px 20px; }
+    .vstage:has(.app-shell--no-sidebar) .new-agent-topbar { margin-bottom: 16px; }
+    .vstage:has(.app-shell--no-sidebar) .new-agent-scroll { animation: none; }
+    .vstage:has(.app-shell--no-sidebar) .agent-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .vstage:has(.app-shell--no-sidebar) .agent-card__img-area { height: 104px; }
+    .vstage:has(.app-shell--no-sidebar) .agent-card__img { width: 104px; height: 104px; }
+    .vstage:has(.app-shell--no-sidebar) .agent-card { border-radius: 14px; }
+    .vstage:has(.app-shell--no-sidebar) .agent-card__body { margin-top: -10px; padding: 6px 14px 2px; gap: 3px; }
+    .vstage:has(.app-shell--no-sidebar) .agent-card__name { font-size: 13.5px; }
+    .vstage:has(.app-shell--no-sidebar) .agent-card__desc { font-size: 11px; line-height: 1.45; }
+    .vstage:has(.app-shell--no-sidebar) .agent-card__tags { gap: 4px; margin-top: 6px; }
+    .vstage:has(.app-shell--no-sidebar) .agent-tag { font-size: 10px; padding: 1.5px 7px; }
+    .vstage:has(.app-shell--no-sidebar) .agent-card__footer { padding: 8px 14px 14px; }
+    .vstage:has(.app-shell--no-sidebar) .agent-card__btn { font-size: 11px; padding: 5px 12px; }
+    .vstage:has(.app-shell--no-sidebar) .agent-card__btn svg { width: 10px; height: 10px; }
+    /* Step 05 — the console is a full app; plain frame, let the
+       embedded prototype fill it. */
+    .vstage--console {
+      aspect-ratio: auto;
+      height: 640px;
+      padding: 0;
+      background: #fff;
+      display: block;
+    }
+    .console-embed {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+    .step-cap {
+      margin: 14px 2px 0;
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--muted, #71717a);
+      max-width: 760px;
+    }
+
+    /* Solo mode (?only=N): render one bare, live stage so a card in the
+       case-study page can embed it in place of a static screenshot. The
+       card already supplies the frame, so the stage drops its own border
+       and the root loses its padding — the mock fills edge-to-edge. */
+    .steps--solo { gap: 0; max-width: none; margin: 0; }
+    .steps--solo .vstage { border: 0; border-radius: 0; }
+    #root:has(.steps--solo) { padding: 0; }
+
+    @media (max-width: 640px) {
+      .steps { gap: 48px; }
+      .vstage { aspect-ratio: 3 / 4; }
+      .vstage:has(.install-dual) { aspect-ratio: 1 / 1; }
+      .vstage--console { height: 520px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="vendor/react.production.min.js"></script>
+  <script src="vendor/react-dom.production.min.js"></script>
+  <script src="vendor/babel.min.js"></script>
+
+  <script type="text/babel">
+    const nav = [
+      ["overview", "01", "Overview"],
+      ["challenge", "02", "Challenge"],
+      ["frame", "03", "Core Frame"],
+      ["experience", "04", "Final Experience"],
+      ["impact", "05", "Impact"],
+      ["reflection", "06", "Reflection"],
+    ];
+
+    const challengeBreaks = [
+      ["Setup friction", "Users may lose confidence before they reach value."],
+      ["Category confusion", "Users do not know whether this is a chatbot, assistant, automation tool, or agent system."],
+      ["Empty-prompt paralysis", "A blank input asks novices to invent the right task before they understand the product."],
+      ["Weak repeat-use habit", "A first experiment does not become adoption unless the product creates relevance and trust over time."],
+    ];
+
+    const journey = [
+      { id: "install", title: "Quick Install", belief: "I can install it", desc: "Users need to feel setup is guided, recoverable, and not technically intimidating." },
+      { id: "orientation", title: "Orientation", belief: "I know what it is", desc: "Users need a simple mental model before seeing system complexity." },
+      { id: "win", title: "First Win", belief: "I can use it successfully", desc: "Users need one concrete task to succeed before confidence can form." },
+      { id: "relevance", title: "Personal Relevance", belief: "It is useful for me", desc: "Users need to connect the product to their own goals, contexts, and routines." },
+      { id: "repeat", title: "Trust & Repeat", belief: "I can trust and reuse it", desc: "Users need clear boundaries around memory, permissions, and autonomy." },
+    ];
+
+    const system = [
+      { id: "onboarding", title: "Onboarding / setup layer", desc: "Guides installation, setup, and first understanding." },
+      { id: "templates", title: "Task templates", desc: "Turns abstract capability into concrete starting points." },
+      { id: "tools", title: "Tool execution", desc: "Lets the agent act, not just answer." },
+      { id: "memory", title: "Memory", desc: "Creates continuity and reduces repeated explanation." },
+      { id: "permission", title: "Permission model", desc: "Defines what the system can access or do." },
+      { id: "heartbeat", title: "Heartbeat / proactive tasks", desc: "Supports proactive checks and recurring tasks." },
+      { id: "subagents", title: "Subagents", desc: "Delegates complex work into focused background agents." },
+    ];
+
+    const capabilityLinks = [
+      ["install", "onboarding"],
+      ["install", "permission"],
+      ["orientation", "onboarding"],
+      ["orientation", "templates"],
+      ["orientation", "memory"],
+      ["win", "templates"],
+      ["win", "tools"],
+      ["win", "permission"],
+      ["win", "subagents"],
+      ["relevance", "templates"],
+      ["relevance", "tools"],
+      ["relevance", "memory"],
+      ["relevance", "heartbeat"],
+      ["relevance", "subagents"],
+      ["repeat", "memory"],
+      ["repeat", "permission"],
+      ["repeat", "heartbeat"],
+      ["repeat", "subagents"],
+    ];
+
+    const linkNotes = {
+      install: "Setup and permission design make the first technical step feel safe and recoverable.",
+      orientation: "Templates and onboarding turn agentic AI from a vague category into understandable use cases.",
+      win: "Templates, tools, and confirmations help users complete one real task without losing control.",
+      relevance: "Memory, tools, and proactive patterns connect the system to personal routines and repeated value.",
+      repeat: "Long-term trust comes from remembered context, clear boundaries, and restrained proactivity."
+    };
+
+    const experiences = [
+      {
+        title: "One-step install with deferred decisions",
+        belief: "I can install it",
+        why: "Installation is the first trust test. By deferring complexity and avoiding heavy upfront decisions, the experience helps novice users complete one clear action before they encounter advanced settings, disclosures, or task-specific permissions.",
+        emotion: "The avatar turns installation into a welcoming moment, then uses playful identity shifts during progress to make waiting feel meaningful and to hint at the range of tasks MicroClaw can support.",
+        decision: "Turn installation from a technical barrier into a lightweight first success by deferring complexity.",
+        visualStates: [
+          {
+            title: "One-step install state",
+            copy: "A celebratory avatar frames installation as one clear action. Advanced settings, disclosures, and task-specific permissions are deferred, so users can **complete the first install before facing heavier decisions**.",
+          },
+          {
+            title: "Meaningful progress state",
+            copy: "A visual installation process combines progress feedback, value messages, and playful avatar identity shifts, **turning waiting time into a moment of reassurance and discovery**.",
+          },
+        ],
+        capabilities: [],
+      },
+      {
+        title: "Scenario-to-first-win flow",
+        belief: "I know what it is → I can use it successfully",
+        why: "Novice users should not have to understand agents or master prompt writing before seeing value. Familiar scenarios create orientation, while editable prompt scaffolds teach users how to ask before the task begins.",
+        emotion: "Collage illustrations make abstract agent capabilities feel concrete and approachable, reducing the pressure of choosing where to start.",
+        decision: "Turn scenarios into first wins before asking users to master prompts.",
+        visualStates: [
+          {
+            title: "Scenario cards",
+            copy: "Large collage-style task cards turn abstract agent capabilities into concrete, approachable starting points **before users face an empty prompt**.",
+          },
+          {
+            title: "Prompt scaffolding",
+            copy: "Selecting a task card **fills the input with an editable prompt**. Switching cards updates the prompt, and users can revise or add context before sending.",
+          },
+        ],
+        capabilities: [],
+      },
+      {
+        title: "System metaphors for invisible agent states",
+        belief: "It is useful for me",
+        why: "Novice users do not need to understand skills, permissions, sandboxes, or subagents in technical terms. They need visible metaphors that explain what the agent can do, where it is working, and when it is crossing a boundary.",
+        emotion: "Avatars, spaces, and expert identities make complex system behavior feel concrete, approachable, and safe to interpret.",
+        decision: "Use familiar metaphors — expert roles, safe spaces, and workbenches — to make agentic systems understandable without exposing technical architecture.",
+        visualStates: [
+          {
+            title: "Expert identities for agent skills",
+            copy: "Expert roles help users understand MicroClaw’s skills through familiar social entry points instead of abstract capability lists.",
+          },
+          {
+            title: "Safe zone vs. outside zone",
+            copy: "The avatar’s workspace shows what can happen safely inside the system. Crossing into files, accounts, phone, or external actions becomes a visible boundary that requires user trust.",
+          },
+          {
+            title: "Background workbench",
+            copy: "When the agent is checking, organizing, or delegating work to helpers, the task appears in a visible workspace instead of disappearing into the background.",
+          },
+        ],
+        capabilities: [],
+      },
+      {
+        title: "Progressive trust controls",
+        belief: "I can stay in control",
+        why: "Users are more likely to grant access when the request appears after a clear task need, not before they understand the value.",
+        emotion: "Avatar stickers make permission requests feel benefit-led by showing what access enables.",
+        decision: "Ask for trust at the moment of need, not at the moment of curiosity.",
+        visualStates: [
+          {
+            title: "Task-triggered permission",
+            copy: "Permission appears only after a task creates a clear need.",
+          },
+          {
+            title: "Benefit preview sticker",
+            copy: "Avatar sticker shows the future benefit before asking for access.",
+          },
+          {
+            title: "Permission × autonomy ladder",
+            copy: "Access and action levels increase gradually as risk grows. As access and action risk increase, users need stronger visibility, confirmation, and recovery controls.",
+          },
+        ],
+        capabilities: [],
+      },
+      {
+        title: "Recoverable limits and failure states",
+        belief: "I can trust and reuse it",
+        why: "Trust is not only built when things work. It is also built when the system reaches a limit, loses access, or cannot complete a task. The user needs to understand what happened and what can still be done.",
+        emotion: "The emotional layer softens breakdowns with repair-oriented states, making errors feel temporary, understandable, and recoverable instead of like a system failure.",
+        decision: "Turn breakdowns into clear recovery paths instead of dead ends.",
+        visualStates: [
+          {
+            title: "Limit reached",
+            copy: "A token, usage, or service limit is shown as a recoverable state with a plain-language explanation and a clear next step.",
+          },
+          {
+            title: "Recovery path",
+            copy: "The system offers retry, adjust scope, wait, undo, or continue-later options so users can recover without losing confidence or control.",
+          },
+        ],
+        capabilities: [],
+      },
+      {
+        title: "Ambient habit loops",
+        belief: "I can trust and reuse it",
+        why: "Habits form when help is easy to recall in the moment of need. Ambient entry points reduce the cost of starting again and turn saved workflows into everyday assistance.",
+        emotion: "Friendly hover tips, desktop presence, and gentle reminders make proactive help feel lightweight rather than intrusive.",
+        decision: "Make repeat use ambient by placing MicroClaw where user intent naturally appears.",
+        visualStates: [
+          {
+            title: "Desktop companion entry",
+            copy: "A lightweight desktop entry keeps MicroClaw available without demanding attention. Hover tips offer friendly prompts when the user may need help.",
+          },
+          {
+            title: "Contextual file actions",
+            copy: "Right-click actions and drag-to-agent affordances let users invoke MicroClaw from the file or object they are already working with.",
+          },
+          {
+            title: "Saved experts and gentle reminders",
+            copy: "Successful workflows can become reusable expert agents, while reminders tied to saved workflows bring help back at the right time.",
+          },
+        ],
+        capabilities: [],
+      },
+    ];
+
+    const impacts = [
+      ["Turned an early concept into a buildable prototype within 4 days", "Created an interactive prototype, clarified the design–engineering collaboration model, and established an AI-assisted animation workflow for faster motion exploration."],
+      ["Defined a novice adoption model for agentic AI", "Reframed the experience from installing an AI tool to a staged journey from setup confidence, to first win, to trust and repeat use."],
+      ["Created a progressive trust framework", "Connected permission scope, autonomy level, visibility, reversibility, and duration into a clearer model for agentic trust controls."],
+      ["Reduced conceptual complexity through emotional system metaphors", "Used avatars, expert identities, safe spaces, and workbenches to make invisible system behavior easier for novice users to understand."],
+      ["Extended repeat use into ambient workflow entry points", "Designed desktop presence, contextual file actions, saved experts, and gentle reminders to bring MicroClaw back at the moment of need."],
+    ];
+
+    function ConfettiBurst({ originX = 0.5, originY = 0.35, interval = 4000, delay = 900 }) {
+      const canvasRef = React.useRef(null);
+      React.useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        const colors = ["#e8533a", "#f5a623", "#4cd964", "#5ac8fa", "#af52de", "#ff2d55", "#ffcc00", "#34aadc"];
+        let particles = [];
+        let rafId = null;
+
+        function resize() {
+          canvas.width = canvas.offsetWidth;
+          canvas.height = canvas.offsetHeight;
+        }
+        resize();
+        const ro = new ResizeObserver(resize);
+        ro.observe(canvas);
+
+        function launch() {
+          const cx = canvas.width * originX;
+          const cy = canvas.height * originY;
+          for (let i = 0; i < 90; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 2 + Math.random() * 4;
+            particles.push({
+              x: cx, y: cy,
+              vx: Math.cos(angle) * speed,
+              vy: Math.sin(angle) * speed - 1.5,
+              w: 5 + Math.random() * 5,
+              h: 2.5 + Math.random() * 3.5,
+              color: colors[Math.floor(Math.random() * colors.length)],
+              angle: Math.random() * Math.PI * 2,
+              spin: (Math.random() - 0.5) * 0.15,
+              alpha: 1,
+              decay: 0.006 + Math.random() * 0.004,
+              driftFreq: 0.02 + Math.random() * 0.02,
+              driftAmp: 0.3 + Math.random() * 0.5,
+              driftT: Math.random() * Math.PI * 2,
+            });
+          }
+          if (!rafId) rafId = requestAnimationFrame(draw);
+        }
+
+        function draw() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          let alive = false;
+          for (const p of particles) {
+            if (p.alpha <= 0) continue;
+            alive = true;
+            p.vy += 0.035;
+            p.vy *= 0.99;
+            p.vx *= 0.995;
+            p.driftT += p.driftFreq;
+            p.x += p.vx + Math.sin(p.driftT) * p.driftAmp;
+            p.y += p.vy;
+            p.angle += p.spin;
+            p.alpha -= p.decay;
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, p.alpha);
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.angle);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            ctx.restore();
+          }
+          particles = particles.filter((p) => p.alpha > 0);
+          if (alive) {
+            rafId = requestAnimationFrame(draw);
+          } else {
+            rafId = null;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+          }
+        }
+
+        /* setTimeout returns a number, so the interval id cannot be parked on it
+           as a property — that assignment threw in strict mode, which meant the
+           cleanup below never saw an id and the relaunch interval was never
+           cleared. Keep the id in the effect's own scope instead. */
+        let loopId = null;
+        const startTimer = setTimeout(() => {
+          launch();
+          loopId = setInterval(launch, interval);
+        }, delay);
+
+        return () => {
+          if (rafId) cancelAnimationFrame(rafId);
+          clearTimeout(startTimer);
+          if (loopId) clearInterval(loopId);
+          ro.disconnect();
+        };
+      }, [originX, originY, interval, delay]);
+      return <canvas ref={canvasRef} className="iw-confetti-canvas" />;
+    }
+
+    const APP_AGENTS = [
+      { id: "default",    name: "MicroClaw",        desc: "Your AI sidekick",              avatar: "assets/microclaw.png" },
+      { id: "codeMonkey", name: "Code Monkey",      desc: "Code development & debugging",  avatar: "assets/agent-code.png" },
+      { id: "growth",     name: "Growth Hacker",    desc: "Content marketing & analytics", avatar: "assets/agent-growth.png" },
+      { id: "finance",    name: "Finance Leopard",  desc: "Stock analysis & portfolio",    avatar: "assets/agent-finance.png" },
+      { id: "vangogh",    name: "Van Gogh",         desc: "Illustration & scene creation", avatar: "assets/agent-vangogh.png" },
+      { id: "master",     name: "Grandmaster",      desc: "Life planning & travel",        avatar: "assets/agent-master.png" },
+    ];
+
+    /* Specialists for New Agent page (sourced from real ALL_PRESETS in mockAgents.ts) */
+    const SPECIALISTS = [
+      { id: "codeMonkey", name: "Code Monkey",       desc: "Code development, debugging & review",       cardImage: "assets/Coder.png",     tags: ["Development", "Debug & Optimize", "Code Review"] },
+      { id: "vangogh",    name: "Van Gogh",          desc: "Pixel art illustration & scene creation",    cardImage: "assets/Painter.png",   tags: ["Illustration", "Style Analysis", "Scene Design"] },
+      { id: "counsel",    name: "Legal Counsel",     desc: "Contract review & compliance checks",        cardImage: "assets/Lawyer.png",    tags: ["Contracts", "Compliance", "Risk Review"] },
+      { id: "growth",     name: "Growth Hacker",     desc: "Content marketing & data analytics",         cardImage: "assets/Scientist.png", tags: ["Content Strategy", "Data Analytics", "Viral Copy"] },
+      { id: "finance",    name: "Finance Leopard",   desc: "Stock market analysis & portfolio tracking", cardImage: "assets/stock.png",     tags: ["Stock Analysis", "Market Review", "Portfolio Mgmt"] },
+      { id: "grandmaster",name: "Grandmaster",       desc: "Life planning, diet & travel arrangements",  cardImage: "assets/Diviner.png",   tags: ["Life Planning", "Diet Tips", "Travel Planning"] },
+    ];
+
+    /* Projects that live under the MicroClaw agent in the sidebar. The first
+       entry is the task running in step 03 (the city-walk plan); the other two
+       are earlier work, kept so the list reads as a real project history. */
+    const APP_PROJECTS = [
+      { id: "citywalk",    name: "Hometown friend visiting…", icon: null },
+    ];
+
+    const PROJECT_ICONS = {
+      phone: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="7" y="2.5" width="10" height="19" rx="2.4"/><line x1="10.8" y1="18.6" x2="13.2" y2="18.6"/>
+        </svg>
+      ),
+      spark: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M13 2.6 15 8.4 20.8 10.4 15 12.4 13 18.2 11 12.4 5.2 10.4 11 8.4Z"/><path d="M18.4 16.4 19.2 18.6 21.4 19.4 19.2 20.2 18.4 22.4 17.6 20.2 15.4 19.4 17.6 18.6Z"/>
+        </svg>
+      ),
+    };
+
+    function ChatThinkingMock({ staticEnd } = {}) {
+      const steps = [
+        "Analyzing request: friend visiting from hometown, looking for City Walk routes — relaxed pace, great for two people exploring together.",
+        "Key factors: ① Weekend weather is partly cloudy with mild temps; ② Avoid peak afternoon sun — schedule indoor activities midday; ③ Prioritize subway-accessible, walkable locations.",
+        "Route logic: Summer Palace (nature + history, best in cool morning) → National Museum (indoor afternoon) → Sanlitun specialty coffee → Chaoyang Park (evening stroll).",
+        "Transit: all spots reachable by subway, no taxi needed, very walkable. Budget-friendly overall, no rushing.",
+      ];
+      return (
+        <div className={"chat-view-mock" + (staticEnd ? " chat-static" : "")}>
+          <div className="chat-thread-mock--demo">
+            {/* User message */}
+            <div className="chat-group user">
+              <div className="chat-group-messages">
+                <div className="chat-bubble user">
+                  My friend from hometown is visiting this weekend — recommend some City Walk routes for us.
+                </div>
+              </div>
+            </div>
+            {/* Assistant response */}
+            <div className="chat-group">
+              <div className="chat-agent-avatar"><img src="assets/microclaw.png" alt="" /></div>
+              <div className="chat-group-messages">
+                {/* Cycling GIFs (background workbench) */}
+                <div className="emoji-reaction-mock">
+                  <img className="emoji-gif emoji-gif--search" src="assets/openclaw_search_preview_transparent.gif" alt="" />
+                  <img className="emoji-gif emoji-gif--book"   src="assets/book.gif" alt="" />
+                  <img className="emoji-gif emoji-gif--bino"   src="assets/binoculars.gif" alt="" />
+                  <img className="emoji-gif emoji-gif--map"    src="assets/map.gif" alt="" />
+                </div>
+                {/* Thinking panel slides open after the emoji phase */}
+                <div className="thinking-panel-mock">
+                  <div className="thinking-panel-header">
+                    <svg className="thinking-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                    <span className="thinking-label">{staticEnd ? "Thought for 3s" : "Thinking"}</span>
+                    {!staticEnd && <span className="thinking-duration">3s</span>}
+                  </div>
+                  <div className="thinking-body">
+                    <div className="thinking-timeline">
+                      {steps.map((s, i) => (
+                        <div key={i} className={"thinking-step thinking-step--" + (i + 1) + (i === 3 ? " thinking-step--active" : "")}>
+                          <span className="thinking-step__dot"></span>
+                          <span className="thinking-step__text">{s}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                {/* Final response bubble appears after thinking completes */}
+                <div className="chat-bubble--final">
+                  <p>Based on this weekend's weather, here's a relaxed itinerary:</p>
+                  <p>📅 <strong>Saturday · Light City Exploration</strong></p>
+                  <p>☁️ <strong>Morning</strong> | Summer Palace Stroll (9:00–11:30) — East Palace Gate → Renshou Hall → Kunming Lake loop. Metro Line 4 → North Palace Gate.</p>
+                  <p>🍛 <strong>Lunch</strong> | Small spots near the South Gate — classic Beijing home cooking, ¥60–80/person.</p>
+                  <p>🏛️ <strong>Afternoon</strong> | National Museum (14:00–16:30) — indoor, skip the heat. Book entry in advance; try Ancient China + Road to Rejuvenation.</p>
+                  <p>📅 <strong>Sunday · Recharge & Unwind</strong></p>
+                  <p>📍 <strong>Morning</strong> | Specialty coffee near Sanlitun, slow start.</p>
+                  <p>☘️ <strong>Afternoon</strong> | Chaoyang Park — walking, cycling, or just lounging by the lake.</p>
+                </div>
+                {/* Phone auth card slides in after the itinerary */}
+                <div className="phone-auth-card">
+                  <img className="phone-auth-card__mascot" src="assets/microclaw.png" alt="" />
+                  <div className="phone-auth-card__title">Want to send the itinerary to your phone? 🤔</div>
+                  <ul className="phone-auth-card__benefits">
+                    <li>
+                      <svg className="phone-auth-card__check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      Check it anytime, wherever you go
+                    </li>
+                    <li>
+                      <svg className="phone-auth-card__check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      Control MicroClaw from your phone
+                    </li>
+                  </ul>
+                  <div className="phone-auth-card__actions">
+                    <div className="phone-auth-btn phone-auth-btn--deny">No thanks</div>
+                    <div className="phone-auth-btn phone-auth-btn--confirm">Sure, send it</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="chat-compose">
+            <div className="compose-wrapper">
+              <div className="compose-input-row">
+                <span className="compose-placeholder">Reply to MicroClaw…</span>
+              </div>
+              <div className="compose-bottom">
+                <div className="compose-bottom__left">
+                  <div className="compose-icon" title="Attach a file">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                    </svg>
+                  </div>
+                  <div className="compose-icon" title="Mention">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="4"/>
+                      <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>
+                    </svg>
+                  </div>
+                </div>
+                <div className="compose-bottom__right">
+                  <div className="compose-model" title="Select model">
+                    <span className="compose-model__name">Qwen3-Max</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="6 9 12 15 18 9"/>
+                    </svg>
+                  </div>
+                  <div className="compose-send">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function NewAgentMock() {
+      return (
+        <div className="new-agent-view">
+         <div className="new-agent-scroll">
+          <div className="new-agent-topbar">
+            <h1 className="new-agent-topbar__title">Featured Agents</h1>
+            <div className="customize-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+              Custom Agent
+            </div>
+          </div>
+          <div className="agent-grid">
+            {SPECIALISTS.map((a) => {
+              const animClass = a.id === "xiaohongshu" ? " agent-card--gh-anim"
+                              : a.id === "tianluo"     ? " agent-card--gm-anim"
+                              : "";
+              return (
+              <div className={"agent-card" + animClass} key={a.id}>
+                <div className="agent-card__img-area">
+                  <img className="agent-card__img" src={a.cardImage} alt="" />
+                </div>
+                <div className="agent-card__body">
+                  <div className="agent-card__name">{a.name}</div>
+                  <div className="agent-card__desc">{a.desc}</div>
+                  <div className="agent-card__tags">
+                    {a.tags.map((tg) => <span className="agent-tag" key={tg}>{tg}</span>)}
+                  </div>
+                </div>
+                <div className="agent-card__footer">
+                  <div className="agent-card__btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                    </svg>
+                    <span className="agent-card__btn-label">
+                      <span className="lbl-add">Add</span>
+                      <span className="lbl-rem">Remove</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+              );
+            })}
+          </div>
+         </div>
+        </div>
+      );
+    }
+
+    function AppTitlebar({ title = "MicroClaw", withBack = false }) {
+      return (
+        <div className="app-titlebar">
+          <div className="app-titlebar-left">
+            {withBack && (
+              <div className="app-titlebar-back" title="Back">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg>
+              </div>
+            )}
+            <span className="app-titlebar-title">{title}</span>
+          </div>
+          <div className="app-titlebar-controls">
+            <div className="win-btn" title="Minimize">
+              <svg viewBox="0 0 10 1"><rect width="10" height="1" fill="currentColor"/></svg>
+            </div>
+            <div className="win-btn" title="Maximize">
+              <svg viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor" strokeWidth="1"/></svg>
+            </div>
+            <div className="win-btn win-btn--close-icon" title="Close">
+              <svg viewBox="0 0 10 10">
+                <line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" strokeLinecap="round"/>
+                <line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" strokeLinecap="round"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function AppPrimaryNav({ active = "chat" }) {
+      /* Real Fluent UI System Icons (20px viewBox) extracted from @fluentui/svg-icons */
+      const chatReg     = "M10 2a8 8 0 1 1-3.61 15.14l-.12-.07-3.65.92a.5.5 0 0 1-.62-.45v-.08l.01-.08.92-3.64-.07-.12a7.95 7.95 0 0 1-.83-2.9l-.02-.37L2 10a8 8 0 0 1 8-8Zm0 1a7 7 0 0 0-6.1 10.42.5.5 0 0 1 .06.28l-.02.1-.75 3.01 3.02-.75a.5.5 0 0 1 .19-.01l.09.02.09.04A7 7 0 1 0 10 3Zm.5 8a.5.5 0 0 1 .09 1H7.5a.5.5 0 0 1-.09-1h3.09Zm2-3a.5.5 0 0 1 .09 1H7.5a.5.5 0 0 1-.09-1h5.09Z";
+      const chatFilled  = "M10 2a8 8 0 1 1-3.61 15.14l-.12-.07-3.65.92a.5.5 0 0 1-.62-.45v-.08l.01-.08.92-3.64-.07-.12a7.95 7.95 0 0 1-.83-2.9l-.02-.37L2 10a8 8 0 0 1 8-8Zm.5 9H7.41a.5.5 0 0 0 0 1H10.59a.5.5 0 0 0 0-1h-.09Zm2-3H7.41a.5.5 0 0 0 0 1h5.18a.5.5 0 0 0 0-1h-.09Z";
+      const sparkleReg  = "M7.4 12.8a1.04 1.04 0 0 0 1.59-.51l.45-1.37a2.34 2.34 0 0 1 1.47-1.48l1.4-.45A1.04 1.04 0 0 0 12.25 7l-1.37-.45A2.34 2.34 0 0 1 9.4 5.08L8.95 3.7a1.03 1.03 0 0 0-.82-.68 1.04 1.04 0 0 0-1.15.7l-.46 1.4a2.34 2.34 0 0 1-1.44 1.45L3.7 7a1.04 1.04 0 0 0 .02 1.97l1.37.45a2.33 2.33 0 0 1 1.48 1.48l.46 1.4c.07.2.2.37.38.5Zm.08-7.4.53-1.38.44 1.37a3.33 3.33 0 0 0 2.12 2.12l1.4.53-1.38.45a3.34 3.34 0 0 0-2.11 2.11l-.53 1.38-.45-1.38a3.34 3.34 0 0 0-2.1-2.12L4 7.96 5.4 7.5a3.36 3.36 0 0 0 2.08-2.12Zm6.06 11.45a.8.8 0 0 0 1.22-.4l.25-.76a1.09 1.09 0 0 1 .68-.68l.77-.25a.8.8 0 0 0-.02-1.52l-.77-.25a1.08 1.08 0 0 1-.68-.68l-.25-.77a.8.8 0 0 0-1.52.01l-.24.76a1.1 1.1 0 0 1-.67.68l-.77.25a.8.8 0 0 0 0 1.52l.77.25a1.09 1.09 0 0 1 .68.68l.25.77c.06.16.16.3.3.4Zm-.92-2.8-.18-.05.19-.06a2.09 2.09 0 0 0 1.3-1.32l.06-.18.05.18a2.08 2.08 0 0 0 1.32 1.32l.2.06-.18.06a2.08 2.08 0 0 0-1.32 1.32l-.06.18-.06-.18a2.07 2.07 0 0 0-1.32-1.32Z";
+      const sparkleFill = "M7.4 12.8a1.04 1.04 0 0 0 1.59-.51l.45-1.37a2.34 2.34 0 0 1 1.47-1.48l1.4-.45A1.04 1.04 0 0 0 12.25 7l-1.37-.45A2.34 2.34 0 0 1 9.4 5.08L8.95 3.7a1.03 1.03 0 0 0-.82-.68 1.04 1.04 0 0 0-1.15.7l-.46 1.4a2.34 2.34 0 0 1-1.44 1.45L3.7 7a1.04 1.04 0 0 0 .02 1.97l1.37.45a2.33 2.33 0 0 1 1.48 1.48l.46 1.4c.07.2.2.37.38.5Zm6.14 4.05a.8.8 0 0 0 1.22-.4l.25-.76a1.09 1.09 0 0 1 .68-.68l.77-.25a.8.8 0 0 0-.02-1.52l-.77-.25a1.08 1.08 0 0 1-.68-.68l-.25-.77a.8.8 0 0 0-1.52.01l-.24.76a1.1 1.1 0 0 1-.67.68l-.77.25a.8.8 0 0 0 0 1.52l.77.25a1.09 1.09 0 0 1 .68.68l.25.77c.06.16.16.3.3.4Z";
+      const phoneReg    = "M9 14a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1H9ZM7 2a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h6a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H7ZM6 4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4Z";
+      const settingsReg = "M1.91 7.38A8.5 8.5 0 0 1 3.7 4.3a.5.5 0 0 1 .54-.13l1.92.68a1 1 0 0 0 1.32-.76l.36-2a.5.5 0 0 1 .4-.4 8.53 8.53 0 0 1 3.55 0c.2.04.35.2.38.4l.37 2a1 1 0 0 0 1.32.76l1.92-.68a.5.5 0 0 1 .54.13 8.5 8.5 0 0 1 1.78 3.08c.06.2 0 .4-.15.54l-1.56 1.32a1 1 0 0 0 0 1.52l1.56 1.32a.5.5 0 0 1 .15.54 8.5 8.5 0 0 1-1.78 3.08.5.5 0 0 1-.54.13l-1.92-.68a1 1 0 0 0-1.32.76l-.37 2a.5.5 0 0 1-.38.4 8.53 8.53 0 0 1-3.56 0 .5.5 0 0 1-.39-.4l-.36-2a1 1 0 0 0-1.32-.76l-1.92.68a.5.5 0 0 1-.54-.13 8.5 8.5 0 0 1-1.78-3.08.5.5 0 0 1 .15-.54l1.56-1.32a1 1 0 0 0 0-1.52L2.06 7.92a.5.5 0 0 1-.15-.54Zm1.06 0 1.3 1.1a2 2 0 0 1 0 3.04l-1.3 1.1c.3.79.72 1.51 1.25 2.16l1.6-.58a2 2 0 0 1 2.63 1.53l.3 1.67a7.56 7.56 0 0 0 2.5 0l.3-1.67a2 2 0 0 1 2.64-1.53l1.6.58a7.5 7.5 0 0 0 1.24-2.16l-1.3-1.1a2 2 0 0 1 0-3.04l1.3-1.1a7.5 7.5 0 0 0-1.25-2.16l-1.6.58a2 2 0 0 1-2.63-1.53l-.3-1.67a7.55 7.55 0 0 0-2.5 0l-.3 1.67A2 2 0 0 1 5.81 5.8l-1.6-.58a7.5 7.5 0 0 0-1.24 2.16ZM7.5 10a2.5 2.5 0 1 1 5 0 2.5 2.5 0 0 1-5 0Zm1 0a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z";
+
+      const mainItems = [
+        { id: "chat",    regular: chatReg,    filled: chatFilled },
+        { id: "tasks",   custom: true },
+        { id: "explore", regular: sparkleReg, filled: sparkleFill },
+      ];
+      const utils = [
+        { id: "phone",    regular: phoneReg },
+        { id: "settings", regular: settingsReg },
+      ];
+
+      /* Custom tasks icon — 16px viewBox, uses fill + strokes */
+      const tasksCustomSvg = (
+        <svg width="20" height="20" viewBox="0 0 16 16" fill="none">
+          <path d="M11.5 2C12.8807 2 14 3.11929 14 4.5V8.67188C13.9999 9.33481 13.7363 9.97068 13.2676 10.4395L10.4395 13.2676C9.97068 13.7363 9.33481 13.9999 8.67188 14H4.5C3.11929 14 2 12.8807 2 11.5V4.5C2 3.11929 3.11929 2 4.5 2H11.5ZM4.5 3C3.67157 3 3 3.67157 3 4.5V11.5C3 12.3284 3.67157 13 4.5 13H8.67188C8.78325 13 8.893 12.986 9 12.9619V10.4229C9.0008 10.4189 9.00291 10.4045 9.00586 10.3701C9.07171 9.60251 9.71534 9 10.5 9H12.9619C12.986 8.893 13 8.78325 13 8.67188V4.5C13 3.67157 12.3284 3 11.5 3H4.5ZM10.5 10C10.2239 10 10 10.2239 10 10.5V12.293L12.293 10H10.5Z" fill="currentColor"/>
+          <line x1="5.5" y1="5.5" x2="10.5" y2="5.5" stroke="currentColor" strokeLinecap="round"/>
+          <line x1="5.5" y1="7.5" x2="10.5" y2="7.5" stroke="currentColor" strokeLinecap="round"/>
+          <line x1="5.5" y1="9.5" x2="7.5" y2="9.5" stroke="currentColor" strokeLinecap="round"/>
+        </svg>
+      );
+
+      const renderIcon = (it, isActive) => {
+        if (it.custom) return tasksCustomSvg;
+        return (
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+            <path d={isActive && it.filled ? it.filled : it.regular} />
+          </svg>
+        );
+      };
+      return (
+        <div className="app-pnav">
+          <div className="app-pnav-drag"></div>
+          <div className="app-pnav-avatar"><div className="app-pnav-avatar-dot">B</div></div>
+          <div className="app-pnav-items">
+            {mainItems.map((it) => (
+              <div key={it.id} className={"app-pnav-item" + (it.id === active ? " active" : "")}>
+                {renderIcon(it, it.id === active)}
+              </div>
+            ))}
+          </div>
+          <div className="app-pnav-spacer"></div>
+          <div className="app-pnav-utilities">
+            {utils.map((it) => (
+              <div key={it.id} className="app-pnav-item">{renderIcon(it, false)}</div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    /* `activeProject` — the id of the project currently open under the first
+       agent. When it is set the selection belongs to that project row, and the
+       agent row above it is left unselected; with no project open the agent row
+       carries the selection as before. */
+    function AppSidebar({ singleAgent = false, activeProject = null }) {
+      const agents = singleAgent ? APP_AGENTS.slice(0, 1) : APP_AGENTS;
+      return (
+        <div className="app-sidebar">
+          <div className="app-sidebar-drag"></div>
+          <div className="app-sidebar-search">
+            <span className="app-sidebar-search-icon">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path d="M13.73 14.44a6.5 6.5 0 1 1 .7-.7l3.42 3.4a.5.5 0 0 1-.63.77l-.07-.06-3.42-3.41Zm-.71-.71A5.54 5.54 0 0 0 15 9.5a5.5 5.5 0 1 0-1.98 4.23Z"/></svg>
+            </span>
+            <span>Search</span>
+          </div>
+          <div className="app-sidebar-new">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Agent
+          </div>
+          <div className="app-sidebar-section">
+            <div className="app-sidebar-section-head">Agent</div>
+            <div className="app-sidebar-list">
+              {agents.map((a, i) => (
+                <React.Fragment key={a.id}>
+                  <div className={"app-agent-row" + (i === 0 && !activeProject ? " selected" : "")}>
+                    <div className="app-agent-avatar"><img src={a.avatar} alt="" /></div>
+                    <div className="app-agent-info">
+                      <span className="app-agent-name">{a.name}</span>
+                      <span className="app-agent-desc">{a.desc}</span>
+                    </div>
+                  </div>
+                  {i === 0 && activeProject && (
+                    <div className="app-project-list">
+                      {APP_PROJECTS.map(p => (
+                        <div key={p.id} className={"app-project-row" + (p.id === activeProject ? " selected" : "")}>
+                          <span className="app-project-icon">{p.icon ? PROJECT_ICONS[p.icon] : null}</span>
+                          <span className="app-project-name">{p.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function AppCursor() {
+      return (
+        <div className="app-cursor">
+          <svg viewBox="0 0 20 22">
+            <path d="M2 2 L2 16.5 L6.2 12.8 L8.8 18.5 L11.3 17.4 L8.7 11.7 L13.2 11.7 Z"
+                  fill="#1f1f1f" stroke="#ffffff" strokeWidth="1.5" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      );
+    }
+
+    const IwClose = () => (
+      <div className="iw-close" title="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </div>
+    );
+
+    function InstallWelcomeMock() {
+      return (
+        <div className="install-mock">
+          <div className="install-window">
+            <ConfettiBurst originX={0.5} originY={0.30} interval={4000} delay={950} />
+            <IwClose />
+            <div className="iw-mascot-toggle">
+              <img className="iw-mascot-fold" src="assets/welcom_fold.png" alt="MicroClaw mascot folded" />
+              <img className="iw-mascot-expand" src="assets/welcom_expand.png" alt="MicroClaw mascot expanded" />
+            </div>
+            <div className="iw-title">Welcome to MicroClaw</div>
+            <div className="iw-bottom">
+              <div className="iw-notice">
+                By continuing, you agree to our<br/>
+                <a href="#" onClick={(e) => e.preventDefault()}>Terms of Service</a> and <a href="#" onClick={(e) => e.preventDefault()}>Privacy Policy</a>
+              </div>
+              <div className="iw-btn-primary">Quick Install</div>
+              <div className="iw-btn-ghost">Custom Install</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function InstallProgressMock() {
+      return (
+        <div className="install-mock">
+          <div className="install-window">
+            <IwClose />
+            <div className="iw-mascot-cycle">
+              <img className="iw-mascot-item" src="assets/Coder.png" alt="Coder identity" />
+              <img className="iw-mascot-item" src="assets/Lawyer.png" alt="Lawyer identity" />
+              <img className="iw-mascot-item" src="assets/Painter.png" alt="Painter identity" />
+            </div>
+            <div className="iw-cycle">
+              <span className="iw-cycle-item">Intuitive</span>
+              <span className="iw-cycle-item">Trustworthy</span>
+              <span className="iw-cycle-item">Built for you</span>
+            </div>
+            <div className="iw-bottom">
+              <div className="iw-cycle-desc">
+                <span className="iw-cycle-desc-item">Just say what you want</span>
+                <span className="iw-cycle-desc-item">You stay in control</span>
+                <span className="iw-cycle-desc-item">Works with your workflow</span>
+              </div>
+              <div className="iw-progress"><div className="iw-progress-bar"></div></div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const steps = [
+        {
+          num: "01",
+          title: "Install",
+          cap: "One-step install, complexity deferred — a mascot welcome plus meaningful progress carry the very first setup.",
+          stage: (
+            <div className="install-dual">
+              <InstallWelcomeMock />
+              <InstallProgressMock />
+            </div>
+          ),
+        },
+        {
+          num: "02",
+          title: "Orientation",
+          cap: "Scenario cards make capability legible — “try one of these to start” shows what it can do before you commit.",
+          stage: (
+            <div className="app-shell">
+              <AppPrimaryNav active="chat" />
+              <AppSidebar singleAgent />
+              <div className="app-main">
+                <AppTitlebar title="MicroClaw" />
+                <div className="app-main-body">
+                  <div className="chat-thread-mock">
+                    <div className="scenario-heading">Hi, I'm MicroClaw.<br/>Less chat. More done — a work partner with hands.</div>
+                    <div className="scenario-subheading">Try one of these to start.</div>
+                    <div className="fan-container scenario-mock-inner">
+                      <div className="fan-slot fan-slot--news">
+                        <div className="fan-body">
+                          <div className="fan-name">Daily Hot News</div>
+                          <div className="fan-desc">Get concise daily highlights and trending news.</div>
+                        </div>
+                        <div className="fan-img-area"><img className="fan-img" src="assets/daily-news.png" alt="" /></div>
+                      </div>
+                      <div className="fan-slot fan-slot--email">
+                        <div className="fan-body">
+                          <div className="fan-name">Manage Email</div>
+                          <div className="fan-desc">Organize your inbox; keep what matters clear.</div>
+                        </div>
+                        <div className="fan-img-area"><img className="fan-img" src="assets/email.png" alt="" /></div>
+                      </div>
+                      <div className="fan-slot fan-slot--travel">
+                        <div className="fan-body">
+                          <div className="fan-name">Travel Assistant</div>
+                          <div className="fan-desc">Plan weekend trips around your location and weather.</div>
+                        </div>
+                        <div className="fan-img-area"><img className="fan-img" src="assets/travel.png" alt="" /></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="chat-compose">
+                    <div className="compose-wrapper">
+                      <div className="compose-input-row cycling">
+                        <span className="compose-placeholder cycling-rest">Or just tell me what needs doing…</span>
+                        <span className="chat-prompt">Set up a daily 8 AM briefing — a 5-minute podcast covering the top 2 stories each from AI, internet, and macro economy.</span>
+                        <span className="chat-prompt">Going inbox-zero today — sort everything into 'reply now', 'follow up later', and 'archive', then draft replies for the 'reply now' bucket.</span>
+                        <span className="chat-prompt">Hometown friend visiting this weekend — plan us a couple of walking routes that match the weather and feel local.</span>
+                      </div>
+                      <div className="compose-bottom">
+                        <div className="compose-bottom__left">
+                          <div className="compose-icon" title="Attach a file">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+                            </svg>
+                          </div>
+                          <div className="compose-icon" title="Mention">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="4"/>
+                              <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>
+                            </svg>
+                          </div>
+                        </div>
+                        <div className="compose-bottom__right">
+                          <div className="compose-model" title="Select model">
+                            <span className="compose-model__name">Qwen3-Max</span>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="6 9 12 15 18 9"/>
+                            </svg>
+                          </div>
+                          <div className="compose-send cycling">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <AppCursor />
+            </div>
+          ),
+        },
+        {
+          num: "03",
+          title: "First win",
+          cap: "A background workbench keeps thinking and tool calls visible, so the first successful task feels earned — not opaque.",
+          stage: (
+            <div className="app-shell">
+              <AppPrimaryNav active="chat" />
+              {/* A task is running, so the sidebar selection sits on that project
+                  rather than on the agent that owns it. */}
+              <AppSidebar singleAgent activeProject="citywalk" />
+              <div className="app-main">
+                <AppTitlebar title="MicroClaw" />
+                <div className="app-main-body">
+                  <ChatThinkingMock />
+                </div>
+              </div>
+            </div>
+          ),
+        },
+        {
+          num: "04",
+          title: "Personal relevance",
+          cap: "An expert-identity gallery lets people pick agents that fit their own work — the tool bends toward them.",
+          stage: (
+            <div className="app-shell app-shell--no-sidebar">
+              <AppPrimaryNav active="chat" />
+              <div className="app-main">
+                <AppTitlebar title="New Agent" withBack />
+                <div className="app-main-body">
+                  <NewAgentMock />
+                </div>
+              </div>
+              <AppCursor />
+            </div>
+          ),
+        },
+        {
+          num: "05",
+          title: "Trust & repeat",
+          cap: "Controllable permissions and a clear time console — visible boundaries make people willing to rely on it again.",
+          console: true,
+          stage: (
+            <iframe
+              className="console-embed"
+              src="microclaw-console.html"
+              title="MicroClaw time console"
+              scrolling="no"
+            ></iframe>
+          ),
+        },
+      ];
+
+      /* Solo embed: ?only=N (1-based) renders just that step's live mock,
+         with no step-head/caption — the host card provides those. */
+      const soloParam = new URLSearchParams(window.location.search).get("only");
+      const soloIdx = soloParam
+        ? Math.max(1, Math.min(steps.length, parseInt(soloParam, 10))) - 1
+        : null;
+      if (soloIdx != null && steps[soloIdx]) {
+        const s = steps[soloIdx];
+        return (
+          <div className="steps steps--solo">
+            <div className={"vstage" + (s.console ? " vstage--console" : "")}>
+              {s.stage}
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="steps">
+          {steps.map((s) => (
+            <section className="step" key={s.num}>
+              <div className="step-head">
+                <span className="step-num">{s.num}</span>
+                <h3 className="step-title">{s.title}</h3>
+              </div>
+              <div className={"vstage" + (s.console ? " vstage--console" : "")}>
+                {s.stage}
+              </div>
+              <p className="step-cap">{s.cap}</p>
+            </section>
+          ))}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+
+  <script>
+    /* Always-on: post the rendered height to the parent so the
+       case-study iframe can auto-size and every step shows with no
+       inner scroll. (This page only ever loads inside that frame.) */
+    (function () {
+      function postHeight() {
+        var h = Math.max(
+          document.body.scrollHeight,
+          document.documentElement.scrollHeight
+        );
+        window.parent.postMessage(
+          { type: "microclaw-embed-height", height: h },
+          "*"
+        );
+      }
+
+      window.addEventListener("load", postHeight);
+      if (window.ResizeObserver) {
+        new ResizeObserver(postHeight).observe(document.body);
+      }
+      // Backstop for late React mounts and animation-driven reflow.
+      setInterval(postHeight, 1000);
+      postHeight();
+    })();
+  </script>
+</body>
+</html>

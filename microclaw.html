@@ -1,0 +1,1067 @@
+<!doctype html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MicroClaw — From FOMO to trust · Bingnan Jiang</title>
+  <meta name="description" content="MicroClaw case study — designing agentic AI for novice users in China. Turning FOMO-driven installs into trusted, repeat use through first wins, visible boundaries, and ambient habit loops.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f4f5;
+      --bg-2: #fafafa;
+      --ink: #18181b;
+      --soft: #3f3f46;
+      --muted: #71717a;
+      --faint: #a1a1aa;
+      --line: #e4e4e7;
+      --line-strong: #d4d4d8;
+      --card: #ffffff;
+      --card-2: #fafafa;
+      --glass: rgba(255, 255, 255, .88);
+      --accent: #18181b;
+      --green: #10b981;
+      --shadow: 0 10px 28px -18px rgba(24, 24, 27, .22);
+      --shadow-soft: 0 6px 20px -16px rgba(24, 24, 27, .3);
+      --radius: 18px;
+      --radius-lg: 22px;
+      --max: 1080px;
+      font-family: "Space Grotesk", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      letter-spacing: .1px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      font-family: Inter, "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    }
+    a { color: inherit; text-decoration: none; }
+    a, button { -webkit-tap-highlight-color: transparent; }
+    ::selection { background: rgba(24, 24, 27, .13); color: var(--ink); }
+
+    .wrap { width: min(var(--max), calc(100vw - 40px)); margin: 0 auto; }
+    .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+    h1, h2, h3, .disp { font-family: "Space Grotesk", Inter, sans-serif; }
+
+    /* ---------- Top bar ---------- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--glass);
+      backdrop-filter: saturate(1.4) blur(14px);
+      -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    }
+    .topbar-inner {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 58px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--soft);
+      transition: color .2s ease;
+    }
+    .back-link:hover { color: var(--ink); }
+    .back-link .arw { transition: transform .22s ease; }
+    .back-link:hover .arw { transform: translateX(-3px); }
+    .top-actions { display: inline-flex; gap: 10px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 36px;
+      padding: 0 15px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--line-strong);
+      background: var(--card);
+      color: var(--ink);
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); border-color: var(--ink); }
+    .btn.solid { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .btn.solid:hover { background: #000; }
+
+    /* ---------- Eyebrow / kickers ---------- */
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .kicker .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green);
+    }
+    .sec-num {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-weight: 500;
+    }
+
+    /* ---------- Hero ---------- */
+    .hero { padding: 72px 0 40px; }
+    .hero h1 {
+      font-size: clamp(42px, 7vw, 76px);
+      line-height: 1.02;
+      letter-spacing: -1.6px;
+      margin: 20px 0 0;
+      font-weight: 700;
+    }
+    .hero .lede {
+      font-size: clamp(18px, 2.4vw, 23px);
+      line-height: 1.5;
+      color: var(--soft);
+      max-width: 620px;
+      margin: 22px 0 0;
+    }
+    .hero .lede em { font-style: normal; color: var(--ink); font-weight: 600; }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      margin-top: 46px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--card);
+      overflow: hidden;
+    }
+    .meta-cell {
+      padding: 18px 20px;
+      border-right: 1px solid var(--line);
+    }
+    .meta-cell:last-child { border-right: none; }
+    .meta-cell .k {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10.5px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+    .meta-cell .v {
+      margin-top: 7px;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.35;
+    }
+
+    /* ---------- Section frame ---------- */
+    section.block { padding: 52px 0; }
+    .sec-head { max-width: 680px; margin-bottom: 34px; }
+    .sec-head h2 {
+      font-size: clamp(26px, 4vw, 38px);
+      line-height: 1.1;
+      letter-spacing: -0.8px;
+      margin: 14px 0 0;
+      font-weight: 600;
+    }
+    .sec-head p {
+      font-size: 16.5px;
+      line-height: 1.6;
+      color: var(--muted);
+      margin: 14px 0 0;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+    }
+
+    /* ---------- Why-cards (Context / the bet) ---------- */
+    .why-lead {
+      padding-bottom: 26px;
+      margin-bottom: 26px;
+    }
+    .why-num {
+      display: block;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      color: var(--green);
+      font-weight: 500;
+    }
+    .why-lead-title {
+      display: block;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(22px, 3vw, 30px);
+      line-height: 1.14;
+      letter-spacing: -0.5px;
+      font-weight: 600;
+      margin: 12px 0 10px;
+    }
+    .why-lead p { margin: 0; color: var(--soft); font-size: 15.5px; line-height: 1.6; max-width: 640px; }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    .why-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 20px;
+      background: var(--card-2);
+      transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+    }
+    .why-card:hover { border-color: var(--line-strong); transform: translateY(-2px); box-shadow: var(--shadow); }
+    .why-card .why-num { color: var(--muted); }
+    .why-card strong {
+      display: block;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 16.5px;
+      margin: 9px 0 7px;
+      letter-spacing: -0.2px;
+    }
+    .why-card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+
+    /* ---------- Problem: break cards ---------- */
+    .break-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .break-card {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px 22px;
+      background: var(--card);
+    }
+    .break-card > strong {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 19px;
+      letter-spacing: -0.3px;
+      display: block;
+    }
+    .break-card .desc { display: block; margin-top: 8px; color: var(--soft); font-size: 14.5px; line-height: 1.55; }
+    .break-card .flow {
+      display: block;
+      margin-top: 14px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: .2px;
+      color: var(--ink);
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 10px 12px;
+      line-height: 1.5;
+    }
+    .signals { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 9px; }
+    .signals li {
+      position: relative;
+      padding-left: 24px;
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--soft);
+    }
+    .signals li::before {
+      position: absolute;
+      left: 0; top: 0;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .signals li.good::before { content: "+"; color: var(--green); }
+    .signals li.bad::before { content: "\2212"; color: var(--faint); }
+    .callout {
+      margin-top: 20px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--ink);
+      color: #fff;
+      border-radius: 14px;
+      padding: 20px 22px;
+    }
+    .callout strong {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--green);
+      white-space: nowrap;
+      padding-top: 2px;
+    }
+    .callout span { font-size: 15.5px; line-height: 1.55; color: #e4e4e7; }
+
+    /* ---------- Feature map ---------- */
+    .fmap-note { font-size: 13px; color: var(--faint); margin: 0 0 18px; font-family: "JetBrains Mono", monospace; letter-spacing: .3px; }
+    .fmap {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 70px 1fr;
+      gap: 0;
+      align-items: stretch;
+    }
+    .fmap-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
+    .fmap-path { fill: none; stroke: var(--line-strong); stroke-width: 1.5; opacity: .55; transition: stroke .2s ease, opacity .2s ease, stroke-width .2s ease; }
+    .fmap-path.is-active { stroke: var(--ink); opacity: 1; stroke-width: 2; }
+    .fmap-path.is-dim { opacity: .12; }
+    .fmap-col { display: flex; flex-direction: column; gap: 12px; justify-content: space-between; position: relative; z-index: 2; }
+    .fmap-node {
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 13px 15px;
+      background: var(--card);
+      cursor: pointer;
+      transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+    }
+    .fmap-node:hover { border-color: var(--line-strong); }
+    .fmap-node.is-active { border-color: var(--ink); box-shadow: var(--shadow-soft); transform: translateY(-1px); }
+    .fmap-node.is-linked { border-color: var(--line-strong); }
+    .fmap-node.is-dim { opacity: .38; }
+    .fmap-node strong {
+      display: block;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 15px; letter-spacing: -0.2px; margin-top: 3px;
+    }
+    .fmap-kicker {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: "JetBrains Mono", monospace; font-size: 10px;
+      letter-spacing: .8px; text-transform: uppercase; color: var(--muted);
+    }
+    .fmap-kicker .kdot { width: 6px; height: 6px; border-radius: 50%; background: var(--faint); }
+    .fmap-kicker.k-must .kdot { background: var(--ink); }
+    .fmap-kicker.k-perf .kdot { background: var(--muted); }
+    .fmap-kicker.k-delight .kdot { background: var(--green); }
+    .fmap-kicker .focus { color: var(--green); font-weight: 600; }
+    .fmap-belief { display: block; margin: 7px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--green); font-weight: 600; }
+    .fmap-desc { margin: 5px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+    .fmap-mid { display: flex; align-items: center; justify-content: center; }
+    .fmap-mid span {
+      writing-mode: vertical-rl;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--faint);
+    }
+    .fmap-caption { display: flex; justify-content: space-between; margin-bottom: 14px; }
+    .fmap-caption span {
+      font-family: "JetBrains Mono", monospace; font-size: 10.5px;
+      letter-spacing: 1.2px; text-transform: uppercase; color: var(--faint);
+    }
+
+    /* ---------- Final design: flow states ---------- */
+    .state { display: grid; grid-template-columns: 1fr; gap: 0; }
+    .state + .state { margin-top: 20px; }
+    .state-copy { margin-bottom: 16px; }
+    .state-copy strong {
+      display: block; font-family: "Space Grotesk", sans-serif;
+      font-size: 18px; letter-spacing: -0.2px;
+    }
+    .state-copy span { display: block; margin-top: 7px; color: var(--muted); font-size: 15px; line-height: 1.6; max-width: 640px; }
+
+    /* ---------- Final design: live prototype embed ---------- */
+    /* The embedded steps page already frames each screen; the wrapper
+       stays chrome-less so it doesn't read as a shell around a shell. */
+    .proto-frame { position: relative; width: 100%; height: 1200px; background: transparent; transition: height .25s ease; }
+    .proto-frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .proto-note { margin: 16px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); }
+    .proto-note a { color: var(--ink); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--line); transition: opacity .2s ease; }
+    .proto-note a:hover { opacity: .62; }
+
+    /* The six gates read as one continuous ladder, not six boxed cards —
+       matching the chrome-less prototype above it. Each gate states its
+       claim (text first), then shows the live mock as evidence below; a
+       single hairline rules one gate off from the next. */
+    .principles { display: flex; flex-direction: column; margin-top: 28px; }
+    .principle {
+      display: flex; flex-direction: column;
+      padding: 44px 0;
+      border-top: 1px solid var(--line);
+    }
+    .principle:first-child { border-top: 0; padding-top: 6px; }
+    .principle:last-child { padding-bottom: 6px; }
+
+    /* Claim, above the evidence. */
+    .principle .ptext { margin: 0 0 22px; max-width: 720px; }
+    .principle .pk {
+      font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: 1.1px; text-transform: uppercase; color: var(--green);
+    }
+    .principle strong { display: block; font-family: "Space Grotesk", sans-serif; font-size: 20px; margin: 10px 0 9px; letter-spacing: -0.2px; }
+    .principle p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+    /* Evidence: the live mock, framed by one hairline like the prototype's
+       own frame — the embedded step already fills it edge-to-edge, so the
+       wrapper stays a single quiet border, never a shell around a shell. */
+    .principle .pframe {
+      border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+      background: var(--card-2);
+    }
+    /* Gate 01's mock is two install cards that already carry their own
+       borders — the ladder frame would ring them a second time (shell-in-
+       shell), so this one gate drops its outer ring. The single-mock gates
+       (02–06) keep the frame, since it's their only border. */
+    .principle .pframe--bare { border-color: transparent; background: transparent; }
+    .principle .pimg { display: block; width: 100%; height: auto; object-fit: contain; background: var(--card-2); }
+    /* Live-mock band: embed the running step instead of a static shot.
+       Height is synced from the embed via postMessage (below); 340px is
+       just the pre-load placeholder so the band never collapses. */
+    .principle iframe.pimg { border: 0; height: 340px; }
+
+    /* ---------- Reflection ---------- */
+    .reflect {
+      background: var(--ink);
+      color: #fff;
+      border-radius: var(--radius-lg);
+      padding: 44px 40px;
+    }
+    .reflect .rk {
+      font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: 1.3px; text-transform: uppercase; color: var(--green);
+    }
+    .reflect .big {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(24px, 3.6vw, 36px);
+      line-height: 1.14; letter-spacing: -0.6px; font-weight: 600;
+      margin: 16px 0 0;
+    }
+    .reflect .big .fade { color: #a1a1aa; }
+    .reflect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 30px; }
+    .reflect-grid .rc strong {
+      display: block; font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: 1.1px; text-transform: uppercase; color: #71717a; margin-bottom: 8px;
+    }
+    .reflect-grid .rc p { margin: 0; color: #d4d4d8; font-size: 15px; line-height: 1.6; }
+
+    /* ---------- Footer ---------- */
+    footer { padding: 40px 0 60px; margin-top: 8px; }
+    .foot-inner { width: min(1180px, calc(100vw - 40px)); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    .foot-meta { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--faint); letter-spacing: .4px; }
+    .foot-meta strong { color: var(--soft); font-weight: 600; }
+
+    /* ---------- Shell + left section nav ---------- */
+    section[id] { scroll-margin-top: 76px; }
+    .shell {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 196px minmax(0, 1fr);
+      gap: 46px;
+      align-items: start;
+    }
+    .content { min-width: 0; }
+    .content .wrap { width: 100%; }
+    .toc {
+      position: sticky;
+      top: 78px;
+      margin-top: 96px;
+      padding-right: 8px;
+    }
+    .toc-title {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: var(--ink);
+      margin-bottom: 3px;
+    }
+    .toc-kicker {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 16px;
+    }
+    .toc-list { display: flex; flex-direction: column; }
+    .toc-list a {
+      display: flex;
+      gap: 11px;
+      align-items: baseline;
+      padding: 8px 0 8px 15px;
+      margin-left: -1px;
+      border-left: 2px solid var(--line);
+      font-size: 13.5px;
+      color: var(--muted);
+      transition: color .2s ease, border-color .2s ease;
+    }
+    .toc-list a .n {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10.5px;
+      color: var(--faint);
+      transition: color .2s ease;
+    }
+    .toc-list a:hover { color: var(--ink); }
+    .toc-list a.active { color: var(--ink); font-weight: 600; border-color: var(--ink); }
+    .toc-list a.active .n { color: var(--green); }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; gap: 0; }
+      .toc { display: none; }
+    }
+    @media (max-width: 820px) {
+      .meta-grid { grid-template-columns: 1fr 1fr; }
+      .meta-cell:nth-child(2) { border-right: none; }
+      .meta-cell:nth-child(1), .meta-cell:nth-child(2) { border-bottom: 1px solid var(--line); }
+      .why-grid { grid-template-columns: 1fr; }
+      .break-grid { grid-template-columns: 1fr; }
+      .principles { grid-template-columns: 1fr; }
+      .reflect-grid { grid-template-columns: 1fr; }
+      .fmap { grid-template-columns: 1fr; }
+      .fmap-svg { display: none; }
+      .fmap-mid { display: none; }
+      .fmap-caption { display: none; }
+      .fmap-col { gap: 10px; }
+      .fmap-col--left { margin-bottom: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="back-link" href="portfolio.html">
+        <span class="arw mono">&larr;</span>
+        <span>Bingnan Jiang</span>
+      </a>
+      <div class="top-actions">
+        <a class="btn" href="portfolio.html#work">All work</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="shell">
+      <aside class="toc" id="toc">
+        <div class="toc-title">MicroClaw</div>
+        <div class="toc-kicker">Case study</div>
+        <nav class="toc-list">
+          <a href="#context"><span class="n">01</span><span>Context</span></a>
+          <a href="#problem"><span class="n">02</span><span>Problem</span></a>
+          <a href="#insight"><span class="n">03</span><span>Insight</span></a>
+          <a href="#process"><span class="n">04</span><span>Process</span></a>
+          <a href="#final"><span class="n">05</span><span>Final design</span></a>
+          <a href="#reflection"><span class="n">06</span><span>Reflection</span></a>
+        </nav>
+      </aside>
+      <div class="content">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap">
+        <div class="kicker"><span class="dot"></span>Case study · Agentic AI · 0 &rarr; 1</div>
+        <h1>MicroClaw</h1>
+        <p class="lede">From <em>FOMO-driven installs</em> to <em>trusted, repeat use</em> — designing agentic AI for first-time users in China through <em>first wins</em>, <em>visible boundaries</em>, and <em>ambient habit loops</em>.</p>
+        <div class="meta-grid">
+          <div class="meta-cell"><div class="k">Role</div><div class="v">Lead product designer</div></div>
+          <div class="meta-cell"><div class="k">Scope</div><div class="v">Strategy &rarr; prototype</div></div>
+          <div class="meta-cell"><div class="k">Timeline</div><div class="v">1 week · AI-assisted sprint</div></div>
+          <div class="meta-cell"><div class="k">Status</div><div class="v">Interactive prototype</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 01 CONTEXT -->
+    <section class="block" id="context">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">01 / Context</div>
+          <h2>What MicroClaw is</h2>
+          <p>MicroClaw is an agentic AI assistant aimed at first-time users in China. The hard part isn't what the agent can do — it's getting a novice to trust it enough to install it, succeed once, and come back.</p>
+        </div>
+        <div class="card">
+          <div class="why-lead">
+            <span class="why-num">The core bet · Adoption over capability</span>
+            <strong class="why-lead-title">Agentic adoption is a product-design problem, not a model problem.</strong>
+            <p>The models can already act. For a first-time user the question isn't &ldquo;what can it do,&rdquo; but &ldquo;can I trust it with something real?&rdquo; So adoption becomes a sequence of small beliefs the product has to earn, in order:</p>
+          </div>
+          <div class="why-grid">
+            <div class="why-card">
+              <span class="why-num">Belief 01 · Start</span>
+              <strong>&ldquo;I can install it.&rdquo;</strong>
+              <p>The first commitment has to cost almost nothing — no wall of permissions or setup before any value is felt.</p>
+            </div>
+            <div class="why-card">
+              <span class="why-num">Belief 02 · First win</span>
+              <strong>&ldquo;I can use it successfully.&rdquo;</strong>
+              <p>A brand-new category is intimidating. The first run needs to produce a real, concrete win — not a blank prompt box.</p>
+            </div>
+            <div class="why-card">
+              <span class="why-num">Belief 03 · Value &amp; control</span>
+              <strong>&ldquo;It's useful, and I stay in control.&rdquo;</strong>
+              <p>An agent acts on its own. Its work has to be legible and bounded, so power feels like help, not risk.</p>
+            </div>
+            <div class="why-card">
+              <span class="why-num">Belief 04 · Return</span>
+              <strong>&ldquo;I can trust and reuse it.&rdquo;</strong>
+              <p>One win isn't a habit. There has to be a low-friction, ambient reason to come back tomorrow.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 PROBLEM -->
+    <section class="block" id="problem">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">02 / Problem</div>
+          <h2>Where adoption breaks</h2>
+          <p>Curiosity gets novices to the door, but they fall off at four predictable points. Each one is a place where the product asked for trust it hadn't earned yet.</p>
+        </div>
+        <div class="break-grid">
+          <div class="break-card">
+            <strong>Setup friction</strong>
+            <span class="desc">Install and first-run ask for too much, too early.</span>
+            <span class="flow">Curiosity &rarr; Config wall &rarr; Drop-off</span>
+            <ul class="signals">
+              <li class="bad">Permissions and setup demanded before any value lands.</li>
+              <li class="bad">Novices bounce before they ever reach a first win.</li>
+            </ul>
+          </div>
+          <div class="break-card">
+            <strong>Category confusion</strong>
+            <span class="desc">&ldquo;Agent&rdquo; is a new, abstract idea — users don't know what to say.</span>
+            <span class="flow">Open &rarr; Blank prompt &rarr; Paralysis</span>
+            <ul class="signals">
+              <li class="bad">No mental model for what the thing actually does.</li>
+              <li class="bad">Empty-box paralysis at the very first screen.</li>
+            </ul>
+          </div>
+          <div class="break-card">
+            <strong>Invisible agency</strong>
+            <span class="desc">The agent acts off-screen; users can't see or steer it.</span>
+            <span class="flow">Ask &rarr; ??? &rarr; Result</span>
+            <ul class="signals">
+              <li class="bad">Hidden steps feel out of control and untrustworthy.</li>
+              <li class="good">Trust needs visible boundaries and legible state.</li>
+            </ul>
+          </div>
+          <div class="break-card">
+            <strong>No reason to return</strong>
+            <span class="desc">A one-off trial that never turns into a habit.</span>
+            <span class="flow">First try &rarr; Silence &rarr; Churn</span>
+            <ul class="signals">
+              <li class="bad">Nothing ambient pulls the user back the next day.</li>
+              <li class="good">Repeat use needs a low-friction re-entry point.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>The challenge</strong>
+          <span>Each drop-off point is really a belief the user hasn't been given a reason to hold yet. Adoption is a sequence of trust gates — install, first win, usefulness, control, and return.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 INSIGHT -->
+    <section class="block" id="insight">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">03 / Insight</div>
+          <h2>Adoption is a sequence of belief gates</h2>
+          <p>The frame that organized everything: map each stage of the novice journey to the belief it must earn — and to the design response that earns it. Hover a node to trace the link; click to pin it.</p>
+        </div>
+        <div class="card">
+          <p class="fmap-note">Interactive · hover a node to trace, click to pin</p>
+          <div class="fmap-caption">
+            <span>Journey · Belief</span>
+            <span>Design response</span>
+          </div>
+          <div class="fmap" id="fmap">
+            <svg class="fmap-svg" id="fmap-svg"></svg>
+            <div class="fmap-col fmap-col--left" id="fmap-left"></div>
+            <div class="fmap-mid"><span>earned by</span></div>
+            <div class="fmap-col fmap-col--right" id="fmap-right"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 PROCESS -->
+    <section class="block" id="process">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">04 / Process</div>
+          <h2>How I worked</h2>
+          <p>A fast, one-week 0&rarr;1 sprint: frame the adoption problem, then prototype the key moments as something you can actually feel — using AI to move from idea to a runnable prototype quickly.</p>
+        </div>
+        <div class="card">
+          <div class="why-lead">
+            <span class="why-num">Method · A one-week AI-assisted sprint</span>
+            <strong class="why-lead-title">Prototype the feeling, not just the flow.</strong>
+            <p>Trust in an agent lives in motion and timing — how install, the first win, and the agent's own states actually behave. So the goal wasn't slides; it was a working, animated prototype the model could be judged against.</p>
+          </div>
+          <div class="why-grid">
+            <div class="why-card">
+              <span class="why-num">01 · Frame</span>
+              <strong>Model the adoption funnel</strong>
+              <p>Turned novice adoption into the sequence of belief gates in section 03, so every later decision traces back to the belief it's meant to earn.</p>
+            </div>
+            <div class="why-card">
+              <span class="why-num">02 · Prototype the moments</span>
+              <strong>Make it feelable</strong>
+              <p>Built the pivotal moments — install, scenario-to-first-win, live agent states — as an interactive, animated prototype rather than static mockups.</p>
+            </div>
+            <div class="why-card">
+              <span class="why-num">03 · Design &times; engineering</span>
+              <strong>A tight build loop</strong>
+              <p>Used AI coding to turn interaction intent directly into runnable UI, so design and implementation moved as one fast loop instead of a handoff.</p>
+            </div>
+            <div class="why-card">
+              <span class="why-num">04 · Explore metaphors</span>
+              <strong>Make agency legible</strong>
+              <p>Explored familiar, app-like system metaphors for the agent's invisible states, plus a permission &times; autonomy ladder for visible, adjustable control.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 FINAL DESIGN -->
+    <section class="block" id="final">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">05 / Final design</div>
+          <h2>The experience, end to end</h2>
+          <p>Six designed moments carry a first-time user from install to habit — each one built to earn the next belief. The prototype below is where the motion and timing live — open it full-screen to feel it. The cards under it are the argument: the barrier a first-timer hits at each gate, and the design response that earns past it.</p>
+        </div>
+
+        <div class="card">
+          <div class="principles">
+            <div class="principle">
+              <div class="ptext">
+                <div class="pk">Gate 01</div>
+                <strong>&ldquo;I can install it.&rdquo;</strong>
+                <p>A first-timer won't commit before the product has proven anything. So the first ask is almost nothing — <em>one-step install with deferred decisions</em>; permissions and setup arrive later, in context, only when they actually buy the user something.</p>
+              </div>
+              <div class="pframe pframe--bare">
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=1" title="Step 1 — the install screen, running live" loading="lazy" scrolling="no"></iframe>
+              </div>
+            </div>
+            <div class="principle">
+              <div class="ptext">
+                <div class="pk">Gate 02</div>
+                <strong>&ldquo;I can use it.&rdquo;</strong>
+                <p>Dropped at a blank prompt, a novice stalls. So they're routed straight into a <em>concrete scenario built to produce a guaranteed first win</em>, instead of being asked to invent a use case.</p>
+              </div>
+              <div class="pframe">
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=2" title="Step 2 — orientation, running live" loading="lazy" scrolling="no"></iframe>
+              </div>
+            </div>
+            <div class="principle">
+              <div class="ptext">
+                <div class="pk">Gate 03</div>
+                <strong>&ldquo;It's useful.&rdquo;</strong>
+                <p>An agent's work is invisible, so its value is easy to miss. So <em>familiar, app-like metaphors</em> stand in for the hidden states, making the work legible at a glance.</p>
+              </div>
+              <div class="pframe">
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=3" title="Step 3 — first win, running live" loading="lazy" scrolling="no"></iframe>
+              </div>
+            </div>
+            <div class="principle">
+              <div class="ptext">
+                <div class="pk">Gate 04</div>
+                <strong>&ldquo;I stay in control.&rdquo;</strong>
+                <p>People fear an agent that acts faster than they trust it. So a <em>permission &times; autonomy ladder</em> lets users see and set how far it can go — autonomy grows in step with trust, never ahead of it.</p>
+              </div>
+              <div class="pframe">
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=4" title="Step 4 — personal relevance, running live" loading="lazy" scrolling="no"></iframe>
+              </div>
+            </div>
+            <div class="principle">
+              <div class="ptext">
+                <div class="pk">Gate 05</div>
+                <strong>&ldquo;I can recover.&rdquo;</strong>
+                <p>One irreversible mistake ends the relationship. So every boundary and error is a <em>recoverable limit</em> — undoable by design, never punishing to a nervous first-timer.</p>
+              </div>
+              <div class="pframe">
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=5" title="Step 5 — the trust console, running live" loading="lazy" scrolling="no"></iframe>
+              </div>
+            </div>
+            <div class="principle">
+              <div class="ptext">
+                <div class="pk">Gate 06</div>
+                <strong>&ldquo;I'll come back.&rdquo;</strong>
+                <p>A single win fades if nothing pulls the user back. So <em>lightweight, ambient loops</em> plant low-friction reasons to return — turning one first win into a repeated, trusted habit.</p>
+              </div>
+              <div class="pframe">
+                <img class="pimg" src="assets/mc-step-06-placeholder.svg" alt="Placeholder for the sixth first-run moment — demo coming soon" loading="lazy">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 REFLECTION -->
+    <section class="block" id="reflection">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">06 / Reflection</div>
+          <h2>From FOMO to trust</h2>
+        </div>
+        <div class="reflect">
+          <div class="rk">The shift</div>
+          <div class="big">From a <span class="fade">FOMO-driven install</span> to trusted, repeat use.</div>
+          <div class="reflect-grid">
+            <div class="rc">
+              <strong>What it is</strong>
+              <p>A 0&rarr;1 concept and interactive prototype for onboarding novices to agentic AI — not a shipped product with usage data, but a complete, feelable model of the whole experience.</p>
+            </div>
+            <div class="rc">
+              <strong>The reusable model</strong>
+              <p>Adoption reframed as a sequence of belief gates, each earned by a specific design response — a lens that outlives this one product.</p>
+            </div>
+            <div class="rc">
+              <strong>The trust system</strong>
+              <p>A progressive permission &times; autonomy ladder plus recoverable limits — a concrete pattern for giving first-time users real control over an autonomous agent.</p>
+            </div>
+            <div class="rc">
+              <strong>What I'd validate next</strong>
+              <p>The honest open questions: does scenario-to-first-win actually convert, and do ambient loops drive real return? The next step is testing with real first-time users.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap foot-inner">
+      <div class="foot-meta"><strong>MicroClaw</strong> · Agentic AI · 0 &rarr; 1 concept &amp; prototype</div>
+      <div class="top-actions">
+        <a class="btn" href="portfolio.html#work">Next work &rarr;</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      // ---- Belief-gate map: journey stage -> design response ----
+      var features = [
+        { id: "discover", label: "Discover", kano: "FOMO",      belief: "“Should I even try this?”" },
+        { id: "install",  label: "Install",  kano: "Commit",    belief: "“I can install it.”" },
+        { id: "firstuse", label: "First use",kano: "First win",  belief: "“I can use it successfully.”", star: true },
+        { id: "value",    label: "See value",kano: "Value",      belief: "“It's useful for me.”" },
+        { id: "return",   label: "Return",   kano: "Habit",     belief: "“I can trust &amp; reuse it.”" }
+      ];
+      var modalities = [
+        { id: "onestep",  label: "One-step install",         effort: "Lower the bar",       desc: "Install with deferred decisions — permissions and setup come later, in context." },
+        { id: "scenario", label: "Scenario-to-first-win",    effort: "Guarantee a win",     desc: "Route new users into a scenario that reliably produces a real first win." },
+        { id: "metaphor", label: "System metaphors",         effort: "Make agency legible", desc: "Familiar, app-like metaphors stand in for the agent's invisible states." },
+        { id: "controls", label: "Progressive trust controls", effort: "Visible boundaries", desc: "A permission × autonomy ladder — the user sees and sets how far the agent can go." },
+        { id: "recover",  label: "Recoverable limits",       effort: "Safe failure",        desc: "Every limit and failure is reversible — nothing feels irreversible." },
+        { id: "ambient",  label: "Ambient habit loops",      effort: "Easy re-entry",       desc: "Lightweight, ambient entry points that give a reason to come back." }
+      ];
+      var linkNotes = {
+        discover: "FOMO gets them curious — a concrete scenario turns curiosity into a reason to start.",
+        install: "The first commitment must cost almost nothing — defer every heavy decision.",
+        firstuse: "The first run has to succeed. Hand them a scenario with a guaranteed win.",
+        value: "Make the invisible agent legible and bounded — that's what earns 'useful and safe'.",
+        return: "Repeat use is earned by visible control and a low-friction way back in."
+      };
+      var capabilityLinks = [
+        ["discover", "scenario"], ["discover", "onestep"],
+        ["install", "onestep"],
+        ["firstuse", "scenario"], ["firstuse", "metaphor"],
+        ["value", "metaphor"], ["value", "controls"],
+        ["return", "controls"], ["return", "recover"], ["return", "ambient"]
+      ];
+
+      var leftEl = document.getElementById("fmap-left");
+      var rightEl = document.getElementById("fmap-right");
+      var mapEl = document.getElementById("fmap");
+      var svg = document.getElementById("fmap-svg");
+      var SVGNS = "http://www.w3.org/2000/svg";
+
+      var stageNodes = {}, capNodes = {}, pathEls = [];
+      var pinned = null; // { type, id }
+      var hover = null;
+
+      features.forEach(function (f) {
+        var node = document.createElement("div");
+        node.className = "fmap-node";
+        var kicker = '<div class="fmap-kicker ' + (f.star ? "k-delight" : "k-perf") + '"><span class="kdot"></span><span>' + f.kano + '</span></div>';
+        node.innerHTML = kicker + '<strong>' + f.label + '</strong><span class="fmap-belief">' + f.belief + '</span><p class="fmap-desc">' + linkNotes[f.id] + '</p>';
+        node.addEventListener("mouseenter", function () { onEnter("stage", f.id); });
+        node.addEventListener("click", function () { onClick("stage", f.id); });
+        leftEl.appendChild(node);
+        stageNodes[f.id] = node;
+      });
+
+      modalities.forEach(function (m) {
+        var node = document.createElement("div");
+        node.className = "fmap-node";
+        node.innerHTML = '<div class="fmap-kicker"><span class="kdot"></span><span>' + m.effort + '</span></div><strong>' + m.label + '</strong><p class="fmap-desc">' + m.desc + '</p>';
+        node.addEventListener("mouseenter", function () { onEnter("cap", m.id); });
+        node.addEventListener("click", function () { onClick("cap", m.id); });
+        rightEl.appendChild(node);
+        capNodes[m.id] = node;
+      });
+
+      capabilityLinks.forEach(function (pair) {
+        var p = document.createElementNS(SVGNS, "path");
+        p.setAttribute("class", "fmap-path");
+        p.__stage = pair[0];
+        p.__cap = pair[1];
+        svg.appendChild(p);
+        pathEls.push(p);
+      });
+
+      mapEl.addEventListener("mouseleave", function () { hover = null; render(); });
+
+      function activeMap() { return pinned || hover; }
+
+      function isLinkedToPinned(type, id) {
+        if (!pinned) return true;
+        if (pinned.type === type && pinned.id === id) return true;
+        if (pinned.type === "stage" && type === "cap") return capabilityLinks.some(function (l) { return l[0] === pinned.id && l[1] === id; });
+        if (pinned.type === "cap" && type === "stage") return capabilityLinks.some(function (l) { return l[1] === pinned.id && l[0] === id; });
+        return false;
+      }
+      function onEnter(type, id) {
+        if (pinned && !isLinkedToPinned(type, id)) return;
+        hover = { type: type, id: id };
+        render();
+      }
+      function onClick(type, id) {
+        if (pinned) {
+          if (pinned.type === type && pinned.id === id) { pinned = null; hover = null; render(); }
+          return;
+        }
+        pinned = { type: type, id: id };
+        hover = { type: type, id: id };
+        render();
+      }
+
+      function render() {
+        var am = activeMap();
+        var linkedStages = {}, linkedCaps = {};
+        if (am && am.type === "cap") capabilityLinks.forEach(function (l) { if (l[1] === am.id) linkedStages[l[0]] = true; });
+        if (am && am.type === "stage") capabilityLinks.forEach(function (l) { if (l[0] === am.id) linkedCaps[l[1]] = true; });
+
+        features.forEach(function (f) {
+          var n = stageNodes[f.id];
+          var isActive = am && am.type === "stage" && am.id === f.id;
+          var isLinked = !!linkedStages[f.id];
+          var isDim = am && !isActive && !isLinked;
+          n.classList.toggle("is-active", !!isActive);
+          n.classList.toggle("is-linked", isLinked);
+          n.classList.toggle("is-dim", !!isDim);
+        });
+        modalities.forEach(function (m) {
+          var n = capNodes[m.id];
+          var isActive = am && am.type === "cap" && am.id === m.id;
+          var isLinked = !!linkedCaps[m.id];
+          var isDim = am && !isActive && !isLinked;
+          n.classList.toggle("is-active", !!isActive);
+          n.classList.toggle("is-linked", isLinked);
+          n.classList.toggle("is-dim", !!isDim);
+        });
+        pathEls.forEach(function (p) {
+          var on = am && ((am.type === "stage" && p.__stage === am.id) || (am.type === "cap" && p.__cap === am.id));
+          p.classList.toggle("is-active", !!on);
+          p.classList.toggle("is-dim", !!(am && !on));
+        });
+      }
+
+      function drawPaths() {
+        var mapRect = mapEl.getBoundingClientRect();
+        svg.setAttribute("viewBox", "0 0 " + mapRect.width + " " + mapRect.height);
+        pathEls.forEach(function (p) {
+          var s = stageNodes[p.__stage], c = capNodes[p.__cap];
+          if (!s || !c) return;
+          var sr = s.getBoundingClientRect(), cr = c.getBoundingClientRect();
+          var x1 = sr.right - mapRect.left;
+          var y1 = sr.top + sr.height / 2 - mapRect.top;
+          var x2 = cr.left - mapRect.left;
+          var y2 = cr.top + cr.height / 2 - mapRect.top;
+          var dx = (x2 - x1) * 0.5;
+          p.setAttribute("d", "M " + x1 + " " + y1 + " C " + (x1 + dx) + " " + y1 + ", " + (x2 - dx) + " " + y2 + ", " + x2 + " " + y2);
+        });
+      }
+
+      var raf;
+      function schedule() { cancelAnimationFrame(raf); raf = requestAnimationFrame(drawPaths); }
+      window.addEventListener("resize", schedule);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+      drawPaths();
+      setTimeout(drawPaths, 120);
+      setTimeout(drawPaths, 400);
+      render();
+    })();
+
+    // ---- Left section-nav scroll-spy ----
+    (function () {
+      var ids = ["context", "problem", "insight", "process", "final", "reflection"];
+      var links = {};
+      ids.forEach(function (id) { links[id] = document.querySelector('.toc-list a[href="#' + id + '"]'); });
+      var els = ids.map(function (id) { return document.getElementById(id); }).filter(Boolean);
+      if (!els.length) return;
+      var visible = {};
+      function setActive(id) {
+        ids.forEach(function (k) { if (links[k]) links[k].classList.toggle("active", k === id); });
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) visible[e.target.id] = true; else delete visible[e.target.id];
+        });
+        var top = ids.filter(function (id) { return visible[id]; })[0];
+        if (top) setActive(top);
+      }, { rootMargin: "-40% 0px -55% 0px", threshold: 0 });
+      els.forEach(function (el) { io.observe(el); });
+      setActive("context");
+    })();
+
+    /* Auto-size the embedded steps frames to their content, so each
+       screen shows with no inner scroll. Every embed (the full stack at
+       the top and each ?only=N live card below) posts its rendered
+       height; we match the message to its source window and size that
+       frame. The top embed sizes its wrapper (.proto-frame); the live
+       card iframes size themselves. */
+    (function () {
+      var frames = document.querySelectorAll("#microclaw-embed, iframe.pimg--live");
+      if (!frames.length) return;
+      window.addEventListener("message", function (e) {
+        var d = e.data;
+        if (!d || d.type !== "microclaw-embed-height") return;
+        var h = Number(d.height);
+        if (!(h > 0)) return;
+        for (var i = 0; i < frames.length; i++) {
+          if (frames[i].contentWindow === e.source) {
+            if (frames[i].id === "microclaw-embed") {
+              frames[i].parentNode.style.height = Math.max(360, h) + "px";
+            } else {
+              frames[i].style.height = Math.max(200, h) + "px";
+            }
+            break;
+          }
+        }
+      });
+    })();
+  </script>
+</body></html>
