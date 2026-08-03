@@ -16,7 +16,9 @@
   --mc-paper:     #ffffff;
   --mc-text:      #272320;
   --mc-text-2:    #4c4642;
-  --mc-text-muted:#b3ada8;
+  --mc-text-muted:#b3ada8;   /* body-copy compromise — see deviation 3 */
+  --mc-hint:      #cfc9c5;   /* --text-muted verbatim: placeholders and resting
+                                icons, where the app's lighter value is right */
   --mc-border:    rgba(0,0,0,0.12);
   --mc-border-row:rgba(0,0,0,0.10);
   --mc-border-lt: #efeae7;
@@ -32,12 +34,12 @@
        --smtc-status-{danger,success,informative}-tint-{background,foreground,stroke}
        --smtc-ctrl-list-background-selected-rest */
   --mc-success:      #01712b;    /* success-tint-foreground / -stroke */
-  --mc-success-tint: #97dfa133;  /* success-tint-background  → #eaf9ec on paper */
+  --mc-success-tint: #97dfa199;  /* success-tint-background at 60%, not the
+                                    token's 20% — see deviation 2 */
   --mc-danger:       #ac1922;    /* danger-tint-foreground  / -stroke */
-  --mc-danger-tint:  #ffb5ae33;  /* danger-tint-background   → #fff0ef on paper */
   --mc-info-tint:    #efeae7;    /* informative-tint-background */
-  --mc-info-stroke:  #e2ddd9;    /* informative-tint-stroke */
-  --mc-list-sel:     #00000008;  /* ctrl-list-background-selected-rest */
+  --mc-selected:     #efeae7;    /* --bg-selected, stone-200 — replaces the old
+                                    ctrl-list-background-selected-rest #00000008 */
   --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 }
 
@@ -53,13 +55,18 @@
       at full strength it out-shouted the step titles it annotates. Every
       value is still a system token — only the pairing differs.
 
-   2. .tl-dot.done ring — DEVIATION, deliberate.
-      The success-tint recipe includes a full-strength #01712b stroke. We
-      drop the stroke and keep tint fill + dark glyph, which is exactly how
-      .tl-tag.confirm renders the danger tint. Finished steps and the step
-      that is waiting then share one shape language, and at 16px that ring
-      was the heaviest mark on a card whose whole argument is that completed
-      work should recede. Fill and glyph are still the system's values.
+   2. .tl-dot.done — DEVIATION, deliberate, two parts.
+      (a) No ring. The success-tint recipe includes a full-strength #01712b
+      stroke; we keep only tint fill + dark glyph. At 16px that ring was the
+      heaviest mark on a card whose whole argument is that completed work
+      should recede.
+      (b) The fill runs at 60% (#97dfa199), not the token's 20%. The tints are
+      authored for a white page; this card is warm stone #f8f4f1, and the
+      limit there is chroma, not lightness. At 20% the fill lands on #e5f0e1 —
+      chroma 15 against a card that is already 7, so it reads as beige with a
+      hint rather than as green. 60% takes chroma to 41 and still leaves the
+      #01712b glyph at 4.53:1, above the 4.5 floor; past ~70% the glyph starts
+      failing it. The hue is untouched — only the dilution changed.
 
    3. --mc-text-muted #b3ada8 — DEVIATION, inherited.
       The app's --text-muted is #cfc9c5, which is a *placeholder* colour and
@@ -136,9 +143,13 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .app-pnav-spacer { flex: 1; }
 .app-pnav-item {
   width: 100%; display: flex; align-items: center; justify-content: center;
-  padding: 10px 4px; border-radius: 8px; color: var(--mc-text-muted);
+  padding: 10px 4px; border-radius: 8px; color: var(--mc-hint);
+  transition: background 0.15s, color 0.15s;
 }
-.app-pnav-item.active { color: var(--mc-text); }
+.app-pnav-item:hover { background: rgba(0,0,0,0.05); color: var(--mc-text-2); }
+/* .pnav-item.active is colour-only — the app deliberately gives the active
+   rail item no fill, so the rail reads as one surface with one dark icon. */
+.app-pnav-item.active { background: transparent; color: var(--mc-text); }
 .app-pnav-utilities .app-pnav-item { color: var(--mc-text-2); }
 .app-pnav-item svg { width: 22px; height: 22px; display: block; }
 
@@ -154,7 +165,7 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
   margin: 4px 14px 12px; padding: 8px 12px;
   background: rgba(0,0,0,0.045); border-radius: 20px;
   display: flex; align-items: center; gap: 8px;
-  font-size: 13px; color: var(--mc-text-muted); flex-shrink: 0;
+  font-size: 13px; color: var(--mc-hint); flex-shrink: 0;
 }
 .app-sidebar-search-icon { width: 14px; height: 14px; flex-shrink: 0; display: grid; place-items: center; }
 .app-sidebar-search-icon svg { width: 14px; height: 14px; }
@@ -167,17 +178,13 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
   flex-shrink: 0;
 }
 .app-sidebar-section { margin-top: 4px; }
-.app-sidebar-section-head {
-  padding: 6px 18px 4px;
-  font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
-  text-transform: uppercase; color: var(--mc-text-muted);
-}
 .app-sidebar-list { padding: 0 8px; display: flex; flex-direction: column; }
 .app-agent-row {
   display: flex; align-items: center; gap: 10px;
   padding: 9px 10px; border-radius: 10px; position: relative;
 }
-.app-agent-row.selected { background: var(--mc-bg); }   /* .agent-header.selected → --bg-tertiary */
+.app-agent-row { transition: background 0.15s; }
+.app-agent-row.selected { background: var(--mc-selected); }
 .app-agent-avatar {
   width: 36px; height: 36px; border-radius: 50%;
   flex-shrink: 0; overflow: hidden; background: #ddd;
@@ -185,26 +192,38 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .app-agent-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .app-agent-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
 .app-agent-name {
-  font-size: 13px; font-weight: 500; color: var(--mc-text);
+  font-size: 13.5px; font-weight: 600; color: var(--mc-text);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3;
 }
+/* --text-secondary, not --text-muted: the app moved this up a step. The hint
+   grey is for placeholders, and this is a real line of copy. */
 .app-agent-desc {
-  font-size: 11px; font-weight: 400; color: var(--mc-text-muted);
+  font-size: 11.5px; font-weight: 400; color: var(--mc-text-2);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3;
 }
-/* A session hangs off its agent, so its label starts where the agent's name
-   does: list padding 8 + row padding 10 + avatar 36 + gap 10 = 56px. The chip
-   keeps the row's full width so the two cards still share an edge. */
+/* .task-row — flush with the agent header above it, so the row's icon lands
+   on the same left edge as the avatar. Ownership reads from the grouping and
+   the lighter weight; it needs neither an indent nor a caption. */
 .app-session-item {
-  margin: 2px 8px 0 8px;
-  padding: 7px 10px 7px 56px;
+  display: flex; align-items: center; gap: 8px;
+  margin: 1px 8px 0 8px;
+  padding: 7px 10px;
   border-radius: 8px;
-  font-size: 12px; color: var(--mc-text-2);
+  font-size: 13px; font-weight: 500; color: var(--mc-text-2);
+  transition: background 0.15s, color 0.15s;
+}
+.app-session-item svg { width: 14px; height: 14px; flex-shrink: 0; color: var(--mc-hint); transition: color 0.15s; }
+.app-session-item:hover svg,
+.app-session-item.selected svg { color: var(--mc-text-2); }
+.app-session-item span {
+  min-width: 0; flex: 1;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 /* Selection belongs to whatever is open in the main pane — that's the session.
    The agent above it is context, not a second selected thing. */
-.app-session-item.selected { background: var(--mc-list-sel); color: var(--mc-text); font-weight: 600; }
+.app-session-item:hover { background: var(--mc-bg); color: var(--mc-text); }
+.app-session-item.selected { background: var(--mc-selected); color: var(--mc-text); }
+.app-session-item.selected span { font-weight: 600; }
 
 /* main column */
 .app-main {
@@ -251,9 +270,12 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   font-size: 14px; line-height: 1.55;
 }
+/* A reply is text, not an object. Giving up this fill is what frees the warm
+   stone to mean "something you operate on" everywhere else.
+   6px top keeps the first line optically level with the 30px avatar. */
 .chat-bubble.assistant {
-  background: var(--mc-bg); border: 0.5px solid var(--mc-border);
-  border-radius: 18px; padding: 12px 18px;
+  background: transparent; border: none; border-radius: 0;
+  padding: 6px 0 2px;
   font-size: 14px; line-height: 1.65; color: var(--mc-text);
 }
 
@@ -264,13 +286,15 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
    ========================================================================== */
 .tl-card {
   margin-top: 10px;
-  background: var(--mc-paper);
+  /* Warm stone inherited from the reply bubble that just gave it up, and 18px
+     to match .chat-bubble.user — one fill and one radius for the whole thread. */
+  background: var(--mc-bg);
   border: 1px solid var(--mc-border);
-  border-radius: 14px;
-  /* Bottom runs deeper than the other three: the footer ends in a 22px
-     button, and a round mark that close to the edge reads as crowded even
-     when the measured gap matches the top. */
-  padding: 14px 16px 20px;
+  border-radius: 18px;
+  /* Roomier on all four sides, toward .phone-auth-card's 24/26. Not the whole
+     way: that card carries a mascot and two lines, this one a six-row list,
+     and at 24 the rows started to feel stranded in their own margin. */
+  padding: 18px 20px 20px;
   width: 100%;
   max-width: 430px;          /* compact panel — not the full chat column */
 }
@@ -278,23 +302,18 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 
 .tl-head {
   display: flex; align-items: center; gap: 8px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 .tl-head-label { font-size: 12px; font-weight: 600; color: var(--mc-text-2); letter-spacing: 0.02em; }
-/* Progress belongs on the right, where every step row already keeps its
-   "Step 1/6 · 2.1s" — the header then reads as the same two-column shape as
-   the list under it. It also means the label can change width ("Working" →
-   "Paused") without anything sliding. Pill dropped: a tint that faint left
-   the count at 2:1, and the count is not a chip. */
+/* No pill: a tint that faint left the count at 2:1, and a count is not a chip. */
 .tl-head-count {
-  margin-left: auto;
   font-size: 11px; color: var(--mc-text-2);
   font-variant-numeric: tabular-nums;
 }
 /* the plan changing itself is news, not a call to action — neutral chip */
 .tl-replan {
   font-size: 11px; font-weight: 600;
-  background: var(--mc-bg); color: var(--mc-text);
+  background: var(--mc-info-tint); color: var(--mc-text);
   padding: 2px 9px; border-radius: 10px;
   animation: grp-in 300ms ease-out;
 }
@@ -314,20 +333,84 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
    row sits a shade *lighter* than the canvas hover, and the spinner plus the
    bolder title carry the rest. Pointing at a row must still darken it. */
 .tl-step:hover { background: var(--mc-border-lt); }
-.tl-step.ghost { opacity: 0.3; }
-.tl-step.ghost:hover { background: transparent; }
-.tl-step.running { background: var(--mc-bg); }
-.tl-step.running:hover { background: var(--mc-border-lt); }
+/* Dropped rows are discarded history — subordinate, but still legible enough
+   to read what was dropped. 0.3 was tuned against a white card; on stone it
+   left the title at 1.86:1 and the sub-line at 1.21:1, i.e. gone.
+   Opacity also compounds: the sub-line starts from a muted grey, so it gets
+   dimmed twice. Starting it from --mc-text-2 is what keeps it on the page. */
+.tl-step.ghost { opacity: 0.6; }
 
-/* trust tag — says in words why a step pauses, so no legend is needed.
-   Outline = you may act (notify) · filled tint = you must (confirm). */
-.tl-tag {
-  flex-shrink: 0; white-space: nowrap;
-  padding: 2px 9px; border-radius: 10px;
-  font-size: 10px; font-weight: 400; letter-spacing: 0.02em;
+/* Rewinding is a change of state, so it plays where the state lives: the tick
+   spins off and the filled dot empties back into a ring. Tinting the whole row
+   was the wrong instinct — that shade is what hover uses, so the sweep read as
+   a pointer running up the list rather than as work being undone.
+   Bottom row first, so the sweep travels back towards step 2. */
+/* No tick is put back — re-adding it read as the step completing again a beat
+   before it was undone. Instead each dot holds its finished state until the
+   sweep reaches it, then drains.
+   The rotation is carried by the same arc the running dot spins, turned the
+   other way: a step that is working winds forward, a step being un-run winds
+   back. A circle can't show rotation on its own — the arc is the only part of
+   this mark with an angle to read. */
+/* Opening sweep. The clip starts mid-run, so the finished steps arrive all at
+   once unless they are dealt in — top to bottom, the order they happened. It
+   is the un-run played forwards: arc winds in, fill lands, tick scales up.
+   Read together, the two sweeps make the direction legible on its own —
+   downwards is work being done, upwards is work being undone. */
+.tl-step.landing .tl-dot { animation: tl-dot-run 420ms ease-out both; }
+@keyframes tl-dot-run {
+  0%   { background: transparent;            border: 1.5px solid var(--mc-text-muted); }
+  55%  { background: transparent;            border: 1.5px solid var(--mc-text-muted); }
+  100% { background: var(--mc-success-tint); border: 1.5px solid transparent; }
 }
-.tl-tag.notify  { background: var(--mc-paper); color: var(--mc-text-2); box-shadow: inset 0 0 0 1px var(--mc-info-stroke); }
-.tl-tag.confirm { background: var(--mc-danger-tint); color: var(--mc-danger); }
+.tl-step.landing .tl-dot::after {
+  content: ""; position: absolute; inset: -1.5px;
+  border-radius: 50%; border: 1.5px solid transparent;
+  border-top-color: var(--mc-success);
+  animation: tl-wind 420ms cubic-bezier(0.35, 0, 0.35, 1) both;
+}
+@keyframes tl-wind {
+  0%   { transform: rotate(-360deg); opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: rotate(0deg);    opacity: 0; }
+}
+.tl-step.landing .tl-dot > svg { animation: tl-check-in 260ms ease-out both; }
+@keyframes tl-check-in {
+  0%   { opacity: 0; transform: scale(0.4) rotate(-70deg); }
+  100% { opacity: 1; transform: none; }
+}
+
+.tl-step.reverted .tl-dot { animation: tl-dot-unrun 460ms ease-out both; }
+/* The fill goes first, the arc keeps unwinding after it. Holding the green to
+   70% meant the dot still looked finished most of the way through its own
+   undo — the arc has to be turning against something that has already let go. */
+@keyframes tl-dot-unrun {
+  0%   { background: var(--mc-success-tint); border-color: transparent; }
+  20%  { background: var(--mc-success-tint); border-color: transparent; }
+  60%  { background: transparent;            border-color: var(--mc-text-muted); }
+  100% { background: transparent;            border-color: var(--mc-text-muted); }
+}
+.tl-step.reverted .tl-dot::after {
+  content: ""; position: absolute; inset: -1.5px;
+  border-radius: 50%; border: 1.5px solid transparent;
+  border-top-color: var(--mc-success);
+  /* both, not backwards: backwards only covers the delay, so once the arc
+     finished it snapped back to its resting state — a full green ring left
+     sitting on every dot the sweep had already passed. */
+  animation: tl-unwind 460ms cubic-bezier(0.35, 0, 0.35, 1) both;
+}
+/* Fades the whole way round rather than holding and then cutting at 80%.
+   The green should be leaving for as long as the arc is turning — waiting for
+   the rotation to finish made the disappearance a separate, later event. */
+@keyframes tl-unwind {
+  from { transform: rotate(0deg);    opacity: 1; }
+  to   { transform: rotate(-360deg); opacity: 0; }
+}
+.tl-step.ghost .tl-sub,
+.tl-step.ghost .tl-meta { color: var(--mc-text-2); }
+.tl-step.ghost:hover { background: transparent; }
+.tl-step.running { background: var(--mc-paper); }
+.tl-step.running:hover { background: var(--mc-border-lt); }
 
 /* status dot */
 .tl-dot {
@@ -338,8 +421,7 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .tl-dot.pending { border: 1.5px solid var(--mc-text-muted); }
 .tl-dot.ghost   { border: 1.5px solid var(--mc-text-muted); }
 /* Done is the least actionable row on the card, so it stops being the
-   loudest mark on it: tint fill, dark glyph, no ring — the same shape
-   .tl-tag.confirm makes out of the danger tint. */
+   loudest mark on it: tint fill, dark glyph, no ring. */
 .tl-dot.done    { background: var(--mc-success-tint); color: var(--mc-success); }
 .tl-dot.running { border: 1.5px solid var(--mc-border); }
 .tl-dot.running::after {
@@ -356,7 +438,7 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .tl-main { flex: 1; min-width: 0; }
 .tl-right {
   flex-shrink: 0; padding-top: 1px;
-  display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 5px;
 }
 .tl-title {
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -372,13 +454,74 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 
 /* rewrite trace — struck-out original stays on the left, its badge sits in
    the right column alongside the other step-status chips */
+/* Same size as the title it used to be. Being superseded didn't make the
+   wording shorter or less important — the strike and the lighter ink say it
+   is history, and shrinking it as well only made the evidence harder to read.
+   inline-block so the box hugs the words: as a block it filled the row, and
+   the drawn strike ran the full width while the real line-through that
+   replaces it only covers the text, so the line jumped shorter at the end. */
 .tl-was {
+  /* block + fit-content, not inline-block. Both hug the text so the drawn
+     strike matches the real line-through, but an inline-block still sits in a
+     line box its parent sizes from line-height — so collapsing its height to 0
+     left that line box standing, and the fold ended on an empty row. A block
+     takes its own height and nothing else. */
+  display: block; width: fit-content; max-width: 100%;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-  font-size: 11px; color: var(--mc-text-muted); text-decoration: line-through;
+  font-size: 13px; line-height: 1.5;
+  color: var(--mc-text-2); text-decoration: line-through;
 }
-/* The one chip that records something the *user* did. Filled rather than
-   outlined so it still reads differently from the trust tags beside it, but
-   kept quiet — it's a trace of what happened, not a thing to go press. */
+
+/* The rewrite plays out after that row's dot has emptied, in the order the
+   change actually happens: the old wording drops out of the title slot and is
+   struck, then the new wording takes the slot it left. Showing both at once
+   made it a fact about the step; showing it in order makes it an edit. */
+.tl-step.rewritten .tl-was {
+  text-decoration: none;                       /* the line is drawn instead */
+  position: relative;
+  animation: tl-was-settle 380ms ease-out both;
+}
+.tl-step.rewritten .tl-was::after {
+  content: ""; position: absolute; left: 0; right: 0; top: 50%;
+  height: 1px; background: currentColor;
+  transform-origin: left center;
+  animation: tl-strike 300ms ease-out var(--strike-delay, 0ms) both;
+}
+/* The new wording opens a line above the old one and pushes it down — which
+   is what actually happens. Translating the old line down instead left its
+   own layout slot standing empty, so a blank row opened under it mid-swap. */
+.tl-step.rewritten .tl-title {
+  animation: tl-title-wedge 340ms cubic-bezier(0.2, 0, 0.2, 1) both;
+}
+
+/* Once the step has run again, the superseded wording folds out of the row.
+   It stays reachable on hover — a step edited ten times shouldn't carry ten
+   struck lines, but the record still has to exist. */
+.tl-step.folding .tl-was { animation: tl-was-fold 340ms cubic-bezier(0.4, 0, 0.6, 1) both; }
+/* Height and opacity close together. Fading first and collapsing afterwards
+   left the line's slot standing empty for a beat, so the row looked like it
+   had grown a blank before it shrank. */
+@keyframes tl-was-fold {
+  from { height: 19.5px; opacity: 1; }        /* 13px × 1.5, same as the title */
+  to   { height: 0;      opacity: 0; }
+}
+.tl-actions .tl-was {
+  font-size: 10px; max-width: 150px;
+  color: var(--mc-text-muted);
+}
+/* It doesn't move and it doesn't resize — the only thing that changes is
+   that it stops being the current wording. */
+@keyframes tl-was-settle {
+  from { color: var(--mc-text); }
+  to   { color: var(--mc-text-2); }
+}
+@keyframes tl-strike { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes tl-title-wedge {
+  0%   { opacity: 0; height: 0; }
+  100% { opacity: 1; height: 19.5px; }    /* 13px × 1.5 line-height */
+}
+/* Lives in the hover layer, beside the actions — a trace of what happened,
+   not a thing to press, so it stays quieter than the buttons next to it. */
 .tl-badge {
   display: inline-flex; align-items: center;
   padding: 2px 9px; border-radius: 10px;
@@ -410,9 +553,11 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .tl-inline { margin: 2px 0 6px 25px; animation: grp-in 240ms ease-out; }
 /* Both inline blocks are one shape: a filled panel hanging off the step above.
    Only the rail colour says how serious it is. */
+/* On stone, white reads as raised — the panels you have to answer sit forward
+   and the card stays the ground under them. */
 .tl-note, .tl-confirm {
   padding: 10px 12px;
-  background: var(--mc-bg);
+  background: var(--mc-paper);
   border-radius: 8px;
   border-left: 2px solid;
   font-size: 12.5px; color: var(--mc-text); line-height: 1.5;
@@ -441,7 +586,7 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .tl-confirm { border-left-color: var(--mc-danger); }
 .tl-confirm-q { font-weight: 600; color: var(--mc-text); margin-bottom: 8px; }
 .tl-filelist {
-  background: var(--mc-paper); border-radius: 6px;
+  background: var(--mc-bg); border-radius: 6px;   /* inverted: stone inside a white panel */
   padding: 8px 12px; margin-bottom: 10px;
   font-size: 11.5px; color: var(--mc-text-2); line-height: 1.8;
 }
@@ -449,38 +594,42 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 
 /* buttons — .phone-auth-btn, scaled to the compact card */
 .btn { padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; transition: filter 0.15s; }
-.btn--deny { background: #ffffff; color: var(--mc-text-2); border: 0.5px solid var(--mc-border); }
+.btn--deny { background: transparent; color: var(--mc-text-2); }
 .btn--confirm { background: var(--mc-text); color: #fff; }
 .btn:hover { filter: brightness(1.06); }
 .btn--deny:hover { background: var(--mc-bg); filter: none; }
 
-/* footer */
-.tl-foot { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-.tl-foot-hint { font-size: 11px; color: var(--mc-text-muted); }
-
 /* pause — the one control that's always there, because "I can stop this"
-   shouldn't be something you have to hover a row to discover.
-   Icon-only, so it sits at the head of the footer without competing with
-   the hint text for the eye. */
+   shouldn't be something you have to hover a row to discover. It sits in the
+   card's top-right corner, alone: the corner is where a surface keeps the
+   control that acts on the whole surface. */
 .tl-pause {
   position: relative;
+  margin-left: auto;
   flex-shrink: 0;
   width: 22px; height: 22px; border-radius: 50%;
   display: inline-grid; place-items: center;
-  color: var(--mc-text-2); background: var(--mc-paper);
-  border: 0.5px solid var(--mc-border);
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  color: var(--mc-text-2); background: transparent;
+  border: none;
+  transition: background 0.15s, color 0.15s;
 }
 .tl-pause svg { width: 9px; height: 9px; display: block; }
 /* Hover stays a quiet tint rather than the usual ink fill — ink is spent on
    the halted state below, and a hover that previewed it would read as "already
    paused". */
-.tl-pause:hover { background: var(--mc-bg); color: var(--mc-text); border-color: var(--mc-border-row); }
+/* .hovering is the same state driven by class, because the scripted pointer is
+   an image and can't trigger :hover — in the clip the button was being pointed
+   at by something it had no way of knowing about.
+   Deeper than the rail's rgba(0,0,0,.05): this button is 22px where a rail item
+   is 44, so it has half the area to say it with, and it says it on stone rather
+   than on the rail's own darker surface. */
+.tl-pause:hover,
+.tl-pause.hovering { background: rgba(0,0,0,0.10); color: var(--mc-text); }
 /* Halted = ink, the same weight this file gives a primary action. The button
    is the only way out of the state, so it should read as the thing to press,
    not as a status chip. */
-.tl-pause.is-paused { background: var(--mc-text); color: #fff; border-color: var(--mc-text); }
-.tl-pause.is-paused:hover { background: var(--mc-text-2); color: #fff; border-color: var(--mc-text-2); }
+.tl-pause.is-paused { background: var(--mc-text); color: #fff; }
+.tl-pause.is-paused:hover { background: var(--mc-text-2); color: #fff; }
 /* the play triangle reads left-heavy in a circle — nudge it back to centre */
 .tl-pause.is-paused svg { margin-left: 1px; }
 /* ring that fires once under the scripted pointer, so the press is visible */
@@ -521,7 +670,7 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 
 /* completion */
 .tl-done-head { font-size: 13px; font-weight: 600; color: var(--mc-text); margin: 12px 0 7px; }
-.tl-summary { background: var(--mc-bg); border-radius: 10px; padding: 12px 14px; }
+.tl-summary { background: var(--mc-paper); border-radius: 10px; padding: 12px 14px; }
 .tl-summary-main { font-size: 13px; font-weight: 600; color: var(--mc-text); }
 /* "what you held back" vs "what ran anyway" — one line is inked and weighted,
    the other stays secondary text. Same job the amber used to do, by value. */
@@ -536,19 +685,28 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
    Dimensions taken from the first-run mock in microclaw-steps.html so the
    two screens read as the same app: 20px radius, hairline border, 52px
    input row, 30px icon buttons, 40px send. */
-.chat-compose { flex-shrink: 0; padding: 0 28px 18px; }
+/* Equal inset on all three open sides. At 28px left/right against 18px
+   bottom the box sat lower in its own margin than it did in from the edges
+   and read as dropped rather than centred. */
+.chat-compose { flex-shrink: 0; padding: 0 28px 28px; }
 .compose-wrapper {
   display: flex; flex-direction: column;
   border: 0.5px solid var(--mc-border); border-radius: 20px;
-  padding: 8px 16px; background: var(--mc-paper);
+  padding: 16px 16px 12px; background: var(--mc-paper);
+  /* Two layers: a wide soft halo that lifts the box off the page, and a tight
+     low one that grounds it. One mid-sized shadow reads as a drop shadow —
+     this is meant to be light spilling out. The composer is white on a white
+     page, so without it only a 0.5px hairline separated the two. */
+  box-shadow: 0 4px 20px rgba(39,35,32,0.06), 0 1px 3px rgba(39,35,32,0.04);
+  transition: border-color 0.15s, box-shadow 0.2s;
 }
 .compose-input-row {
   box-sizing: border-box;
-  min-height: 52px;              /* two lines at 15px / 1.6 plus padding */
+  min-height: 28px;              /* .compose-input — one line, grows on wrap */
   padding: 4px 0 12px;
   font-size: 15px; line-height: 1.6; color: var(--mc-text);
 }
-.compose-placeholder { color: var(--mc-text-muted); }
+.compose-placeholder { color: var(--mc-hint); }
 /* The pointer hands off to a caret here: same idea, different tool. Once the
    field is focused the placeholder goes, so the caret is the only mark in an
    empty box and stays readable. */
@@ -567,6 +725,7 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .compose-icon svg { width: 18px; height: 18px; }
 .compose-spacer { flex: 1; }
 .compose-send {
+  position: relative;
   width: 40px; height: 40px; border-radius: 50%;
   background: var(--mc-border); color: var(--mc-text-muted);
   display: grid; place-items: center; flex-shrink: 0;
@@ -575,8 +734,11 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .compose-send svg { width: 16px; height: 16px; }
 /* A draft outranks the run: with something typed, the button goes ink */
 .compose-send.is-send { background: var(--mc-text); color: var(--mc-paper); }
-.chat-disclaimer {
-  margin-top: 8px; font-size: 10.5px; color: var(--mc-text-muted); text-align: center;
+/* same press ring the pause button uses, so both scripted clicks read alike */
+.compose-send.pressed::after {
+  content: ""; position: absolute; inset: -3px;
+  border-radius: 50%; border: 1.5px solid var(--mc-text);
+  animation: tl-press 460ms ease-out forwards;
 }
 
 /* ── demo bar (presentation only — press H to hide) ──────────────────── */
@@ -653,7 +815,6 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
       New Agent
     </div>
     <div class="app-sidebar-section">
-      <div class="app-sidebar-section-head">Agent</div>
       <div class="app-sidebar-list">
         <div class="app-agent-row" id="agentRow">
           <div class="app-agent-avatar"><img src="assets/microclaw.png" alt="" /></div>
@@ -663,7 +824,10 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
           </div>
         </div>
       </div>
-      <div class="app-session-item" id="sessionItem">Tidy up my desktop</div>
+      <div class="app-session-item" id="sessionItem">
+        <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M3.5 4h3.17c.4 0 .78.16 1.06.44L8.9 5.5h7.6A1.5 1.5 0 0 1 18 7v7.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 2 14.5v-9A1.5 1.5 0 0 1 3.5 4Zm0 1a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5V7a.5.5 0 0 0-.5-.5H8.5a.5.5 0 0 1-.35-.15L7.02 5.15A.5.5 0 0 0 6.67 5H3.5Z"/></svg>
+        <span>Tidy up my desktop</span>
+      </div>
     </div>
   </div>
 
@@ -697,7 +861,6 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
               </div>
             </div>
           </div>
-          <div class="chat-disclaimer">AI-generated content may be incorrect. AI is not a person. Microsoft is not responsible for AI-generated content.</div>
         </div>
       </div>
     </div>
@@ -777,7 +940,7 @@ function syncCountdown() {
 /* 47 desktop files = 8 screenshots + 14 images + 12 PDFs + 9 docs + 4 empties */
 
 function mk(o) {
-  return Object.assign({ status: "pending", trust: "auto", was: null, edited: false, sub: "" }, o);
+  return Object.assign({ status: "pending", trust: "auto", was: null, edited: false, reverted: false, rewritten: false, sub: "" }, o);
 }
 
 function planA() {
@@ -854,25 +1017,52 @@ const BEATS = [
       state.draft = REDIRECT;
   }},
 
-  { name: "User rewinds to step 2", run() {
+  { name: "User sends the redirect", run() {
       state.interventions++;
+      state.msgs.push({ role: "user", text: REDIRECT });
+      state.draft = "";        // sent — box is empty but the caret stays in it
+  }},
+
+  /* Its own beat, because the plan reacting is not the same event as you
+     asking. Landing both at once read as the timeline having already moved
+     before the sentence was finished. */
+  { name: "Plan rewinds to step 2", run() {
       const s2 = find("s2");
       s2.was = s2.title;
       s2.title = "Group by date";
       s2.sub = "last 30 days / earlier";
       s2.edited = true;
       s2.status = "pending";
-      ["s3", "s4", "s5"].forEach(id => { find(id).status = "ghost"; });
-      state.msgs.push({ role: "user", text: REDIRECT });
-      state.draft = "";        // sent — box is empty but the caret stays in it
+      /* Rewinding voids their results, it does not remove them: nothing past
+         step 2 has run any more, so they go back to pending. Dropping a step
+         is the agent's decision on the next beat, not a side effect of the
+         user moving the playhead. The edit to s4 survives — undoing a run
+         doesn't undo what you asked for. */
+      ["s2", "s3", "s4", "s5"].forEach(id => {
+        const st = find(id);
+        st.status = "pending";
+        st.reverted = true;    // drives the staggered un-run, bottom row first
+      });
+      s2.rewritten = true;     // and the title swap that follows it
+      s2.dur = 3.8;            // grouping by date takes a little longer
   }},
+
+  /* Do what you were told before working out what it costs: step 2 re-runs
+     with the new grouping, and only then does the plan reckon with what that
+     did to everything downstream. */
+  { name: "Step 2 re-runs", run() { done("s2"); }},
 
   { name: "Plan re-plans itself", run() {
       /* screenshots + images + docs collapse into one date archive: 8 + 14 + 9 = 31 */
+      /* This is where steps get dropped — and they stay on the list, greyed,
+         directly under the step that absorbed them. "6 steps → 5" is then
+         something you can see rather than a claim in a badge. */
       state.steps = [
         Object.assign(find("s1"), { status: "done" }),
-        Object.assign(find("s2"), { status: "pending", dur: 3.8 }),
+        Object.assign(find("s2"), { status: "done" }),
         mk({ id: "s3b", title: "Archive into 2026-07/ and Earlier/", sub: "31 files", dur: 32.4 }),
+        Object.assign(find("s3"), { status: "ghost" }),
+        Object.assign(find("s5"), { status: "ghost" }),
         Object.assign(find("s4"), { status: "pending", dur: 5.2, trust: "notify" }),
         find("s6"),
       ];
@@ -882,7 +1072,7 @@ const BEATS = [
   { name: "Re-run up to the delete", run() {
       state.planNote = null;
       state.paused = false;          // the held breath is released here
-      ["s2", "s3b", "s4"].forEach(done);
+      ["s3b", "s4"].forEach(done);
   }},
 
   { name: "MicroClaw stops itself", run() {
@@ -915,7 +1105,9 @@ const NOTIFY_BEAT = beatAt("Step 4 gives you a window");
 const READY_BEAT  = beatAt("Step 5 finishes");
 const HALT_BEAT   = beatAt("User halts the run");
 const TYPE_BEAT   = beatAt("User types the redirect");
-const REWIND_BEAT = beatAt("User rewinds to step 2");
+const SEND_BEAT   = beatAt("User sends the redirect");
+const REWIND_BEAT = beatAt("Plan rewinds to step 2");
+const RERUN_BEAT  = beatAt("Step 2 re-runs");
 const ASK_BEAT    = beatAt("MicroClaw stops itself");
 const DONE_BEAT   = beatAt("Confirmed · all done");
 
@@ -997,6 +1189,10 @@ function syncSession() {
    Three beats, three frames — approach on 6, press on 7, leave on 8. The
    press is a beat boundary rather than a timer, so replaying the deck with
    goto() lands on exactly the same picture. */
+/* True only while the clip's opening frame renders, so the finished steps
+   get dealt in once per loop rather than on every replay. */
+let openingSweep = false;
+
 const cursorEl = document.getElementById("tlCursor");
 let cursorTimers = [];
 const cursorAt = (ms, fn) => cursorTimers.push(setTimeout(fn, ms));
@@ -1021,21 +1217,44 @@ function cursorTo(node, dx, dy, glide) {
    there overlapped the state flip and read as the pointer chasing the change
    instead of causing it. Its one journey comes after: down to the composer,
    where it hands off to a caret and leaves. */
+const CURSOR_START = [76, 88];     // off the button, down and to the right
 const CURSOR_CLICK = [-2, -1];     // tip on the pause button
+const CURSOR_SEND  = [-2, -2];     // tip on the send button
+const TYPE_DONE    = TYPE_LEAD + TYPE_STEP * REDIRECT.length;
 
 function syncCursor() {
   cursorTimers.forEach(clearTimeout); cursorTimers = [];
   cursorEl.classList.remove("click");
-  const btn = document.querySelector(".tl-pause");
+  const btn  = document.querySelector(".tl-pause");
+  if (btn && state.beat !== READY_BEAT) btn.classList.remove("hovering");
+  const send = document.getElementById("composeSend");
+  /* render() rebuilds .tl-pause every beat, so its press class clears itself.
+     #composeSend is static markup — clear it by hand or the ring never fires
+     a second time round the loop. */
+  if (send && state.beat !== SEND_BEAT) send.classList.remove("pressed");
 
-  if ((state.beat === READY_BEAT || state.beat === HALT_BEAT) && btn) {
+  if (state.beat === READY_BEAT && btn) {
+    /* Approaches, rather than being planted on the button. All of it happens
+       inside this beat — settled by ~720ms against a 2000ms hold — so by the
+       time the press beat fires the pointer has been still for over a second.
+       That gap is the whole point: a glide still running when the button
+       changes reads as the pointer chasing the change. */
+    cursorTo(btn, ...CURSOR_START, false);
+    cursorEl.offsetHeight;
+    cursorEl.classList.add("show");
+    /* Moves in at 900ms, after the ticks have finished landing, and settles at
+       ~1420 against a 2000ms hold. Starting at 200 left it parked on the button
+       for well over a second — long enough to read as hesitation. */
+    cursorAt(900, () => {
+      cursorTo(btn, ...CURSOR_CLICK, true);
+      cursorAt(520, () => btn.classList.add("hovering"));
+    });
+  } else if (state.beat === HALT_BEAT && btn) {
     cursorTo(btn, ...CURSOR_CLICK, false);
     cursorEl.classList.add("show");
-    if (state.beat === HALT_BEAT) {
-      btn.classList.add("pressed");
-      cursorEl.classList.add("click");
-      cursorAt(200, () => cursorEl.classList.remove("click"));
-    }
+    btn.classList.add("pressed");
+    cursorEl.classList.add("click");
+    cursorAt(200, () => cursorEl.classList.remove("click"));
   } else if (state.beat === TYPE_BEAT) {
     /* Aim at the caret itself rather than at the box: it's already in the DOM
        (syncComposer ran first) and sits exactly where the typing begins, so
@@ -1044,6 +1263,22 @@ function syncCursor() {
     if (caret) cursorTo(caret, 0, -1, true);
     cursorEl.classList.add("show");
     cursorAt(560, () => cursorEl.classList.remove("show"));
+    /* Typing done — the pointer comes back *on* the send button, not on its
+       way to it. Gliding across from the caret made it look like a second
+       pointer entering from the left; the hand never left the mouse, it left
+       the keyboard. Position is set while it is still invisible, so only the
+       fade is seen. */
+    cursorAt(TYPE_DONE + 120, () => {
+      if (send) cursorTo(send, ...CURSOR_SEND, false);
+      cursorEl.classList.add("show");
+    });
+  } else if (state.beat === SEND_BEAT && send) {
+    cursorTo(send, ...CURSOR_SEND, false);
+    cursorEl.classList.add("show");
+    send.classList.add("pressed");
+    cursorEl.classList.add("click");
+    cursorAt(200, () => cursorEl.classList.remove("click"));
+    cursorAt(950, () => cursorEl.classList.remove("show"));
   } else {
     cursorEl.classList.remove("show", "moving");
   }
@@ -1090,17 +1325,39 @@ function renderCard(fresh) {
   const total = live.length;
   const fin   = state.steps.filter(s => s.status === "done").length;
 
+  /* Left is the readout — "Working, 4 of 5" is one sentence, so the label and
+     the count stay together. Right is the control that changes that readout.
+     The button anchoring the corner is also what lets the label change width
+     ("Working" → "Paused") without anything sliding. */
   const head = el("div", "tl-head");
   head.appendChild(el("span", "tl-head-label",
     state.cardState === "done" ? "Timeline" : state.paused ? "Paused" : "Working"));
-  if (state.planNote) head.appendChild(el("span", "tl-replan", state.planNote));
   head.appendChild(el("span", "tl-head-count",
     state.cardState === "done" ? `${total} steps · complete` : `${fin} / ${total}`));
+  if (state.planNote) head.appendChild(el("span", "tl-replan", state.planNote));
+  if (state.cardState !== "done") head.appendChild(renderPause());
   card.appendChild(head);
 
   const list = el("div", "tl-steps");
+  /* Only on the beat that reverts them — reaching this state any other way
+     (a goto() replay, a later frame) should show the result, not replay the
+     motion. Delay counts up from the last reverted row, so the sweep runs
+     upward towards step 2. */
+  /* Only the frame the clip opens on. In full playback these steps completed
+     one beat at a time and already had their moment. */
+  const dealing  = openingSweep;
+  const sweeping = state.beat === REWIND_BEAT;
+  const lastRev  = sweeping ? state.steps.reduce((n, st, i) => st.reverted ? i : n, -1) : -1;
   state.steps.forEach((s, i) => {
-    list.appendChild(renderStep(s, i, total));
+    /* 240ms apart. At 90 the four rows overlapped enough to land as one
+       event; the point of the sweep is that you can count it. */
+    const delay = sweeping && s.reverted ? (lastRev - i) * 240 : null;
+    /* The rewrite starts once this row's own dot has finished emptying, so
+       the phases queue instead of overlapping: ring, then old wording out,
+       then new wording in. */
+    const swap  = sweeping && s.rewritten ? delay + SWEEP_MS : null;
+    const land  = dealing && s.status === "done" ? i * 170 : null;
+    list.appendChild(renderStep(s, i, total, delay, swap, land));
     if (state.inline && state.inline.stepId === s.id) list.appendChild(renderInline(state.inline.kind));
   });
   card.appendChild(list);
@@ -1113,13 +1370,6 @@ function renderCard(fresh) {
     if (state.summary.moved) sum.appendChild(el("div", "tl-summary-moved", `→ ${state.summary.moved}`));
     sum.appendChild(el("div", "tl-summary-sub", state.summary.sub));
     card.appendChild(sum);
-  } else {
-    const foot = el("div", "tl-foot");
-    foot.appendChild(renderPause());
-    foot.appendChild(el("span", "tl-foot-hint", state.paused
-      ? "Nothing is running."
-      : "Hover a step to edit it."));
-    card.appendChild(foot);
   }
   return card;
 }
@@ -1156,12 +1406,22 @@ function renderPause() {
    forever, because the script never presses resume. */
 let userPaused = false;
 
-function renderStep(s, idx, total) {
-  const n = el("div", `tl-step ${s.status}`);
+const CHECK_SVG = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+const SWEEP_MS = 460;    // one dot's un-run, matching @keyframes tl-dot-unrun
+
+function renderStep(s, idx, total, sweepDelay, swapDelay, landDelay) {
+  const n = el("div", `tl-step ${s.status}${sweepDelay == null ? "" : " reverted"}` +
+                      `${swapDelay == null ? "" : " rewritten"}` +
+                      `${landDelay == null ? "" : " landing"}`);
 
   const dot = el("div", `tl-dot ${s.status}`);
+  if (sweepDelay != null) dot.style.animationDelay = `${sweepDelay}ms`;
+  if (landDelay  != null) dot.style.animationDelay = `${landDelay}ms`;
   if (s.status === "done") {
-    dot.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+    dot.innerHTML = CHECK_SVG;
+    /* the tick lands once the arc has closed, not alongside it */
+    if (landDelay != null) dot.firstChild.style.animationDelay = `${landDelay + 170}ms`;
   } else if (s.status === "asking") {
     dot.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="6" x2="12" y2="13"/><line x1="12" y1="18" x2="12" y2="18"/></svg>`;
   }
@@ -1171,26 +1431,46 @@ function renderStep(s, idx, total) {
 
   /* left column — what the step is */
   const main = el("div", "tl-main");
-  main.appendChild(el("div", "tl-title", s.title));
-  if (s.was) main.appendChild(el("div", "tl-was", s.was));
+  const title = el("div", "tl-title", s.title);
+  main.appendChild(title);
+  /* In the row until the step has re-run, folding on the beat it does, and in
+     the hover layer from then on. */
+  const folding = s.was && s.rewritten && s.status === "done" && state.beat === RERUN_BEAT;
+  const was = s.was && (s.status !== "done" || folding) ? el("div", "tl-was", s.was) : null;
+  if (was) {
+    if (folding) n.classList.add("folding");
+    main.appendChild(was);
+  }
+  if (swapDelay != null) {
+    /* The new line opens first and displaces the old one; the strike follows
+       it down rather than racing it. */
+    title.style.animationDelay = `${swapDelay}ms`;
+    if (was) {
+      was.style.animationDelay = `${swapDelay}ms`;
+      was.style.setProperty("--strike-delay", `${swapDelay + 160}ms`);
+    }
+  }
   if (s.sub) main.appendChild(el("div", "tl-sub", s.sub));
   body.appendChild(main);
 
   /* right column — position in the plan, then the step's status chips */
   const right = el("div", "tl-right");
-  const no = idx + 1;
+  /* No ordinal. The list order already says which step this is, the header
+     already carries the count, and printing both was how a row ended up
+     labelled "Step 6/3" — position counted ghosts, the total didn't. */
   right.appendChild(el("span", "tl-meta",
-    s.status === "done"  ? `Step ${no}/${total} · ${fmtDur(s.dur)}` :
-    s.status === "ghost" ? "Dropped" : `Step ${no}/${total}`));
-  if (s.trust !== "auto" && s.status !== "done" && s.status !== "ghost") {
-    right.appendChild(el("span", `tl-tag ${s.trust}`,
-      s.trust === "notify" ? "you can stop it" : "waits for you"));
-  }
-  if (s.edited) right.appendChild(el("span", "tl-badge", "you changed this"));
+    s.status === "done"  ? fmtDur(s.dur) :
+    s.status === "ghost" ? "Dropped" : ""));
+
   body.appendChild(right);
   n.appendChild(body);
 
   const acts = el("div", "tl-actions");
+  /* Only on hover. The struck wording above already says the step was changed;
+     naming it again in the resting row was a caption on something visible.
+     Here it belongs — you are looking at the row's history. */
+  if (s.was && !was) acts.appendChild(el("div", "tl-was", s.was));
+  if (s.edited) acts.appendChild(el("span", "tl-badge", "you changed this"));
   if (s.status === "done") {
     const b = el("button", "tl-act", "↩ Jump back here");
     b.onclick = () => { if (s.id === "s2") goto(REWIND_BEAT); };
@@ -1299,7 +1579,7 @@ function play() {
     if (userPaused) { timer = setTimeout(tick, 300); return; }  // hold, don't drop the chain
     next();
     if (PAUSE_AT.has(state.beat)) return stop();
-    timer = setTimeout(tick, (state.beat === 3 || state.beat === TYPE_BEAT) ? 1900 : 1250);
+    timer = setTimeout(tick, state.beat === TYPE_BEAT ? 2600 : state.beat === 3 ? 1900 : 1250);
   };
   timer = setTimeout(tick, 400);
 }
@@ -1352,15 +1632,24 @@ window.addEventListener("resize", fitShell);
 
 if (CLIP) {
   demoBar.classList.add("hidden");
+  /* The clip opens mid-run, so it must not open on the aftermath of an edit
+     nobody watched: with the default branch, step 4 arrives already rewritten
+     and wearing "you changed this" for something the viewer never saw happen.
+     "auto" lets that step simply have run. The only edit this clip carries is
+     the one it shows you making. */
+  branch = "auto";
   /* Four beats on repeat: the pointer waiting on the button, the halt, the
      redirect being typed, and the redirect landing. goto() rebuilds the run
      up to "step 5 finished" in one frame — that part is only the setting.
      Holds are long because a card is read at a glance, not watched; the
      typing beat also has to outlast the pointer's trip plus ~46 characters. */
-  const CLIP_BEATS = [READY_BEAT, HALT_BEAT, TYPE_BEAT, REWIND_BEAT];
-  const CLIP_HOLD  = [1500, 2200, 2500, 3600];
+  const CLIP_BEATS = [READY_BEAT, HALT_BEAT, TYPE_BEAT, SEND_BEAT, REWIND_BEAT, RERUN_BEAT];
+  /* type covers 1439ms of typing plus the trip to send; rewind covers the
+     720ms sweep, the ring, and the title swap behind it (~1700ms). */
+  const CLIP_HOLD  = [2000, 2200, 2900, 1500, 2600, 2400];   // 1st covers the deal-in
   (function clipLoop(i) {
-    if (i === 0) goto(CLIP_BEATS[0]); else next();
+    if (i === 0) { openingSweep = true; goto(CLIP_BEATS[0]); openingSweep = false; }
+    else next();
     setTimeout(() => {
       if (i < CLIP_BEATS.length - 1) return clipLoop(i + 1);
       reset();
@@ -1371,7 +1660,7 @@ if (CLIP) {
   demoBar.classList.add("hidden");
   /* Drive the timeline on a loop, auto-passing the three interaction beats
      (notify window / rewind / delete-confirm) a presenter would click. */
-  const A_SEG = 1300, A_SLOW = 1800, A_PAUSE = 1900, A_END = 3800, A_GAP = 1000;
+  const A_SEG = 1300, A_SLOW = 1800, A_TYPE = 2600, A_PAUSE = 1900, A_END = 3800, A_GAP = 1000;
   (function autoTick() {
     if (userPaused) { setTimeout(autoTick, 300); return; }
     if (state.beat >= BEATS.length - 1) {
@@ -1380,7 +1669,8 @@ if (CLIP) {
     }
     next();
     let d = A_SEG;
-    if (state.beat === 3 || state.beat === TYPE_BEAT) d = A_SLOW;
+    if (state.beat === 3) d = A_SLOW;
+    if (state.beat === TYPE_BEAT) d = A_TYPE;
     if (PAUSE_AT.has(state.beat)) d = A_PAUSE;
     setTimeout(autoTick, d);
   })();

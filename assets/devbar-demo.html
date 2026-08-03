@@ -72,6 +72,10 @@
        centered in the stage with --m on every side */
     --stage-w: 1324px;    /* 2m + devbar + (card - overlap) = 80+260+984 */
     --stage-h: 784px;     /* 2m + devbar-h = 80+704 */
+    --onb-scale: 0.62;    /* onboarding page size relative to the devbar */
+    /* Centred in the 784 stage: (784 - 640*0.62) / 2. Written out rather than
+       hard-coded so it stays centred if the scale changes. */
+    --onb-top: calc((var(--stage-h) - var(--card-h) * var(--onb-scale)) / 2);
   }
 
   * { box-sizing: border-box; }
@@ -261,8 +265,17 @@
   .onb-card {
     position: absolute;
     left: calc(var(--m) + var(--devbar-w) - var(--overlap));
-    top: calc((var(--stage-h) - var(--card-h)) / 2);
+    top: var(--onb-top);
     width: var(--card-w); height: var(--card-h);
+    /* Shrink just the onboarding page (content and all) relative to the devbar,
+       anchored at its top-left so it stays tucked under the devbar overlap.
+       The devbar keeps its real size.
+       Origin is left *top*, not left center: centred, the card shrank toward
+       its own middle, so every reduction in scale pushed the top edge further
+       down — size and position fought each other. Anchored at the top, scale
+       only pulls the bottom up and --onb-top alone decides how high it sits. */
+    transform: scale(var(--onb-scale));
+    transform-origin: left top;
     z-index: 1;
     border-radius: 24px; overflow: hidden;       /* real card radius */
     background: var(--onb-bg); border: 1px solid rgba(0,0,0,0.04);
@@ -937,7 +950,7 @@
   function fitStage() {
     // Home embed: zoom past width-fit and anchor top-left so the devbar's upper
     // half reads large; the End bar + right-side whitespace crop out of frame.
-    const Z = 1.45;
+    const Z = 1.7;
     const k = (window.innerWidth / 1324) * Z;
     $stage.style.left = "0";
     $stage.style.top = "0";

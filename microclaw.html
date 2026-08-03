@@ -222,6 +222,18 @@
       grid-template-columns: repeat(2, 1fr);
       gap: 16px;
     }
+    /* Section 02 runs the full 5-belief sequence: 3 "getting in" + 2 "staying".
+       Laid out as a 3-over-2 pyramid on a 6-col grid so the two "staying" cards
+       sit centered under the three above — not left-packed with a lone 5th card. */
+    .why-grid--five {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+    }
+    .why-grid--five .why-card { grid-column: span 2; }
+    /* Row 2: center the pair (cols 2–3 and 4–5), leaving a half-card gutter each side. */
+    .why-grid--five .why-card:nth-child(4) { grid-column: 2 / span 2; }
+    .why-grid--five .why-card:nth-child(5) { grid-column: 4 / span 2; }
     .why-card {
       border: 1px solid var(--line);
       border-radius: 14px;
@@ -295,8 +307,9 @@
       display: flex;
       gap: 14px;
       align-items: flex-start;
-      background: var(--ink);
-      color: #fff;
+      background: var(--card);
+      color: var(--ink);
+      border: 1px solid var(--line-strong);
       border-radius: 14px;
       padding: 20px 22px;
     }
@@ -309,7 +322,7 @@
       white-space: nowrap;
       padding-top: 2px;
     }
-    .callout span { font-size: 15.5px; line-height: 1.55; color: #e4e4e7; }
+    .callout span { font-size: 15.5px; line-height: 1.55; color: var(--soft); }
 
     /* ---------- Feature map ---------- */
     .fmap-note { font-size: 13px; color: var(--faint); margin: 0 0 18px; font-family: "JetBrains Mono", monospace; letter-spacing: .3px; }
@@ -419,6 +432,10 @@
        shell), so this one gate drops its outer ring. The single-mock gates
        (02–06) keep the frame, since it's their only border. */
     .principle .pframe--bare { border-color: transparent; background: transparent; }
+    /* Gate 05's console fills its frame edge-to-edge, so even the iframe's
+       own placeholder tint would read as a backing colour — drop it. */
+    .principle .pframe--flush { border-radius: 0; }
+    .principle .pframe--flush .pimg { background: transparent; }
     .principle .pimg { display: block; width: 100%; height: auto; object-fit: contain; background: var(--card-2); }
     /* Live-mock band: embed the running step instead of a static shot.
        Height is synced from the embed via postMessage (below); 340px is
@@ -522,6 +539,11 @@
       .meta-cell:nth-child(2) { border-right: none; }
       .meta-cell:nth-child(1), .meta-cell:nth-child(2) { border-bottom: 1px solid var(--line); }
       .why-grid { grid-template-columns: 1fr; }
+      /* Collapse the pyramid to a single column on narrow screens. */
+      .why-grid--five { grid-template-columns: 1fr; }
+      .why-grid--five .why-card,
+      .why-grid--five .why-card:nth-child(4),
+      .why-grid--five .why-card:nth-child(5) { grid-column: auto; }
       .break-grid { grid-template-columns: 1fr; }
       .principles { grid-template-columns: 1fr; }
       .reflect-grid { grid-template-columns: 1fr; }
@@ -544,7 +566,7 @@
     <div class="wrap topbar-inner">
       <a class="back-link" href="portfolio.html">
         <span class="arw mono">&larr;</span>
-        <span>Bingnan Jiang</span>
+        <span>Home</span>
       </a>
       <div class="top-actions">
         <a class="btn" href="portfolio.html#work">All work</a>
@@ -596,26 +618,31 @@
             <strong class="why-lead-title">Agentic adoption is a product-design problem, not a model problem.</strong>
             <p>The models can already act. For a first-time user the question isn't &ldquo;what can it do,&rdquo; but &ldquo;can I trust it with something real?&rdquo; So adoption becomes a sequence of small beliefs the product has to earn, in order:</p>
           </div>
-          <div class="why-grid">
+          <div class="why-grid why-grid--five">
             <div class="why-card">
-              <span class="why-num">Belief 01 · Start</span>
-              <strong>&ldquo;I can install it.&rdquo;</strong>
-              <p>The first commitment has to cost almost nothing — no wall of permissions or setup before any value is felt.</p>
+              <span class="why-num">Belief 01 · Install</span>
+              <strong>&ldquo;Everyone has to have it — but how do I install it?&rdquo;</strong>
+              <p>FOMO makes it a must-have, not a curiosity. The one open question is the install itself — so the door is one tap, decisions deferred.</p>
             </div>
             <div class="why-card">
-              <span class="why-num">Belief 02 · First win</span>
-              <strong>&ldquo;I can use it successfully.&rdquo;</strong>
-              <p>A brand-new category is intimidating. The first run needs to produce a real, concrete win — not a blank prompt box.</p>
+              <span class="why-num">Belief 02 · Relevance</span>
+              <strong>&ldquo;Installed it — but what's it for me?&rdquo;</strong>
+              <p>FOMO never says what it's <em>for</em>. Facing a blank prompt, a new user is lost — so they're routed into a concrete, everyday scenario instead of an empty box.</p>
             </div>
             <div class="why-card">
-              <span class="why-num">Belief 03 · Value &amp; control</span>
-              <strong>&ldquo;It's useful, and I stay in control.&rdquo;</strong>
-              <p>An agent acts on its own. Its work has to be legible and bounded, so power feels like help, not risk.</p>
+              <span class="why-num">Belief 03 · Understand &amp; steer</span>
+              <strong>&ldquo;I can see what it's doing — and steer it.&rdquo;</strong>
+              <p>An agent acts on its own. The real value isn't just output — it's grasping what it's doing, and bounding how far it can go.</p>
             </div>
             <div class="why-card">
-              <span class="why-num">Belief 04 · Return</span>
-              <strong>&ldquo;I can trust and reuse it.&rdquo;</strong>
-              <p>One win isn't a habit. There has to be a low-friction, ambient reason to come back tomorrow.</p>
+              <span class="why-num">Belief 04 · First win</span>
+              <strong>&ldquo;It works before I hand over anything.&rdquo;</strong>
+              <p>A newcomer doesn't yet know what's safe to authorize. Do the easy, valuable work first — a guaranteed win — then ask for a permission, benefit spelled out.</p>
+            </div>
+            <div class="why-card">
+              <span class="why-num">Belief 05 · Return</span>
+              <strong>&ldquo;Nothing it does is unrecoverable — and it's worth coming back to.&rdquo;</strong>
+              <p>One win isn't a habit; one irreversible mistake ends it. Every limit is recoverable, and a light, ambient loop gives a reason to return tomorrow.</p>
             </div>
           </div>
         </div>
@@ -670,7 +697,7 @@
         </div>
         <div class="callout">
           <strong>The challenge</strong>
-          <span>Each drop-off point is really a belief the user hasn't been given a reason to hold yet. Adoption is a sequence of trust gates — install, first win, usefulness, control, and return.</span>
+          <span>Each drop-off point is really a belief the user hasn't been given a reason to hold yet. Adoption is a sequence of belief gates — get in, what's it for me, first win, usefulness, and return.</span>
         </div>
       </div>
     </section>
@@ -745,69 +772,59 @@
         <div class="sec-head">
           <div class="sec-num">05 / Final design</div>
           <h2>The experience, end to end</h2>
-          <p>Six designed moments carry a first-time user from install to habit — each one built to earn the next belief. The prototype below is where the motion and timing live — open it full-screen to feel it. The cards under it are the argument: the barrier a first-timer hits at each gate, and the design response that earns past it.</p>
+          <p>Five belief gates carry a first-time user from &ldquo;everyone already has it&rdquo; to &ldquo;I'll come back&rdquo; — each moment earns the belief the next one depends on. The prototype below is where the motion and timing live — open it full-screen to feel it. The cards under it are the argument: the barrier a first-timer hits at each gate, and the design response that earns past it.</p>
         </div>
 
         <div class="card">
           <div class="principles">
             <div class="principle">
               <div class="ptext">
-                <div class="pk">Gate 01</div>
-                <strong>&ldquo;I can install it.&rdquo;</strong>
-                <p>A first-timer won't commit before the product has proven anything. So the first ask is almost nothing — <em>one-step install with deferred decisions</em>; permissions and setup arrive later, in context, only when they actually buy the user something.</p>
+                <div class="pk">Gate 01 · FOMO</div>
+                <strong>&ldquo;Everyone has to have it — but how do I install it?&rdquo;</strong>
+                <p>FOMO does the convincing: in China a first-timer arrives because everyone <em>must</em> have it, not out of curiosity. The only question left is the install itself — so it's <em>one tap, decisions deferred</em>: get in first, permissions and setup wait for context.</p>
               </div>
               <div class="pframe pframe--bare">
-                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=1" title="Step 1 — the install screen, running live" loading="lazy" scrolling="no"></iframe>
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=1" title="The install screen, running live" loading="lazy" scrolling="no"></iframe>
               </div>
             </div>
             <div class="principle">
               <div class="ptext">
-                <div class="pk">Gate 02</div>
-                <strong>&ldquo;I can use it.&rdquo;</strong>
-                <p>Dropped at a blank prompt, a novice stalls. So they're routed straight into a <em>concrete scenario built to produce a guaranteed first win</em>, instead of being asked to invent a use case.</p>
+                <div class="pk">Gate 02 · Relevance</div>
+                <strong>&ldquo;Installed it — but what do I do with it?&rdquo;</strong>
+                <p>FOMO gets it onto the phone; it never says what it's <em>for</em>. Facing a blank prompt, a new user has no idea where to start. So instead of an empty box, they're <em>routed into a concrete, everyday scenario</em> — the app answers &ldquo;what's in this for me&rdquo; before it asks them to.</p>
               </div>
               <div class="pframe">
-                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=2" title="Step 2 — orientation, running live" loading="lazy" scrolling="no"></iframe>
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=2" title="The orientation scenario, running live" loading="lazy" scrolling="no"></iframe>
               </div>
             </div>
             <div class="principle">
               <div class="ptext">
-                <div class="pk">Gate 03</div>
-                <strong>&ldquo;It's useful.&rdquo;</strong>
-                <p>An agent's work is invisible, so its value is easy to miss. So <em>familiar, app-like metaphors</em> stand in for the hidden states, making the work legible at a glance.</p>
+                <div class="pk">Gate 03 · Understand &amp; steer</div>
+                <strong>&ldquo;I can see what it's doing — and steer it.&rdquo;</strong>
+                <p>An agent acts on its own, and its work is invisible. The real value isn't just the output — it's <em>grasping what it's doing</em>: metaphors keep the hidden work visible, and a <em>permission &times; autonomy ladder</em> lets users bound how far it can go — power that reads as help, not risk.</p>
               </div>
               <div class="pframe">
-                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=3" title="Step 3 — first win, running live" loading="lazy" scrolling="no"></iframe>
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=3" title="The reasoning trace, running live" loading="lazy" scrolling="no"></iframe>
               </div>
             </div>
             <div class="principle">
               <div class="ptext">
-                <div class="pk">Gate 04</div>
-                <strong>&ldquo;I stay in control.&rdquo;</strong>
-                <p>People fear an agent that acts faster than they trust it. So a <em>permission &times; autonomy ladder</em> lets users see and set how far it can go — autonomy grows in step with trust, never ahead of it.</p>
+                <div class="pk">Gate 04 · First win</div>
+                <strong>&ldquo;It works — before I have to hand over anything.&rdquo;</strong>
+                <p>A newcomer doesn't yet know what's safe to authorize, so the order is inverted: the app <em>does the easy, valuable work first</em> — a scenario built for a guaranteed first win, with <em>familiar, app-like metaphors</em> keeping it legible — and only <em>then</em> asks for a permission, with the benefit spelled out. Trust is earned by a result, not requested on faith.</p>
               </div>
               <div class="pframe">
-                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=4" title="Step 4 — personal relevance, running live" loading="lazy" scrolling="no"></iframe>
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=4" title="The first win — the answer and the ask, running live" loading="lazy" scrolling="no"></iframe>
               </div>
             </div>
             <div class="principle">
               <div class="ptext">
-                <div class="pk">Gate 05</div>
-                <strong>&ldquo;I can recover.&rdquo;</strong>
-                <p>One irreversible mistake ends the relationship. So every boundary and error is a <em>recoverable limit</em> — undoable by design, never punishing to a nervous first-timer.</p>
+                <div class="pk">Gate 05 · Return</div>
+                <strong>&ldquo;Nothing it does is unrecoverable — and it's worth coming back to.&rdquo;</strong>
+                <p>One irreversible mistake ends the relationship; a single win fades if nothing pulls the user back. So every boundary is <em>recoverable by design</em>, and <em>lightweight, ambient loops</em> plant low-friction reasons to return — turning one first win into a trusted habit.</p>
               </div>
-              <div class="pframe">
-                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=5" title="Step 5 — the trust console, running live" loading="lazy" scrolling="no"></iframe>
-              </div>
-            </div>
-            <div class="principle">
-              <div class="ptext">
-                <div class="pk">Gate 06</div>
-                <strong>&ldquo;I'll come back.&rdquo;</strong>
-                <p>A single win fades if nothing pulls the user back. So <em>lightweight, ambient loops</em> plant low-friction reasons to return — turning one first win into a repeated, trusted habit.</p>
-              </div>
-              <div class="pframe">
-                <img class="pimg" src="assets/mc-step-06-placeholder.svg" alt="Placeholder for the sixth first-run moment — demo coming soon" loading="lazy">
+              <div class="pframe pframe--bare pframe--flush">
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=5" title="The trust console, running live" loading="lazy" scrolling="no"></iframe>
               </div>
             </div>
           </div>
@@ -854,7 +871,7 @@
     <div class="wrap foot-inner">
       <div class="foot-meta"><strong>MicroClaw</strong> · Agentic AI · 0 &rarr; 1 concept &amp; prototype</div>
       <div class="top-actions">
-        <a class="btn" href="portfolio.html#work">Next work &rarr;</a>
+        <a class="btn" href="copilot-ime.html">Next: Copilot IME &rarr;</a>
       </div>
     </div>
   </footer>
@@ -863,11 +880,11 @@
     (function () {
       // ---- Belief-gate map: journey stage -> design response ----
       var features = [
-        { id: "discover", label: "Discover", kano: "FOMO",      belief: "“Should I even try this?”" },
-        { id: "install",  label: "Install",  kano: "Commit",    belief: "“I can install it.”" },
-        { id: "firstuse", label: "First use",kano: "First win",  belief: "“I can use it successfully.”", star: true },
-        { id: "value",    label: "See value",kano: "Value",      belief: "“It's useful for me.”" },
-        { id: "return",   label: "Return",   kano: "Habit",     belief: "“I can trust &amp; reuse it.”" }
+        { id: "install",  label: "Install",   kano: "FOMO",      belief: "“Everyone must have it — but how?”" },
+        { id: "relevance",label: "Relevance", kano: "Orient",     belief: "“Installed it — but what's it for me?”" },
+        { id: "value",    label: "Understand & steer", kano: "Value",  belief: "“I can see what it's doing — and steer it.”" },
+        { id: "firstwin", label: "First win", kano: "First win",  belief: "“It works before I hand over anything.”", star: true },
+        { id: "return",   label: "Return",    kano: "Habit",      belief: "“Nothing's unrecoverable — I'll come back.”" }
       ];
       var modalities = [
         { id: "onestep",  label: "One-step install",         effort: "Lower the bar",       desc: "Install with deferred decisions — permissions and setup come later, in context." },
@@ -878,16 +895,16 @@
         { id: "ambient",  label: "Ambient habit loops",      effort: "Easy re-entry",       desc: "Lightweight, ambient entry points that give a reason to come back." }
       ];
       var linkNotes = {
-        discover: "FOMO gets them curious — a concrete scenario turns curiosity into a reason to start.",
-        install: "The first commitment must cost almost nothing — defer every heavy decision.",
-        firstuse: "The first run has to succeed. Hand them a scenario with a guaranteed win.",
-        value: "Make the invisible agent legible and bounded — that's what earns 'useful and safe'.",
-        return: "Repeat use is earned by visible control and a low-friction way back in."
+        install: "FOMO makes it a must-have; the only open question is the install itself — so make it one tap, decisions deferred.",
+        relevance: "Everyone has it, no one knows what for. Route them into a real scenario before the blank prompt loses them.",
+        firstwin: "Do the easy, valuable work first — land a guaranteed win, then ask for permission with the benefit spelled out.",
+        value: "The real value isn't the output — it's grasping what the agent is doing and bounding how far it goes: metaphors plus a permission ladder.",
+        return: "Repeat use is earned by recoverable limits and a low-friction way back in."
       };
       var capabilityLinks = [
-        ["discover", "scenario"], ["discover", "onestep"],
         ["install", "onestep"],
-        ["firstuse", "scenario"], ["firstuse", "metaphor"],
+        ["relevance", "scenario"],
+        ["firstwin", "scenario"], ["firstwin", "metaphor"], ["firstwin", "controls"],
         ["value", "metaphor"], ["value", "controls"],
         ["return", "controls"], ["return", "recover"], ["return", "ambient"]
       ];

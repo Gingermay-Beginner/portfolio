@@ -295,8 +295,11 @@
       display: flex;
       gap: 14px;
       align-items: flex-start;
-      background: var(--ink);
-      color: #fff;
+      /* Light. A callout is the conclusion of the cards above it, not a banner
+         interrupting them; an ink slab read as a different kind of thing. */
+      background: var(--card-2);
+      border: 1px solid var(--line);
+      color: var(--ink);
       border-radius: 14px;
       padding: 20px 22px;
     }
@@ -309,7 +312,7 @@
       white-space: nowrap;
       padding-top: 2px;
     }
-    .callout span { font-size: 15.5px; line-height: 1.55; color: #e4e4e7; }
+    .callout span { font-size: 15.5px; line-height: 1.55; color: var(--soft); }
 
     /* ---------- Primer ---------- */
     .pyp { border: 1px solid var(--line); border-radius: 12px; padding: 24px; background: var(--card-2); }
@@ -329,13 +332,12 @@
     }
     .pyp h3 em, .pyp .barcap em { font-style: normal; color: var(--green); font-weight: 600; }
     .pyp .barcap { color: var(--soft); font-size: 14.5px; line-height: 1.6; margin: 14px 0 0; }
-    .pyp-cbar-img { display: block; width: 100%; max-width: 560px; height: auto; margin-top: 18px; border-radius: 8px; }
     .pyp-fig {
       margin: 26px 0 0; border: 1px solid var(--line); border-radius: 14px;
-      background: var(--card-2); padding: 22px;
+      background: var(--card-2); overflow: hidden;
     }
     .pyp-fig img { display: block; width: 100%; height: auto; }
-    .pyp-fig figcaption { margin-top: 14px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .pyp-fig figcaption { margin: 14px 20px 18px; color: var(--muted); font-size: 13px; line-height: 1.55; }
 
     /* ---------- Feature map ---------- */
     .fmap-note { font-size: 13px; color: var(--faint); margin: 0 0 18px; font-family: "JetBrains Mono", monospace; letter-spacing: .3px; }
@@ -394,6 +396,7 @@
     /* ---------- Final design: flow states ---------- */
     .state { display: grid; grid-template-columns: 1fr; gap: 0; }
     .state + .state { margin-top: 20px; }
+    #final .card + .card { margin-top: 20px; }
     .state-copy { margin-bottom: 16px; }
     .state-copy strong {
       display: block; font-family: "Space Grotesk", sans-serif;
@@ -404,14 +407,41 @@
     .shot img { display: block; width: auto; height: 560px; max-width: none; }
     .shot--fit { overflow: hidden; }
     .shot--fit img { width: 100%; height: auto; }
+    .shot + .shot { margin-top: 18px; }
+    .trigger { display: flex; align-items: baseline; gap: 10px; margin: 14px 2px 0; }
+    .trigger-k { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; color: var(--green); white-space: nowrap; }
+    .trigger-v { font-family: "Space Grotesk", sans-serif; font-size: 16px; font-weight: 600; color: var(--ink); letter-spacing: -0.2px; }
+    .trigger-note { margin: 8px 2px 20px; color: var(--muted); font-size: 13.5px; line-height: 1.55; }
+    .trigger-note b { color: var(--ink); font-weight: 600; }
 
-    .principles { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
-    .principle { border: 1px solid var(--line); border-radius: 14px; padding: 22px; background: var(--card-2); }
+    /* Chat-scenario video mock (Intent Bar) — answer arrives inside chat, no app-switching */
+    .chatmock { margin: 18px 0 0; }
+    .chatmock-frame {
+      position: relative; aspect-ratio: 16 / 10.5; width: 100%;
+      border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+      background: var(--card-2);
+    }
+    .chatmock-frame iframe, .chatmock-frame video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .chatmock-ph {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 13px; text-align: center;
+      color: var(--muted); padding: 20px;
+    }
+    .chatmock-play {
+      display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%;
+      background: var(--ink); color: #fff; font-size: 17px; padding-left: 3px;
+    }
+    .chatmock-phlabel { font-family: "JetBrains Mono", monospace; font-size: 11.5px; letter-spacing: .4px; }
+    .chatmock-cap { margin: 12px 2px 0; color: var(--muted); font-size: 13.5px; line-height: 1.55; }
+    .chatmock-cap b { color: var(--ink); font-weight: 600; }
+
+    .principles { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 20px; }
+    .principle { position: relative; border: 1px solid var(--line); border-radius: 16px; padding: 24px 22px; background: var(--card); }
     .principle .pk {
       font-family: "JetBrains Mono", monospace; font-size: 11px;
       letter-spacing: 1.1px; text-transform: uppercase; color: var(--green);
     }
-    .principle strong { display: block; font-family: "Space Grotesk", sans-serif; font-size: 17px; margin: 9px 0 8px; letter-spacing: -0.2px; }
+    .principle strong { display: block; font-family: "Space Grotesk", sans-serif; font-size: 19px; margin: 9px 0 8px; letter-spacing: -0.3px; }
     .principle p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
 
     /* ---------- Reflection ---------- */
@@ -534,7 +564,7 @@
     <div class="wrap topbar-inner">
       <a class="back-link" href="portfolio.html">
         <span class="arw mono">&larr;</span>
-        <span>Bingnan Jiang</span>
+        <span>Home</span>
       </a>
       <div class="top-actions">
         <a class="btn" href="portfolio.html#work">All work</a>
@@ -662,10 +692,9 @@
             <div class="pyp-kicker"><b>Primer</b>CJK input</div>
             <h3>In Chinese you don't type letters — you type a <em>sound</em>, then <em>choose the meaning</em>.</h3>
             <p class="barcap">You typed just <em>&ldquo;jie&rdquo;</em> (no tone) — the system returns a whole row of same-sound characters, and you must pick one before any character is committed. That row lives in a small piece of UI called a <em>candidate bar</em>; you press a number to commit one.</p>
-            <img class="pyp-cbar-img" src="assets/candidate-bar.png" alt="Candidate bar UI: jie maps to 街 节 洁 杰 姐 借" loading="lazy">
           </div>
           <figure class="pyp-fig">
-            <img src="assets/pinyin-middle-layer.png" alt="Diagram: the conversion layer from pinyin to Chinese characters" loading="lazy">
+            <img src="assets/pinyin-middle-layer.webp" alt="Diagram: the conversion layer from pinyin to Chinese characters" loading="lazy">
             <figcaption>The conversion layer: a phonetic sound (&ldquo;jie&rdquo;) fans out into same-sound candidates — different tones and homophones — and only the character you choose is committed as output.</figcaption>
           </figure>
         </div>
@@ -707,32 +736,54 @@
 
         <div class="card">
           <div class="state">
+            <div class="shot shot--fit"><img src="assets/IntentBar.webp" alt="Before / after: the candidate bar's homophone list (chun jie → 春节 春季 纯洁…) becomes an Intent Bar of actionable intents — 春节放假安排, 春运火车票, 马年吉祥话" loading="lazy"></div>
+            <div class="trigger"><span class="trigger-k">Trigger</span><span class="trigger-v">As you type</span></div>
+            <p class="trigger-note"><b>Candidate bar</b> — predicts the next words to type. <b>Intent Bar</b> — same keystrokes, but reads the intent behind them and surfaces smart actions.</p>
             <div class="state-copy">
               <strong>Embedded entry points — Intent Bar</strong>
               <span>Bring AI into typing surfaces where users already express intent. The candidate bar becomes the entry: Candidate Bar &rarr; Intent Bar &rarr; Copilot Card &rarr; Destination.</span>
             </div>
-            <div class="shot"><img src="assets/intent-bar-flow.png" alt="Flow from candidate bar to destination product: Candidate Bar → Intent Bar → Copilot Card → Destination" loading="lazy"></div>
+            <div class="shot"><img src="assets/intent-bar-flow.webp" alt="Flow from candidate bar to destination product: Candidate Bar → Intent Bar → Copilot Card → Destination" loading="lazy"></div>
+            <!-- Chat-scenario demo — answer arrives inside chat, no app-switching. -->
+            <figure class="chatmock">
+              <div class="chatmock-frame">
+                <iframe src="https://www.loom.com/embed/c8911a79347e479c94c8f7c8a54c70f3" title="Copilot IME — chat-scenario demo" allow="fullscreen" allowfullscreen></iframe>
+              </div>
+              <figcaption class="chatmock-cap">In a chat, the answer surfaces <b>right inside the conversation</b> — the user gets what they need without leaving the thread, and never has to bounce between WeChat and a browser to look it up.</figcaption>
+            </figure>
           </div>
+        </div>
 
+        <div class="card">
           <div class="state">
+            <div class="shot shot--fit"><img src="assets/ActionBar.webp" alt="Before / after: the candidate bar becomes an Action Bar acting on selected text (‘During the Spring Festival, GMV reached RMB86 million, up 35% YoY.’) with Translate, Polish, Convert currency, and Explain terms" loading="lazy"></div>
+            <div class="trigger"><span class="trigger-k">Trigger</span><span class="trigger-v">Select text</span></div>
+            <p class="trigger-note"><b>Candidate bar</b> — fires as you type, predicting words. <b>Action Bar</b> — fires when you select text, reading the selection and its writing context to recommend smart actions.</p>
             <div class="state-copy">
               <strong>Read-write loop — Action Bar</strong>
               <span>Selection turns reading into writing — highlight any text and act on it in place, without leaving the line: Action Bar &rarr; Copilot Card &rarr; in-line result.</span>
             </div>
             <div class="shot shot--fit"><img src="assets/action-bar-flow.png" alt="Selection-translation flow: Action Bar → Copilot Card → In-line Result" loading="lazy"></div>
+            <!-- Read-write loop demo — selection → Action Bar closes read/write + related features into one loop. -->
+            <figure class="chatmock">
+              <div class="chatmock-frame">
+                <iframe src="https://www.loom.com/embed/3de8d2a9bdda4b76b25bc517e39cf6f4" title="Copilot IME — read-write loop demo" allow="fullscreen" allowfullscreen></iframe>
+              </div>
+              <figcaption class="chatmock-cap">Reading and writing are rarely separate — you read, then act. Selecting text to summon the <b>Action Bar</b> closes that gap, letting reading, writing, and adjacent moves like <b>translate</b> or <b>search</b> resolve as one complete loop, all in place.</figcaption>
+            </figure>
           </div>
+        </div>
 
-          <div class="principles">
-            <div class="principle">
-              <div class="pk">Principle 01</div>
-              <strong>Reduce cognitive load</strong>
-              <p>We layered in a lot of intelligence — recommendations, inline answers, quick actions — yet deliberately shipped no new UI pattern. Every capability reuses the candidate bar, the one surface every Chinese user already touches dozens of times a day. New power, no new mental model.</p>
-            </div>
-            <div class="principle">
-              <div class="pk">Principle 02</div>
-              <strong>Don't interrupt the act of typing</strong>
-              <p>Assistance appears inline, right at the cursor where the user is already expressing intent — no app switch, no modal, no break in the typing rhythm. The AI meets the user inside the keystroke, not after it.</p>
-            </div>
+        <div class="principles">
+          <div class="principle">
+            <div class="pk">Principle 01</div>
+            <strong>Reduce cognitive load</strong>
+            <p>We layered in a lot of intelligence — recommendations, inline answers, quick actions — yet deliberately shipped no new UI pattern. Every capability reuses the candidate bar, the one surface every Chinese user already touches dozens of times a day. New power, no new mental model.</p>
+          </div>
+          <div class="principle">
+            <div class="pk">Principle 02</div>
+            <strong>Don't interrupt the act of typing</strong>
+            <p>Assistance appears inline, right at the cursor where the user is already expressing intent — no app switch, no modal, no break in the typing rhythm. The AI meets the user inside the keystroke, not after it.</p>
           </div>
         </div>
       </div>
@@ -769,7 +820,7 @@
     <div class="wrap foot-inner">
       <div class="foot-meta"><strong>Copilot IME</strong> · Human &rarr; AI · Concept system</div>
       <div class="top-actions">
-        <a class="btn" href="portfolio.html#work">Next work &rarr;</a>
+        <a class="btn" href="voice-ime.html">Next: Voice-first IME &rarr;</a>
       </div>
     </div>
   </footer>

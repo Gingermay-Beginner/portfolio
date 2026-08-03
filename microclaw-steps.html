@@ -1007,6 +1007,7 @@
       --mc-border:    rgba(0,0,0,0.12);  /* --border (compose-wrapper)  */
       --mc-border-row:rgba(0,0,0,0.10);  /* --border-row (sidebar/pnav dividers, new-agent-btn) */
       --mc-border-lt: #efeae7;           /* --border-light (titlebar bottom only) */
+      --mc-selected:  rgba(39, 35, 32, 0.055);  /* --bg-selected — ink at low alpha, a wash over the surface (app replaced the opaque #efeae7 with this) */
       --mc-accent:    #a25a02;
       --mc-accent-lt: #fee6d4;
     }
@@ -1035,7 +1036,7 @@
       background: var(--mc-bg);
       border: 1px solid var(--mc-border);
       border-radius: 16px;
-      padding: 24px 28px 22px;
+      padding: 18px 28px 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -1050,52 +1051,63 @@
       pointer-events: none;
       z-index: 5;
     }
+    /* Warm-stone chip circle — mirrors SetupWizard.vue .close-btn:
+       bg-tertiary rest → border-on-hover darken, ink X, active scale-in. */
     .install-window .iw-close {
       position: absolute;
-      top: 14px;
-      right: 14px;
+      top: 12px;
+      right: 12px;
       width: 28px;
       height: 28px;
       border-radius: 50%;
+      border: none;
+      background: var(--mc-selected);
       display: grid;
       place-items: center;
-      color: var(--mc-text-muted);
+      color: var(--mc-text-2);
       line-height: 1;
       z-index: 6;
+      cursor: default;
+      transition: background .15s ease, color .15s ease, transform .1s ease;
     }
-    .install-window .iw-close svg { width: 12px; height: 12px; }
+    .install-window .iw-close:hover { background: var(--mc-border); color: var(--mc-text); }
+    .install-window .iw-close:active { transform: scale(0.94); }
+    .install-window .iw-close svg { width: 14px; height: 14px; }
     /* Shared bottom slot keeps notice/buttons (welcome) and desc/progress
        (installing) at the same vertical zone — mirrors original .welcome-bottom */
     .install-window .iw-bottom {
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 132px;
+      min-height: 122px;
       width: 100%;
     }
     .install-window .iw-mascot {
-      width: 168px;
-      height: 168px;
+      width: 208px;
+      height: 208px;
       object-fit: contain;
-      margin-top: 4px;
-      margin-bottom: -10px;
+      margin-top: 0;
+      margin-bottom: -14px;
     }
     .install-window .iw-title {
-      font-size: 18px;
+      font-size: 22px;
       font-weight: 700;
       color: var(--mc-text);
-      letter-spacing: -0.025em;
+      letter-spacing: -0.03em;
       line-height: 1.25;
-      margin: 4px 0 6px;
+      /* Pulled up over the enlarged mascot's transparent lower padding —
+         mirrors SetupWizard.vue .welcome-title margin-top:-32px. */
+      margin: -20px 0 6px;
+      min-height: 28px;
       text-align: center;
     }
     .install-window .iw-notice {
-      font-size: 10.5px;
+      font-size: 11.5px;
       color: var(--mc-text-muted);
       text-align: center;
       line-height: 1.7;
       margin: 4px 0 14px;
-      max-width: 240px;
+      max-width: 260px;
     }
     .install-window .iw-notice a {
       color: var(--mc-text-2);
@@ -1110,9 +1122,9 @@
       letter-spacing: 0.01em;
     }
     .install-window .iw-progress {
-      width: 168px;
-      height: 5px;
-      background: rgba(0,0,0,0.08);
+      width: 200px;
+      height: 6px;
+      background: var(--mc-selected);
       border-radius: 99px;
       overflow: hidden;
       margin-bottom: 14px;
@@ -1135,16 +1147,16 @@
       position: relative;
       width: 100%;
       text-align: center;
-      height: 22px;
-      margin: 4px 0 6px;
+      height: 26px;
+      margin: -20px 0 6px;
     }
     .iw-cycle .iw-cycle-item {
       position: absolute;
       inset: 0;
-      font-size: 18px;
+      font-size: 22px;
       font-weight: 700;
       color: var(--mc-text);
-      letter-spacing: -0.025em;
+      letter-spacing: -0.03em;
       line-height: 1.25;
       opacity: 0;
       animation: iw-cycle-fade 6s ease-in-out infinite;
@@ -1185,10 +1197,10 @@
     /* Cycling mascot images (paired with phrase) */
     .iw-mascot-cycle {
       position: relative;
-      width: 168px;
-      height: 168px;
-      margin-top: 4px;
-      margin-bottom: -10px;
+      width: 208px;
+      height: 208px;
+      margin-top: 0;
+      margin-bottom: -14px;
       animation: iw-mascot-bob 2.6s ease-in-out infinite;
     }
     .iw-mascot-cycle .iw-mascot-item {
@@ -1212,10 +1224,10 @@
     /* Welcome state: fold ↔ expand toggle (auto-loop, mirrors original 400ms expand → settle behavior) */
     .iw-mascot-toggle {
       position: relative;
-      width: 168px;
-      height: 168px;
-      margin-top: 4px;
-      margin-bottom: -10px;
+      width: 208px;
+      height: 208px;
+      margin-top: 0;
+      margin-bottom: -14px;
     }
     .iw-mascot-toggle .iw-mascot-fold,
     .iw-mascot-toggle .iw-mascot-expand {
@@ -1251,21 +1263,22 @@
     }
     .install-window .iw-btn-primary {
       width: auto;
-      padding: 8px 26px;
+      padding: 9px 28px;
       border-radius: 20px;
       background: var(--mc-text);
       color: #fff;
-      font-size: 11.5px;
+      font-size: 12.5px;
       font-weight: 600;
       letter-spacing: 0.01em;
       margin-bottom: 4px;
     }
     .install-window .iw-btn-ghost {
       width: 100%;
-      height: 32px;
+      height: 38px;
+      border-radius: 14px;
       background: transparent;
       color: var(--mc-text-2);
-      font-size: 11.5px;
+      font-size: 12.5px;
       font-weight: 500;
       display: grid;
       place-items: center;
@@ -1430,6 +1443,21 @@
       display: flex;
       flex-direction: column;
     }
+    /* Inner scroller. The thread is top-aligned so the user's black bubble debuts
+       at the very top of the frame; this wrapper then translates UP once the reply
+       and the phone-auth card grow past the fixed frame, keeping the newest content
+       (the auth card) in view — a real chat pinning to its latest line. */
+    .chat-scroll {
+      display: flex;
+      flex-direction: column;
+      animation: chat-autoscroll 12s ease-in-out infinite;
+    }
+    @keyframes chat-autoscroll {
+      0%, 54% { transform: translateY(0); }
+      64% { transform: translateY(-160px); }   /* follow the itinerary as it streams */
+      76%, 88% { transform: translateY(-430px); } /* tuned to land the auth card at the frame bottom */
+      92%, 100% { transform: translateY(0); }
+    }
     .chat-group {
       display: flex;
       align-items: flex-start;
@@ -1450,6 +1478,16 @@
       overflow: hidden;
       flex-shrink: 0;
       margin-top: 2px;
+      /* Fades in WITH the first thing the agent emits (the mascot GIF at ~9%),
+         never alone — an avatar floating beside an empty column reads as a ghost
+         row. Matches emoji-block-fade's in/out so they arrive and leave together. */
+      opacity: 0;
+      animation: agent-avatar-show 12s ease-in-out infinite;
+    }
+    @keyframes agent-avatar-show {
+      0%, 7% { opacity: 0; }
+      10%, 90% { opacity: 1; }
+      92%, 100% { opacity: 0; }
     }
     .chat-agent-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .chat-bubble.user {
@@ -1463,82 +1501,126 @@
       line-height: 1.55;
     }
 
-    /* Emoji reaction — 4 cycling GIFs (240×240 to match chat-view feel) */
+    /* Emoji reaction — 4 cycling GIFs (192×192 to match app .emoji-video) */
     .emoji-reaction-mock {
       position: relative;
-      width: 240px;
-      height: 240px;
+      width: 192px;
+      height: 192px;
       padding: 4px 0 8px 0;
     }
     .emoji-reaction-mock .emoji-gif {
       position: absolute;
       top: 4px; left: 0;
-      width: 240px;
-      height: 240px;
+      width: 192px;
+      height: 192px;
       object-fit: contain;
       border-radius: 8px;
       opacity: 0;
     }
-    /* GIF cycling: 4 of them visible in sequence from 5-45% of the cycle */
+    /* GIF cycling — runs SIMULTANEOUSLY with the thinking panel (picture above
+       caption), one GIF per thinking step, matching the app (ChatView.vue:1083
+       "Mascot and timeline run together"). Each swap lands on a step's fade-in. */
     .emoji-gif--search { animation: emoji-cycle-1 12s ease-in-out infinite; }
     .emoji-gif--book   { animation: emoji-cycle-2 12s ease-in-out infinite; }
     .emoji-gif--bino   { animation: emoji-cycle-3 12s ease-in-out infinite; }
     .emoji-gif--map    { animation: emoji-cycle-4 12s ease-in-out infinite; }
-    @keyframes emoji-cycle-1 { 0%, 4%, 14%, 100% { opacity: 0; } 5%, 12% { opacity: 1; } }
-    @keyframes emoji-cycle-2 { 0%, 13%, 23%, 100% { opacity: 0; } 14%, 21% { opacity: 1; } }
-    @keyframes emoji-cycle-3 { 0%, 22%, 32%, 100% { opacity: 0; } 23%, 30% { opacity: 1; } }
-    @keyframes emoji-cycle-4 { 0%, 31%, 41%, 100% { opacity: 0; } 32%, 39% { opacity: 1; } }
-    /* Whole emoji block fades out after cycling */
+    @keyframes emoji-cycle-1 { 0%, 9%, 20%, 100% { opacity: 0; } 11%, 18% { opacity: 1; } }
+    @keyframes emoji-cycle-2 { 0%, 18%, 29%, 100% { opacity: 0; } 20%, 27% { opacity: 1; } }
+    @keyframes emoji-cycle-3 { 0%, 27%, 38%, 100% { opacity: 0; } 29%, 36% { opacity: 1; } }
+    @keyframes emoji-cycle-4 { 0%, 36%, 47%, 100% { opacity: 0; } 38%, 45% { opacity: 1; } }
+    /* Mascot GIF stays FIXED above the trace for the whole thinking window, then
+       clears the instant thinking ends (~48%) — before the final text appears. */
     .emoji-reaction-mock { animation: emoji-block-fade 12s ease-in-out infinite; }
     @keyframes emoji-block-fade {
-      0%, 41% { opacity: 1; max-height: 260px; }
-      44%, 100% { opacity: 0; max-height: 0; padding: 0; overflow: hidden; }
+      0%, 7% { opacity: 0; max-height: 0; padding: 0; overflow: hidden; }
+      10%, 46% { opacity: 1; max-height: 208px; }
+      50%, 100% { opacity: 0; max-height: 0; padding: 0; overflow: hidden; }
     }
 
     /* Thinking panel */
     .thinking-panel-mock {
-      border-radius: 10px;
+      /* App's latest design streams the trace borderless / flush-left — no box,
+         no inset, text sits directly in the message column. */
       overflow: hidden;
       animation: thinking-panel-show 12s ease-in-out infinite;
       max-height: 0;
       opacity: 0;
     }
     @keyframes thinking-panel-show {
-      0%, 44% { max-height: 0; opacity: 0; }
-      48%, 95% { max-height: 400px; opacity: 1; }
-      100% { max-height: 0; opacity: 0; }
+      0%, 6% { max-height: 0; opacity: 0; }
+      10%, 88% { max-height: 720px; opacity: 1; }
+      92%, 100% { max-height: 0; opacity: 0; }
     }
     .thinking-panel-header {
       display: flex;
       align-items: center;
       gap: 7px;
-      padding: 9px 14px;
+      padding: 9px 0;
     }
     .thinking-panel-header .thinking-chevron {
       color: var(--mc-text-muted);
       width: 13px; height: 13px;
       flex-shrink: 0;
+      /* Base points right (collapsed); rotates to point down while the body is
+         open, then back to right when the trace collapses (app: .open→rotate90). */
+      animation: thinking-chevron-rot 12s ease-in-out infinite;
+    }
+    @keyframes thinking-chevron-rot {
+      0%, 8% { transform: rotate(0deg); }
+      12%, 46% { transform: rotate(90deg); }
+      52%, 100% { transform: rotate(0deg); }
+    }
+    .thinking-headline {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
     }
     .thinking-label {
       font-size: 12px;
-      font-weight: 600;
-      color: var(--mc-text-2);
+      font-weight: 500;
+      color: var(--mc-text-muted);
       letter-spacing: 0.02em;
+    }
+    /* The "done" label overlays the live pair so the header can cross-fade in
+       place without reflow (--think). Off by default; variants opt in. */
+    .thinking-label--done {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      white-space: nowrap;
+      opacity: 0;
+      display: none;
     }
     .thinking-duration {
       font-size: 11px;
       color: var(--mc-text-muted);
-      background: var(--mc-bg);
-      padding: 1px 7px;
-      border-radius: 10px;
     }
     .thinking-body {
-      padding: 4px 16px 10px;
+      padding: 2px 0 10px;
+      /* Fixed-height streaming window (app: .thinking-body--streaming). The trace
+         auto-scrolls to its newest line, so finished reasoning slides UP and clips
+         off the top while the mascot GIF above stays put. Bottom-anchored stack +
+         top mask fade = that "scrolling up and out" feel. Collapses to 0 once the
+         thinking finishes (~48%), then the mascot clears and the reply appears. */
+      height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      overflow: hidden;
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 30px);
+      mask-image: linear-gradient(to bottom, transparent 0, #000 30px);
+      animation: thinking-body-collapse 12s ease-in-out infinite;
+    }
+    @keyframes thinking-body-collapse {
+      0%, 8% { height: 0; opacity: 0; }
+      12%, 46% { height: 132px; opacity: 1; }
+      52%, 100% { height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; }
     }
     .thinking-timeline {
       display: flex;
       flex-direction: column;
-      gap: 10px;
     }
     .thinking-step {
       display: flex;
@@ -1548,32 +1630,52 @@
       color: var(--mc-text-muted);
       line-height: 1.65;
       opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+    }
+    /* Reasoning rows get a dot, tool-call rows get an icon — both occupy the same
+       14px box so every row's text starts on one left edge (app ChatView.vue). */
+    .thinking-step__dot,
+    .thinking-step__icon {
+      flex: 0 0 14px;
+      height: 14px;
+      margin-top: 3px;
+      display: grid;
+      place-items: center;
     }
     .thinking-step__dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--mc-text-muted);
-      flex-shrink: 0;
-      margin-top: 7px;
+      /* 5px disc drawn inside the 14px box, softer than the type it marks */
+      background: radial-gradient(circle at center, currentColor 0 2.5px, transparent 2.5px);
+      opacity: 0.5;
     }
+    .thinking-step__icon { color: var(--mc-text-muted); }
+    .thinking-step__icon svg { width: 14px; height: 14px; display: block; }
     .thinking-step__text { flex: 1; }
 
-    /* Each step fades in sequentially */
+    /* Each row streams in by GROWING the bottom-anchored stack: as a new row opens
+       (max-height + margin), the earlier rows are pushed up and clip off the top of
+       the fixed window (app auto-scrolls the trace to its newest line). No flex gap —
+       the margin is animated so not-yet-arrived rows add no phantom spacing. All
+       hold until the body collapses at ~48%. */
     .thinking-step--1 { animation: thinking-step-1 12s ease-in-out infinite; }
     .thinking-step--2 { animation: thinking-step-2 12s ease-in-out infinite; }
     .thinking-step--3 { animation: thinking-step-3 12s ease-in-out infinite; }
     .thinking-step--4 { animation: thinking-step-4 12s ease-in-out infinite; }
-    @keyframes thinking-step-1 { 0%, 48%, 96%, 100% { opacity: 0; } 51%, 92% { opacity: 1; } }
-    @keyframes thinking-step-2 { 0%, 53%, 96%, 100% { opacity: 0; } 56%, 92% { opacity: 1; } }
-    @keyframes thinking-step-3 { 0%, 58%, 96%, 100% { opacity: 0; } 61%, 92% { opacity: 1; } }
-    @keyframes thinking-step-4 { 0%, 63%, 96%, 100% { opacity: 0; } 66%, 92% { opacity: 1; } }
+    .thinking-step--5 { animation: thinking-step-5 12s ease-in-out infinite; }
+    .thinking-step--6 { animation: thinking-step-6 12s ease-in-out infinite; }
+    .thinking-step--7 { animation: thinking-step-7 12s ease-in-out infinite; }
+    @keyframes thinking-step-1 { 0%, 11% { max-height: 0; opacity: 0; margin-bottom: 0; } 13%, 46% { max-height: 88px; opacity: 1; margin-bottom: 10px; } 50%, 100% { max-height: 0; opacity: 0; margin-bottom: 0; } }
+    @keyframes thinking-step-2 { 0%, 15% { max-height: 0; opacity: 0; margin-bottom: 0; } 17%, 46% { max-height: 88px; opacity: 1; margin-bottom: 10px; } 50%, 100% { max-height: 0; opacity: 0; margin-bottom: 0; } }
+    @keyframes thinking-step-3 { 0%, 20% { max-height: 0; opacity: 0; margin-bottom: 0; } 22%, 46% { max-height: 88px; opacity: 1; margin-bottom: 10px; } 50%, 100% { max-height: 0; opacity: 0; margin-bottom: 0; } }
+    @keyframes thinking-step-4 { 0%, 25% { max-height: 0; opacity: 0; margin-bottom: 0; } 27%, 46% { max-height: 88px; opacity: 1; margin-bottom: 10px; } 50%, 100% { max-height: 0; opacity: 0; margin-bottom: 0; } }
+    @keyframes thinking-step-5 { 0%, 30% { max-height: 0; opacity: 0; margin-bottom: 0; } 32%, 46% { max-height: 88px; opacity: 1; margin-bottom: 10px; } 50%, 100% { max-height: 0; opacity: 0; margin-bottom: 0; } }
+    @keyframes thinking-step-6 { 0%, 35% { max-height: 0; opacity: 0; margin-bottom: 0; } 37%, 46% { max-height: 88px; opacity: 1; margin-bottom: 10px; } 50%, 100% { max-height: 0; opacity: 0; margin-bottom: 0; } }
+    @keyframes thinking-step-7 { 0%, 40% { max-height: 0; opacity: 0; margin-bottom: 0; } 42%, 46% { max-height: 88px; opacity: 1; margin-bottom: 10px; } 50%, 100% { max-height: 0; opacity: 0; margin-bottom: 0; } }
 
-    /* Final result bubble — assistant markdown response, appears after thinking */
+    /* Final result bubble — assistant markdown response, appears after thinking.
+       Borderless: bare text on the page, no fill/border/radius (variant rule). */
     .chat-bubble--final {
-      background: var(--mc-bg);
-      border: 0.5px solid var(--mc-border);
-      border-radius: 18px;
-      padding: 12px 18px;
+      padding: 6px 0 2px;
       font-size: 14px;
       line-height: 1.65;
       color: var(--mc-text);
@@ -1585,20 +1687,38 @@
     .chat-bubble--final p { margin: 0; }
     .chat-bubble--final p + p { margin-top: 8px; }
     .chat-bubble--final strong { color: var(--mc-text); font-weight: 600; }
+    .chat-bubble--final h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--mc-text);
+      margin: 16px 0 8px;
+    }
+    .chat-bubble--final h3:first-child { margin-top: 0; }
+    .chat-bubble--final ul {
+      margin: 4px 0 0;
+      padding-left: 18px;
+      list-style: disc;
+    }
+    .chat-bubble--final li { margin: 2px 0; color: var(--mc-text-2); }
     @keyframes final-result-show {
-      0%, 70% { max-height: 0; opacity: 0; }
-      74%, 92% { max-height: 600px; opacity: 1; }
-      96%, 100% { max-height: 0; opacity: 0; }
+      0%, 50% { max-height: 0; opacity: 0; }
+      54%, 88% { max-height: 900px; opacity: 1; }
+      92%, 100% { max-height: 0; opacity: 0; }
     }
 
-    /* Phone-auth card (matches original .phone-auth-card) */
+    /* Phone-auth card — the one operable object here, so it takes the warm-stone
+       surface (variant: --bg-secondary→--bg-tertiary, radius 14→18). Layout is
+       ported 1:1 from the app's ChatView.vue .phone-auth-card. */
     .phone-auth-card {
       margin-top: 10px;
-      background: var(--mc-paper);
+      background: var(--mc-bg);
       border: 1px solid var(--mc-border);
-      border-radius: 14px;
-      padding: 16px 18px;
+      border-radius: 18px;
+      padding: 24px 26px;
+      /* Capped (not full-width) so the copy column stays ~260px and the title
+         holds on two lines beside the large mascot — app comment. */
       width: 100%;
+      max-width: 510px;
       box-sizing: border-box;
       max-height: 0;
       opacity: 0;
@@ -1606,27 +1726,42 @@
       animation: phone-auth-show 12s ease-in-out infinite;
     }
     @keyframes phone-auth-show {
-      0%, 80% { max-height: 0; opacity: 0; }
-      83%, 93% { max-height: 320px; opacity: 1; }
-      96%, 100% { max-height: 0; opacity: 0; }
+      0%, 60% { max-height: 0; opacity: 0; }
+      64%, 88% { max-height: 360px; opacity: 1; }
+      92%, 100% { max-height: 0; opacity: 0; }
+    }
+    /* App layout: mascot LEFT, copy column RIGHT (ChatView.vue .phone-auth-card__main) */
+    .phone-auth-card__main {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .phone-auth-card__copy {
+      flex: 1;
+      min-width: 0;
     }
     .phone-auth-card__mascot {
       display: block;
-      width: 84px;
-      height: 84px;
-      margin: 0 auto 8px;
+      /* 172px box renders a ~105px mascot — the GIF character only fills ~3/5 of
+         its 720² frame, so the box runs larger than the optical size (app). */
+      width: 172px;
+      height: 172px;
+      flex-shrink: 0;
       object-fit: contain;
     }
     .phone-auth-card__title {
-      font-size: 14px;
-      font-weight: 600;
+      /* Body face, jumped weight, negative tracking — heading language from the
+         setup wizard's .welcome-title, one size down (app). */
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
       color: var(--mc-text);
-      line-height: 1.5;
-      margin-bottom: 10px;
+      line-height: 1.35;
+      margin-bottom: 12px;
     }
     .phone-auth-card__benefits {
       list-style: none;
-      margin: 0 0 14px;
+      margin: 0;
       padding: 0;
       display: flex;
       flex-direction: column;
@@ -1634,7 +1769,7 @@
     }
     .phone-auth-card__benefits li {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 8px;
       font-size: 13px;
       color: var(--mc-text-2);
@@ -1642,31 +1777,41 @@
     }
     .phone-auth-card__check {
       flex-shrink: 0;
+      margin-top: 3px;
       color: var(--mc-text-2);
     }
+    /* Actions live inside the copy column (not spanning the card), right-aligned
+       at intrinsic width so the confirm pill doesn't stretch with the container. */
     .phone-auth-card__actions {
       display: flex;
-      gap: 8px;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 4px;
+      margin-top: 14px;
     }
     .phone-auth-btn {
-      padding: 8px 20px;
+      padding: 10px 20px;
       border-radius: 20px;
       font-size: 13px;
       font-weight: 600;
+      white-space: nowrap;
     }
     .phone-auth-btn--deny {
-      background: #ffffff;
+      /* Borderless: declining is available, not advertised (app). */
+      background: transparent;
       color: var(--mc-text-2);
-      border: 0.5px solid var(--mc-border);
+      border: none;
     }
     .phone-auth-btn--confirm {
       background: var(--mc-text);
       color: #fff;
       border: none;
     }
-    /* Last (active) step has a pulsing accent dot */
+    /* Active (in-progress) step: brand ink, not alert red — the dot only means
+       "this step is streaming", app uses --text-primary here, not #e8533a. */
     .thinking-step--active .thinking-step__dot {
-      background: #e8533a;
+      background: radial-gradient(circle at center, var(--mc-text) 0 2.5px, transparent 2.5px);
+      opacity: 1;
       animation: step-dot-pulse 1.2s ease-in-out infinite;
     }
     @keyframes step-dot-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(0.6); opacity: 0.55; } }
@@ -1676,7 +1821,210 @@
        is already out and the thread is pinned to the bottom so scrolling up
        reveals the phone-auth card as the focus. */
     .chat-static .chat-thread-mock--demo { justify-content: flex-end; }
+    /* Frozen frame doesn't auto-scroll — the wrapper sits at its natural place */
+    .chat-static .chat-scroll { animation: none; transform: none; }
     .chat-static .chat-group { flex-shrink: 0; }
+    /* Frozen frame shows the avatar at rest, no fade loop */
+    .chat-static .chat-agent-avatar { animation: none; opacity: 1; }
+
+    /* ===== Gate 03 · Understand & steer — the thinking beat, played to its end =====
+       One-shot (iteration 1, fill: forwards): the trace streams row by row, holds,
+       then the body COLLAPSES, the working GIF FADES OUT, and the header cross-fades
+       "Thinking & Execution · 3s" → "Thought for 3s". As it folds, the itinerary
+       answer fills in below (no blank gap); the phone-auth card stays hidden — that
+       "first win" reveal is Gate 04's opening move. */
+    .chat-view-mock--think .chat-scroll { animation: none; transform: none; }
+    /* Phone-auth card stays hidden — that "first win" reveal belongs to Gate 04. */
+    .chat-view-mock--think .phone-auth-card { display: none; }
+    /* Answer opens as the trace collapses, so the panel doesn't leave a blank gap:
+       thinking finishes → header folds to "Thought for 3s" → the itinerary text
+       fills in below it. Holds on the last frame (forwards). */
+    .chat-view-mock--think .chat-bubble--final {
+      animation: think-answer-in 6.2s ease-in-out forwards;
+    }
+    @keyframes think-answer-in {
+      0%, 86% { max-height: 0;     opacity: 0; }
+      100%    { max-height: 900px; opacity: 1; }
+    }
+    .chat-view-mock--think .chat-agent-avatar { animation: none; opacity: 1; }
+    /* Working GIF: rest on the map frame, then clear away as the trace collapses. */
+    .chat-view-mock--think .emoji-reaction-mock {
+      width: 150px; height: 150px; overflow: hidden;
+      animation: think-gif-out 6.2s ease-in-out forwards;
+    }
+    .chat-view-mock--think .emoji-gif {
+      animation: none; opacity: 0; width: 150px; height: 150px; top: 0;
+    }
+    .chat-view-mock--think .emoji-gif--map { opacity: 1; }
+    @keyframes think-gif-out {
+      0%, 90% { opacity: 1; height: 150px; }
+      100%    { opacity: 0; height: 0; padding: 0; }
+    }
+    /* Panel header stays; body opens, holds, then collapses shut. */
+    .chat-view-mock--think .thinking-panel-mock { animation: none; max-height: 720px; opacity: 1; }
+    .chat-view-mock--think .thinking-body { animation: think-body-1shot 6.2s ease-in-out forwards; }
+    @keyframes think-body-1shot {
+      0%   { height: 0;     opacity: 0; }
+      6%   { height: 132px; opacity: 1; }
+      90%  { height: 132px; opacity: 1; }
+      100% { height: 0;     opacity: 0; padding-top: 0; padding-bottom: 0; }
+    }
+    .chat-view-mock--think .thinking-panel-header .thinking-chevron {
+      animation: think-chevron-1shot 6.2s ease-in-out forwards;
+    }
+    @keyframes think-chevron-1shot {
+      0%   { transform: rotate(0deg); }
+      6%   { transform: rotate(90deg); }
+      90%  { transform: rotate(90deg); }
+      100% { transform: rotate(0deg); }
+    }
+    /* Header label cross-fade: live pair out, "Thought for 3s" in, timed to collapse. */
+    .chat-view-mock--think .thinking-label--live,
+    .chat-view-mock--think .thinking-duration {
+      animation: think-live-out 6.2s ease-in-out forwards;
+    }
+    .chat-view-mock--think .thinking-label--done {
+      display: block;
+      animation: think-done-in 6.2s ease-in-out forwards;
+    }
+    @keyframes think-live-out { 0%, 90% { opacity: 1; } 96%, 100% { opacity: 0; } }
+    @keyframes think-done-in  { 0%, 90% { opacity: 0; } 96%, 100% { opacity: 1; } }
+    /* Rows stream in on staggered fixed delays and hold (fill: forwards); the body
+       collapse clips them at the end. Bottom-anchored window + top mask = finished
+       rows age up and out of the fixed frame as new ones arrive. */
+    .chat-view-mock--think .thinking-step {
+      max-height: 0; opacity: 0; margin-bottom: 0;
+      animation: think-row-in 0.5s ease-out forwards;
+    }
+    .chat-view-mock--think .thinking-step--1 { animation-delay: 0.6s; }
+    .chat-view-mock--think .thinking-step--2 { animation-delay: 1.2s; }
+    .chat-view-mock--think .thinking-step--3 { animation-delay: 1.8s; }
+    .chat-view-mock--think .thinking-step--4 { animation-delay: 2.4s; }
+    .chat-view-mock--think .thinking-step--5 { animation-delay: 3.0s; }
+    .chat-view-mock--think .thinking-step--6 { animation-delay: 3.6s; }
+    .chat-view-mock--think .thinking-step--7 { animation-delay: 4.2s; }
+    @keyframes think-row-in {
+      from { max-height: 0;    opacity: 0; margin-bottom: 0; }
+      to   { max-height: 88px; opacity: 1; margin-bottom: 10px; }
+    }
+
+    /* ===== Gate 04 · First win — pick up from Gate 03, scroll, then confirm =====
+       Starts on Gate 03's frozen end-frame: collapsed "Thought for 3s" header at
+       the top, working GIF already gone, answer + phone-auth card sitting fully
+       rendered below the fold. A pointer flicks a scroll-wheel and the thread
+       translates UP to bring the itinerary and the phone-auth card into frame;
+       the pointer then travels to "Sure, send it", presses it, and the card
+       flips in place to the WeChat QR bubble (the app's own qrShown beat). */
+    .chat-view-mock--reveal .chat-thread-mock--demo { position: relative; }
+    .chat-view-mock--reveal .chat-scroll { animation: reveal-scroll 13s ease-in-out infinite; }
+    @keyframes reveal-scroll {
+      0%, 12%   { transform: translateY(0); }        /* Gate 03 end-frame: collapsed header + answer top */
+      30%       { transform: translateY(-320px); }   /* answer streams up into view */
+      46%, 88%  { transform: translateY(-600px); }   /* card lands fully; held through the click + QR beat */
+      94%, 100% { transform: translateY(0); }        /* settle back to the start */
+    }
+    .chat-view-mock--reveal .chat-group { flex-shrink: 0; }
+    .chat-view-mock--reveal .chat-agent-avatar { animation: none; opacity: 1; }
+    .chat-view-mock--reveal .emoji-reaction-mock { display: none; }
+    .chat-view-mock--reveal .thinking-body { display: none; }
+    .chat-view-mock--reveal .thinking-panel-mock { animation: none; max-height: none; opacity: 1; }
+    .chat-view-mock--reveal .thinking-panel-header .thinking-chevron { animation: none; transform: rotate(0deg); }
+    /* Header pinned to the collapsed "Thought for 3s" label (matches Gate 03 end). */
+    .chat-view-mock--reveal .thinking-label--live,
+    .chat-view-mock--reveal .thinking-duration { display: none; }
+    .chat-view-mock--reveal .thinking-label--done { position: static; display: block; opacity: 1; transform: none; }
+    /* Answer + card sit at natural height; the thread scroll reveals them. */
+    .chat-view-mock--reveal .chat-bubble--final,
+    .chat-view-mock--reveal .phone-auth-card {
+      animation: none; max-height: none; opacity: 1; overflow: visible;
+    }
+    /* Scroll-wheel pointer: fades in, nudges down as content scrolls up, then
+       glides left-down onto "Sure, send it" and presses. Origin at the arrow tip
+       so the click scale pivots on the point that touches the button. */
+    .reveal-cursor {
+      position: absolute;
+      right: 96px;
+      top: 0;
+      width: 24px;
+      height: 27px;
+      z-index: 40;
+      pointer-events: none;
+      opacity: 0;
+      transform-origin: 3px 3px;
+      animation: reveal-cursor 13s ease-in-out infinite;
+    }
+    .reveal-cursor img { width: 100%; height: 100%; display: block; }
+    /* translate() is measured from the right:96 anchor; the confirm button sits
+       at translate(-38px, 378px) in the real (width-capped) iframe frame. */
+    @keyframes reveal-cursor {
+      0%, 8%    { opacity: 0; transform: translate(0px,150px) scale(1); }
+      12%       { opacity: 1; transform: translate(0px,150px) scale(1); }
+      22%       { transform: translate(0px,176px) scale(1); }   /* scroll nudge */
+      30%       { transform: translate(0px,154px) scale(1); }
+      40%       { transform: translate(0px,178px) scale(1); }   /* last scroll nudge (thread hits -600 by 46%) */
+      50%       { transform: translate(-38px,300px) scale(1); } /* glide toward the button */
+      55%       { transform: translate(-38px,378px) scale(1); } /* land on "Sure, send it" */
+      58%       { transform: translate(-38px,382px) scale(0.84);} /* click press */
+      61%       { opacity: 1; transform: translate(-38px,378px) scale(1); }  /* release — QR pops here */
+      68%, 100% { opacity: 0; transform: translate(-38px,372px) scale(1); }  /* lift away, leaving the QR clean */
+    }
+    /* Confirm button dips under the pointer at the click instant. */
+    .chat-view-mock--reveal .phone-auth-btn--confirm {
+      animation: reveal-btn-press 13s ease-in-out infinite;
+      transform-origin: center;
+    }
+    @keyframes reveal-btn-press {
+      0%, 55%   { transform: scale(1); }
+      58%       { transform: scale(0.93); }
+      61%, 100% { transform: scale(1); }
+    }
+    /* WeChat QR bubble — the app's qrShown beat. Ported 1:1 from ChatView.vue
+       (.phone-qr-bubble): art left, copy right, same 18px card. Rendered as an
+       opaque overlay on the phone-auth card so it flips in place on the click,
+       with zero reflow — the one card "becomes" the QR. */
+    .chat-view-mock--reveal .phone-auth-card { position: relative; }
+    .phone-qr-bubble {
+      position: absolute;
+      inset: 0;
+      background: var(--mc-bg);
+      border-radius: 18px;
+      padding: 24px 26px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      opacity: 0;
+      animation: reveal-qr-pop 13s ease-in-out infinite;
+    }
+    @keyframes reveal-qr-pop {
+      0%, 57%   { opacity: 0; transform: translateY(4px); }
+      61%       { opacity: 1; transform: translateY(0); }   /* pops in right after the press */
+      88%       { opacity: 1; transform: translateY(0); }
+      92%, 100% { opacity: 0; transform: translateY(4px); } /* clears as the loop resets */
+    }
+    /* Real QR (encodes https://microclaw.app/wechat) — rendered at 360, shown at
+       148 so it stays crisp; matches the app's QRCode.toCanvas sizing. */
+    .phone-qr-bubble__canvas {
+      display: block;
+      width: 148px;
+      height: 148px;
+      flex-shrink: 0;
+      border-radius: 8px;
+    }
+    .phone-qr-bubble__copy { flex: 1; min-width: 0; }
+    .phone-qr-bubble__title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--mc-text);
+      line-height: 1.35;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+    .phone-qr-bubble__hint {
+      font-size: 13px;
+      color: var(--mc-text-2);
+      line-height: 1.5;
+    }
     /* Drop the pre-result animation phases */
     .chat-static .emoji-reaction-mock { display: none; }
     .chat-static .thinking-panel-mock {
@@ -1687,6 +2035,8 @@
     }
     /* Collapse the thinking panel to a completed "Thought for 3s" header */
     .chat-static .thinking-body { display: none; }
+    /* Freeze the chevron pointing right (collapsed), no rotation loop */
+    .chat-static .thinking-chevron { animation: none; transform: none; }
     /* Freeze the result + auth card fully open */
     .chat-static .chat-bubble--final,
     .chat-static .phone-auth-card {
@@ -1916,7 +2266,7 @@
       border-radius: 10px;
       position: relative;
     }
-    .app-agent-row.selected { background: rgba(0,0,0,0.05); }
+    .app-agent-row.selected { background: var(--mc-selected); }
     .app-agent-avatar {
       width: 36px;
       height: 36px;
@@ -1937,9 +2287,9 @@
       line-height: 1.3;
     }
     .app-agent-desc {
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 400;
-      color: var(--mc-text-muted);
+      color: var(--mc-text-2);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1960,17 +2310,17 @@
     .app-project-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      /* Highlight left edge lines up with the agent row / "Agent" label (x=18):
-         margin-left 10 + list padding 8 = 18. The extra left padding (26) keeps
-         the label itself sitting under the agent name, so only the selected
-         background extends leftward, not the text. */
+      gap: 8px;
+      /* Now that the row leads with a folder icon (like the app's .app-task-row),
+         drop the old 26px text indent and sit the icon in the leading slot so it
+         reads as "folder + task title", matching the app. Highlight left edge
+         still lines up with the agent row (margin-left 10). */
       margin-left: 10px;
-      padding: 7px 10px 7px 26px;
+      padding: 7px 10px;
       border-radius: 8px;
       min-width: 0;
     }
-    .app-project-row.selected { background: rgba(0,0,0,0.05); }
+    .app-project-row.selected { background: var(--mc-selected); }
     .app-project-icon {
       width: 16px;
       height: 16px;
@@ -1992,6 +2342,52 @@
       line-height: 1.3;
     }
     .app-project-row.selected .app-project-name { color: var(--mc-text); font-weight: 500; }
+
+    /* Tasks nested under an agent — MULTI-AGENT mode (mirrors the warm-stone
+       variant's .task-row). Selection sits on the task, not the owning agent:
+       the agent header above reverts to plain context. Hierarchy reads from the
+       folder icon + lighter title, not a rail — so the row sits flush and its
+       icon lands on the same left edge (x=18) as the agent avatar above it. */
+    .app-task-list {
+      display: flex;
+      flex-direction: column;
+      padding: 0 0 4px;
+    }
+    .app-task-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      /* padding-left 10 inside the list's 8px pad → folder icon at x=18 */
+      padding: 7px 10px;
+      border-radius: 8px;
+      min-width: 0;
+    }
+    /* All three sidebar row types share one selection token — the app's
+       --bg-selected (ink @5.5% alpha), a wash that tints the surface rather than
+       an opaque stone step. */
+    .app-task-row.selected { background: var(--mc-selected); }
+    .app-task-row-icon {
+      width: 15px;
+      height: 15px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      color: var(--mc-text-muted);
+    }
+    .app-task-row-icon svg { width: 15px; height: 15px; display: block; }
+    .app-task-row.selected .app-task-row-icon { color: var(--mc-text-2); }
+    .app-task-row-title {
+      flex: 1;
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--mc-text-2);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      line-height: 1.3;
+    }
+    .app-task-row.selected .app-task-row-title { color: var(--mc-text); font-weight: 500; }
 
     /* Main content column */
     .app-main {
@@ -2100,6 +2496,15 @@
     .fan-slot--email  { transform: rotate(0deg);                       z-index: 2; background: #f0e8da; }
     .fan-slot--travel { transform: translateX(-55px) rotate(-12deg); z-index: 1; background: #eceae8; }
 
+    /* Scenario fan reads a touch too large against the compose box — shrink the
+       whole cluster (cards + spread together) and anchor to the top so it lifts
+       away from the input. Scaling the container avoids rewriting the hardcoded
+       55px / -38px offsets baked into every fan-lift keyframe. */
+    .fan-container.scenario-mock-inner {
+      transform: scale(0.84);
+      transform-origin: top center;
+    }
+
     /* Scenario cards: 8s cycle — rest → news → email → travel → rest */
     .scenario-mock-inner .fan-slot--news   { animation: fan-lift-news   8s ease-in-out infinite; }
     .scenario-mock-inner .fan-slot--email  { animation: fan-lift-email  8s ease-in-out infinite; }
@@ -2129,13 +2534,13 @@
     /* Cursor for the interactive demo */
     .app-cursor {
       position: absolute;
-      width: 24px; height: 28px;
+      width: 26px; height: 29px;
       pointer-events: none;
       z-index: 200;
       left: 0; top: 0;
       animation: cursor-tour 8s ease-in-out infinite;
     }
-    .app-cursor svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25)); }
+    .app-cursor img { width: 100%; height: 100%; display: block; }
     @keyframes cursor-tour {
       /* Coords within 956 × 760 app-shell. main col=664, fan-container center x≈624, cards ±55, all shifted -8 from previous 972 layout */
       0%, 100%   { transform: translate(632px, 600px); }   /* idle over input */
@@ -2240,7 +2645,9 @@
     /* Compose area (matches ChatView.vue .chat-compose) */
     .chat-compose {
       flex-shrink: 0;
-      padding: 0 28px 18px;
+      /* Equal inset on all three open sides (app: 0 28px 28px) — the box was
+         sitting slightly dropped when bottom was 18 against 28 left/right. */
+      padding: 0 28px 28px;
     }
     .compose-wrapper {
       display: flex;
@@ -2248,9 +2655,14 @@
       background: var(--mc-paper);
       border: 0.5px solid var(--mc-border);
       border-radius: 20px;
-      padding: 8px 16px;
-      /* Vertical 8+8=16 gives wrapper outer 108 at 2-line state
-         (8 + 52 input-row + 40 button + 8 = 108) */
+      /* App padding 16/16/12 — more top room so the text isn't hugging the edge. */
+      padding: 16px 16px 12px;
+      /* Two-layer glow (app): a wide soft halo lifts the box off the page + a
+         tight low one grounds it, so the white-on-white composer reads as light
+         spilling out rather than a flat hairline box. */
+      box-shadow:
+        0 4px 20px rgba(39, 35, 32, 0.06),
+        0 1px 3px rgba(39, 35, 32, 0.04);
     }
     .compose-input-row {
       box-sizing: border-box;    /* match original — min-height includes padding */
@@ -2663,13 +3075,13 @@
     .vstage:has(.app-shell--no-sidebar) .agent-card__footer { padding: 8px 14px 14px; }
     .vstage:has(.app-shell--no-sidebar) .agent-card__btn { font-size: 11px; padding: 5px 12px; }
     .vstage:has(.app-shell--no-sidebar) .agent-card__btn svg { width: 10px; height: 10px; }
-    /* Step 05 — the console is a full app; plain frame, let the
-       embedded prototype fill it. */
+    /* Step 05 — the console is a full app. Match the shell's own 956×760
+       ratio so fitShell's contain-scale fills edge-to-edge with no
+       letterbox, and stay transparent so no backing colour shows. */
     .vstage--console {
-      aspect-ratio: auto;
-      height: 640px;
+      aspect-ratio: 956 / 760;
       padding: 0;
-      background: #fff;
+      background: transparent;
       display: block;
     }
     .console-embed {
@@ -2699,7 +3111,6 @@
       .steps { gap: 48px; }
       .vstage { aspect-ratio: 3 / 4; }
       .vstage:has(.install-dual) { aspect-ratio: 1 / 1; }
-      .vstage--console { height: 520px; }
     }
   </style>
 </head>
@@ -3000,32 +3411,37 @@
     }
 
     const APP_AGENTS = [
-      { id: "default",    name: "MicroClaw",        desc: "Your AI sidekick",              avatar: "assets/microclaw.png" },
-      { id: "codeMonkey", name: "Code Monkey",      desc: "Code development & debugging",  avatar: "assets/agent-code.png" },
-      { id: "growth",     name: "Growth Hacker",    desc: "Content marketing & analytics", avatar: "assets/agent-growth.png" },
-      { id: "finance",    name: "Finance Leopard",  desc: "Stock analysis & portfolio",    avatar: "assets/agent-finance.png" },
+      { id: "default",    name: "MicroClaw",        desc: "Your AI sidekick",              avatar: "assets/microclaw.png",     tasks: [{ id: "citywalk", title: "Hometown friend visiting…" }] },
+      { id: "codeMonkey", name: "Code Monkey",      desc: "Code development & debugging",  avatar: "assets/agent-code.png",    tasks: [{ id: "signup", title: "Fix signup validation bug" }, { id: "auth", title: "Refactor auth flow" }] },
+      { id: "growth",     name: "Growth Hacker",    desc: "Content marketing & analytics", avatar: "assets/agent-growth.png",  tasks: [{ id: "q3", title: "Q3 campaign analysis" }] },
+      { id: "finance",    name: "Finance Leopard",  desc: "Stock analysis & portfolio",    avatar: "assets/agent-finance.png", tasks: [{ id: "rebalance", title: "Rebalance portfolio" }] },
       { id: "vangogh",    name: "Van Gogh",         desc: "Illustration & scene creation", avatar: "assets/agent-vangogh.png" },
-      { id: "master",     name: "Grandmaster",      desc: "Life planning & travel",        avatar: "assets/agent-master.png" },
+      { id: "master",     name: "Grandmaster",      desc: "Life planning & travel",        avatar: "assets/agent-master.png",  tasks: [{ id: "kyoto", title: "Kyoto trip itinerary" }] },
     ];
 
     /* Specialists for New Agent page (sourced from real ALL_PRESETS in mockAgents.ts) */
     const SPECIALISTS = [
-      { id: "codeMonkey", name: "Code Monkey",       desc: "Code development, debugging & review",       cardImage: "assets/Coder.png",     tags: ["Development", "Debug & Optimize", "Code Review"] },
-      { id: "vangogh",    name: "Van Gogh",          desc: "Pixel art illustration & scene creation",    cardImage: "assets/Painter.png",   tags: ["Illustration", "Style Analysis", "Scene Design"] },
-      { id: "counsel",    name: "Legal Counsel",     desc: "Contract review & compliance checks",        cardImage: "assets/Lawyer.png",    tags: ["Contracts", "Compliance", "Risk Review"] },
-      { id: "growth",     name: "Growth Hacker",     desc: "Content marketing & data analytics",         cardImage: "assets/Scientist.png", tags: ["Content Strategy", "Data Analytics", "Viral Copy"] },
-      { id: "finance",    name: "Finance Leopard",   desc: "Stock market analysis & portfolio tracking", cardImage: "assets/stock.png",     tags: ["Stock Analysis", "Market Review", "Portfolio Mgmt"] },
-      { id: "grandmaster",name: "Grandmaster",       desc: "Life planning, diet & travel arrangements",  cardImage: "assets/Diviner.png",   tags: ["Life Planning", "Diet Tips", "Travel Planning"] },
+      { id: "codeMonkey", name: "Code Monkey",       desc: "Code development, debugging & review",       cardImage: "assets/Coder.webp",     tags: ["Development", "Debug & Optimize", "Code Review"] },
+      { id: "vangogh",    name: "Van Gogh",          desc: "Pixel art illustration & scene creation",    cardImage: "assets/Painter.webp",   tags: ["Illustration", "Style Analysis", "Scene Design"] },
+      { id: "counsel",    name: "Legal Counsel",     desc: "Contract review & compliance checks",        cardImage: "assets/Lawyer.webp",    tags: ["Contracts", "Compliance", "Risk Review"] },
+      { id: "growth",     name: "Growth Hacker",     desc: "Content marketing & data analytics",         cardImage: "assets/Scientist.webp", tags: ["Content Strategy", "Data Analytics", "Viral Copy"] },
+      { id: "finance",    name: "Finance Leopard",   desc: "Stock market analysis & portfolio tracking", cardImage: "assets/stock.webp",     tags: ["Stock Analysis", "Market Review", "Portfolio Mgmt"] },
+      { id: "grandmaster",name: "Grandmaster",       desc: "Life planning, diet & travel arrangements",  cardImage: "assets/Diviner.webp",   tags: ["Life Planning", "Diet Tips", "Travel Planning"] },
     ];
 
     /* Projects that live under the MicroClaw agent in the sidebar. The first
        entry is the task running in step 03 (the city-walk plan); the other two
        are earlier work, kept so the list reads as a real project history. */
     const APP_PROJECTS = [
-      { id: "citywalk",    name: "Hometown friend visiting…", icon: null },
+      { id: "citywalk",    name: "Hometown friend visiting…", icon: "folder" },
     ];
 
     const PROJECT_ICONS = {
+      folder: (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3.5 7A2 2 0 0 1 5.5 5h3.3a2 2 0 0 1 1.5.7l.9 1a2 2 0 0 0 1.5.7h5.3a2 2 0 0 1 2 2v7.9a2 2 0 0 1-2 2H5.5a2 2 0 0 1-2-2Z"/>
+        </svg>
+      ),
       phone: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
           <rect x="7" y="2.5" width="10" height="19" rx="2.4"/><line x1="10.8" y1="18.6" x2="13.2" y2="18.6"/>
@@ -3038,16 +3454,27 @@
       ),
     };
 
-    function ChatThinkingMock({ staticEnd } = {}) {
+    function ChatThinkingMock({ staticEnd, variant } = {}) {
+      // Interleaved reasoning + tool-call trace, matching the app's THINKING_STEPS
+      // (ChatView.vue:539) — reasoning rows carry a dot, execution rows an icon.
+      const STEP_ICONS = {
+        weather: <svg viewBox="0 0 20 20" fill="currentColor"><path d="M11 7c2.46 0 3.86 1.57 4.07 3.47h.06A2.82 2.82 0 0 1 18 13.24 2.82 2.82 0 0 1 15.13 16H6.87A2.82 2.82 0 0 1 4 13.24a2.82 2.82 0 0 1 2.87-2.77h.06C7.13 8.57 8.53 7 11 7Zm0 1a3.04 3.04 0 0 0-3.09 3.02c0 .28-.25.5-.54.5h-.55c-1 0-1.82.78-1.82 1.74S5.81 15 6.82 15h8.36c1 0 1.82-.78 1.82-1.74s-.81-1.74-1.82-1.74h-.55c-.29 0-.54-.22-.54-.5A3.02 3.02 0 0 0 11 8ZM3.8 9.7a.5.5 0 0 1-.22.6l-.09.04-.8.27a.5.5 0 0 1-.4-.9l.08-.04.8-.28a.5.5 0 0 1 .63.31Zm5.12-4.2c.33.16.62.37.87.62-.4.08-.78.21-1.13.37a2.28 2.28 0 0 0-3.01 3.3c-.33.1-.64.25-.93.43a3.28 3.28 0 0 1 4.2-4.72Zm-6 .17L3 5.7l.76.37a.5.5 0 0 1-.35.93l-.09-.03-.76-.37a.5.5 0 0 1 .36-.93ZM9.99 3.3c.22.1.33.35.26.58l-.03.08-.37.77a.5.5 0 0 1-.93-.36l.03-.08.37-.76a.5.5 0 0 1 .67-.23Zm-3.8-.04.05.09.27.8a.5.5 0 0 1-.9.4l-.04-.08-.28-.8a.5.5 0 0 1 .9-.4Z"/></svg>,
+        map: <svg viewBox="0 0 20 20" fill="currentColor"><path d="M17.73 3.06a.5.5 0 0 1 .27.44V13a.5.5 0 0 1-.21.41l-5 3.5a.5.5 0 0 1-.58 0l-4.71-3.3-4.71 3.3A.5.5 0 0 1 2 16.5V7a.5.5 0 0 1 .21-.41l5-3.5a.5.5 0 0 1 .58 0l4.71 3.3 4.71-3.3a.5.5 0 0 1 .52-.03ZM12 7.26l-4-2.8v8.28l4 2.8V7.26Zm1 8.28 4-2.8V4.46l-4 2.8v8.28Zm-6-2.8V4.46l-4 2.8v8.28l4-2.8Z"/></svg>,
+        subway: <svg viewBox="0 0 20 20" fill="currentColor"><path d="M8 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm5 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM8.5 5a.5.5 0 0 0 0 1h3a.5.5 0 1 0 0-1h-3ZM3 6a3 3 0 0 1 3-3h8a3 3 0 0 1 3 3v8a3 3 0 0 1-2.68 2.98l2.38 1.06a.5.5 0 1 1-.4.92L11.9 17H8.1l-4.4 1.96a.5.5 0 1 1-.4-.92l2.38-1.06A3 3 0 0 1 3 14V6Zm9.01 10H14a2 2 0 0 0 2-2v-2H4v2c0 1.1.9 2 2 2h6.01ZM4 6v5h12V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2Z"/></svg>,
+      };
       const steps = [
-        "Analyzing request: friend visiting from hometown, looking for City Walk routes — relaxed pace, great for two people exploring together.",
-        "Key factors: ① Weekend weather is partly cloudy with mild temps; ② Avoid peak afternoon sun — schedule indoor activities midday; ③ Prioritize subway-accessible, walkable locations.",
-        "Route logic: Summer Palace (nature + history, best in cool morning) → National Museum (indoor afternoon) → Sanlitun specialty coffee → Chaoyang Park (evening stroll).",
-        "Transit: all spots reachable by subway, no taxi needed, very walkable. Budget-friendly overall, no rushing.",
+        { kind: "think", text: "Analyzing request: friend visiting from hometown, looking for City Walk routes — relaxed pace, great for two people exploring together." },
+        { kind: "act", icon: "weather", text: "Checked weekend weather" },
+        { kind: "think", text: "Key factors: ① Weekend weather is partly cloudy with mild temps, good for outdoors; ② Avoid peak afternoon sun — schedule indoor activities midday; ③ Prioritize subway-accessible, walkable locations; ④ Balance cultural depth with everyday neighborhood vibe." },
+        { kind: "act", icon: "map", text: "Searched City Walk routes" },
+        { kind: "think", text: "Route logic: Summer Palace (nature + history, best in cool morning) → National Museum (indoor afternoon, avoid sun + substantive) → Sanlitun specialty coffee (Sunday slow-start) → Chaoyang Park (evening stroll, relaxed finish)." },
+        { kind: "act", icon: "subway", text: "Looked up subway connections" },
+        { kind: "think", text: "Transit: all spots reachable by subway, no taxi needed, very walkable. Budget-friendly overall, no rushing." },
       ];
       return (
-        <div className={"chat-view-mock" + (staticEnd ? " chat-static" : "")}>
+        <div className={"chat-view-mock" + (staticEnd ? " chat-static" : "") + (variant ? " chat-view-mock--" + variant : "")}>
           <div className="chat-thread-mock--demo">
+            <div className="chat-scroll">
             {/* User message */}
             <div className="chat-group user">
               <div className="chat-group-messages">
@@ -3063,23 +3490,31 @@
                 {/* Cycling GIFs (background workbench) */}
                 <div className="emoji-reaction-mock">
                   <img className="emoji-gif emoji-gif--search" src="assets/openclaw_search_preview_transparent.gif" alt="" />
-                  <img className="emoji-gif emoji-gif--book"   src="assets/book.gif" alt="" />
-                  <img className="emoji-gif emoji-gif--bino"   src="assets/binoculars.gif" alt="" />
-                  <img className="emoji-gif emoji-gif--map"    src="assets/map.gif" alt="" />
+                  <img className="emoji-gif emoji-gif--book"   src="assets/book.webp" alt="" />
+                  <img className="emoji-gif emoji-gif--bino"   src="assets/binoculars.webp" alt="" />
+                  <img className="emoji-gif emoji-gif--map"    src="assets/map.webp" alt="" />
                 </div>
                 {/* Thinking panel slides open after the emoji phase */}
                 <div className="thinking-panel-mock">
                   <div className="thinking-panel-header">
                     <svg className="thinking-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-                    <span className="thinking-label">{staticEnd ? "Thought for 3s" : "Thinking"}</span>
-                    {!staticEnd && <span className="thinking-duration">3s</span>}
+                    {/* Both labels render; variant CSS shows the live pair while the
+                        trace streams and cross-fades to the done label once it
+                        collapses (--think), or pins straight to done (--reveal). */}
+                    <span className="thinking-headline">
+                      <span className="thinking-label thinking-label--live">Thinking &amp; Execution</span>
+                      <span className="thinking-duration">3s</span>
+                      <span className="thinking-label thinking-label--done">Thought for 3s</span>
+                    </span>
                   </div>
                   <div className="thinking-body">
                     <div className="thinking-timeline">
                       {steps.map((s, i) => (
-                        <div key={i} className={"thinking-step thinking-step--" + (i + 1) + (i === 3 ? " thinking-step--active" : "")}>
-                          <span className="thinking-step__dot"></span>
-                          <span className="thinking-step__text">{s}</span>
+                        <div key={i} className={"thinking-step thinking-step--" + (i + 1) + " thinking-step--" + s.kind + (i === steps.length - 1 ? " thinking-step--active" : "")}>
+                          {s.kind === "act"
+                            ? <span className="thinking-step__icon">{STEP_ICONS[s.icon]}</span>
+                            : <span className="thinking-step__dot"></span>}
+                          <span className="thinking-step__text">{s.text}</span>
                         </div>
                       ))}
                     </div>
@@ -3087,19 +3522,43 @@
                 </div>
                 {/* Final response bubble appears after thinking completes */}
                 <div className="chat-bubble--final">
-                  <p>Based on this weekend's weather, here's a relaxed itinerary:</p>
-                  <p>📅 <strong>Saturday · Light City Exploration</strong></p>
-                  <p>☁️ <strong>Morning</strong> | Summer Palace Stroll (9:00–11:30) — East Palace Gate → Renshou Hall → Kunming Lake loop. Metro Line 4 → North Palace Gate.</p>
-                  <p>🍛 <strong>Lunch</strong> | Small spots near the South Gate — classic Beijing home cooking, ¥60–80/person.</p>
-                  <p>🏛️ <strong>Afternoon</strong> | National Museum (14:00–16:30) — indoor, skip the heat. Book entry in advance; try Ancient China + Road to Rejuvenation.</p>
-                  <p>📅 <strong>Sunday · Recharge & Unwind</strong></p>
-                  <p>📍 <strong>Morning</strong> | Specialty coffee near Sanlitun, slow start.</p>
-                  <p>☘️ <strong>Afternoon</strong> | Chaoyang Park — walking, cycling, or just lounging by the lake.</p>
+                  <p>Based on your city and this weekend's weather, here's a relaxed plan.</p>
+                  <h3>🏙️ Saturday · Light City Exploration</h3>
+                  <p><strong>9:00–11:30 — Summer Palace</strong></p>
+                  <ul>
+                    <li>East Palace Gate → Renshou Hall → Kunming Lake loop</li>
+                    <li>8 min walk from Line 4, North Palace Gate</li>
+                    <li>Breezy by the lake, bring a light jacket</li>
+                  </ul>
+                  <p><strong>12:00–13:00 — Lunch by the South Gate</strong></p>
+                  <ul>
+                    <li>Small local spots, classic Beijing home cooking</li>
+                    <li>¥60–80 per person</li>
+                  </ul>
+                  <p><strong>14:00–16:30 — National Museum</strong></p>
+                  <ul>
+                    <li>Indoors, so you skip the afternoon heat</li>
+                    <li>Book entry tickets in advance</li>
+                    <li>Worth seeing: Ancient China, Road to Rejuvenation</li>
+                  </ul>
+                  <h3>🌿 Sunday · Recharge & Unwind</h3>
+                  <p><strong>10:00–12:00 — Café Reading</strong></p>
+                  <ul>
+                    <li>Specialty coffee shops around Sanlitun</li>
+                    <li>An easy, slow start to the day</li>
+                  </ul>
+                  <p><strong>14:00–16:00 — Chaoyang Park</strong></p>
+                  <ul>
+                    <li>Walk, cycle, or just sit by the lake</li>
+                    <li>Sunny all day, good for being outside</li>
+                  </ul>
                 </div>
                 {/* Phone auth card slides in after the itinerary */}
                 <div className="phone-auth-card">
-                  <img className="phone-auth-card__mascot" src="assets/microclaw.png" alt="" />
-                  <div className="phone-auth-card__title">Want to send the itinerary to your phone? 🤔</div>
+                  <div className="phone-auth-card__main">
+                  <img className="phone-auth-card__mascot" src="assets/phone.webp" alt="" />
+                  <div className="phone-auth-card__copy">
+                  <div className="phone-auth-card__title">Want to send the itinerary to your phone?</div>
                   <ul className="phone-auth-card__benefits">
                     <li>
                       <svg className="phone-auth-card__check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -3114,9 +3573,30 @@
                     <div className="phone-auth-btn phone-auth-btn--deny">No thanks</div>
                     <div className="phone-auth-btn phone-auth-btn--confirm">Sure, send it</div>
                   </div>
+                  </div>
+                  </div>
+                  {/* qrShown beat: the confirm click flips this card to the WeChat
+                      QR in place (reveal variant only). Same shape as the app. */}
+                  {variant === "reveal" && (
+                    <div className="phone-qr-bubble" aria-hidden="true">
+                      <img className="phone-qr-bubble__canvas" src="assets/wechat-qr.png" alt="" />
+                      <div className="phone-qr-bubble__copy">
+                        <div className="phone-qr-bubble__title">Add MicroClaw on WeChat</div>
+                        <div className="phone-qr-bubble__hint">Scan with WeChat — I'll push the itinerary right after.</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
+            </div>
+            {/* --reveal: a pointer performs a scroll-wheel gesture that drives the
+                thread up from the collapsed "Thought for 3s" frame to reveal the
+                answer + phone-auth card below. Sits outside .chat-scroll so it
+                doesn't translate with the content. */}
+            {variant === "reveal" && (
+              <div className="reveal-cursor"><img src="assets/Cursor.svg" alt="" /></div>
+            )}
           </div>
           <div className="chat-compose">
             <div className="compose-wrapper">
@@ -3298,7 +3778,7 @@
        agent. When it is set the selection belongs to that project row, and the
        agent row above it is left unselected; with no project open the agent row
        carries the selection as before. */
-    function AppSidebar({ singleAgent = false, activeProject = null }) {
+    function AppSidebar({ singleAgent = false, activeProject = null, activeTask = null }) {
       const agents = singleAgent ? APP_AGENTS.slice(0, 1) : APP_AGENTS;
       return (
         <div className="app-sidebar">
@@ -3314,23 +3794,32 @@
             New Agent
           </div>
           <div className="app-sidebar-section">
-            <div className="app-sidebar-section-head">Agent</div>
             <div className="app-sidebar-list">
               {agents.map((a, i) => (
                 <React.Fragment key={a.id}>
-                  <div className={"app-agent-row" + (i === 0 && !activeProject ? " selected" : "")}>
+                  <div className={"app-agent-row" + (singleAgent && i === 0 && !activeProject ? " selected" : "")}>
                     <div className="app-agent-avatar"><img src={a.avatar} alt="" /></div>
                     <div className="app-agent-info">
                       <span className="app-agent-name">{a.name}</span>
                       <span className="app-agent-desc">{a.desc}</span>
                     </div>
                   </div>
-                  {i === 0 && activeProject && (
+                  {singleAgent && i === 0 && activeProject && (
                     <div className="app-project-list">
                       {APP_PROJECTS.map(p => (
                         <div key={p.id} className={"app-project-row" + (p.id === activeProject ? " selected" : "")}>
                           <span className="app-project-icon">{p.icon ? PROJECT_ICONS[p.icon] : null}</span>
                           <span className="app-project-name">{p.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {!singleAgent && a.tasks && a.tasks.length > 0 && (
+                    <div className="app-task-list">
+                      {a.tasks.map(t => (
+                        <div key={t.id} className={"app-task-row" + (t.id === activeTask ? " selected" : "")}>
+                          <span className="app-task-row-icon">{PROJECT_ICONS.folder}</span>
+                          <span className="app-task-row-title">{t.title}</span>
                         </div>
                       ))}
                     </div>
@@ -3346,17 +3835,14 @@
     function AppCursor() {
       return (
         <div className="app-cursor">
-          <svg viewBox="0 0 20 22">
-            <path d="M2 2 L2 16.5 L6.2 12.8 L8.8 18.5 L11.3 17.4 L8.7 11.7 L13.2 11.7 Z"
-                  fill="#1f1f1f" stroke="#ffffff" strokeWidth="1.5" strokeLinejoin="round"/>
-          </svg>
+          <img src="assets/Cursor.svg" alt="" />
         </div>
       );
     }
 
     const IwClose = () => (
       <div className="iw-close" title="Close">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </div>
@@ -3369,8 +3855,8 @@
             <ConfettiBurst originX={0.5} originY={0.30} interval={4000} delay={950} />
             <IwClose />
             <div className="iw-mascot-toggle">
-              <img className="iw-mascot-fold" src="assets/welcom_fold.png" alt="MicroClaw mascot folded" />
-              <img className="iw-mascot-expand" src="assets/welcom_expand.png" alt="MicroClaw mascot expanded" />
+              <img className="iw-mascot-fold" src="assets/welcom_fold.webp" alt="MicroClaw mascot folded" />
+              <img className="iw-mascot-expand" src="assets/welcom_expand.webp" alt="MicroClaw mascot expanded" />
             </div>
             <div className="iw-title">Welcome to MicroClaw</div>
             <div className="iw-bottom">
@@ -3392,9 +3878,9 @@
           <div className="install-window">
             <IwClose />
             <div className="iw-mascot-cycle">
-              <img className="iw-mascot-item" src="assets/Coder.png" alt="Coder identity" />
-              <img className="iw-mascot-item" src="assets/Lawyer.png" alt="Lawyer identity" />
-              <img className="iw-mascot-item" src="assets/Painter.png" alt="Painter identity" />
+              <img className="iw-mascot-item" src="assets/Coder.webp" alt="Coder identity" />
+              <img className="iw-mascot-item" src="assets/Lawyer.webp" alt="Lawyer identity" />
+              <img className="iw-mascot-item" src="assets/Painter.webp" alt="Painter identity" />
             </div>
             <div className="iw-cycle">
               <span className="iw-cycle-item">Intuitive</span>
@@ -3447,21 +3933,21 @@
                           <div className="fan-name">Daily Hot News</div>
                           <div className="fan-desc">Get concise daily highlights and trending news.</div>
                         </div>
-                        <div className="fan-img-area"><img className="fan-img" src="assets/daily-news.png" alt="" /></div>
+                        <div className="fan-img-area"><img className="fan-img" src="assets/daily-news.webp" alt="" /></div>
                       </div>
                       <div className="fan-slot fan-slot--email">
                         <div className="fan-body">
                           <div className="fan-name">Manage Email</div>
                           <div className="fan-desc">Organize your inbox; keep what matters clear.</div>
                         </div>
-                        <div className="fan-img-area"><img className="fan-img" src="assets/email.png" alt="" /></div>
+                        <div className="fan-img-area"><img className="fan-img" src="assets/email.webp" alt="" /></div>
                       </div>
                       <div className="fan-slot fan-slot--travel">
                         <div className="fan-body">
                           <div className="fan-name">Travel Assistant</div>
                           <div className="fan-desc">Plan weekend trips around your location and weather.</div>
                         </div>
-                        <div className="fan-img-area"><img className="fan-img" src="assets/travel.png" alt="" /></div>
+                        <div className="fan-img-area"><img className="fan-img" src="assets/travel.webp" alt="" /></div>
                       </div>
                     </div>
                   </div>
@@ -3520,7 +4006,7 @@
               <div className="app-main">
                 <AppTitlebar title="MicroClaw" />
                 <div className="app-main-body">
-                  <ChatThinkingMock />
+                  <ChatThinkingMock variant="think" />
                 </div>
               </div>
             </div>
@@ -3528,18 +4014,18 @@
         },
         {
           num: "04",
-          title: "Personal relevance",
-          cap: "An expert-identity gallery lets people pick agents that fit their own work — the tool bends toward them.",
+          title: "First win — the ask",
+          cap: "Picks up from the thinking beat: the answer streams out, then a phone-auth card lands fully in frame — the benefit shown before any permission is asked.",
           stage: (
-            <div className="app-shell app-shell--no-sidebar">
+            <div className="app-shell">
               <AppPrimaryNav active="chat" />
+              <AppSidebar singleAgent activeProject="citywalk" />
               <div className="app-main">
-                <AppTitlebar title="New Agent" withBack />
+                <AppTitlebar title="MicroClaw" />
                 <div className="app-main-body">
-                  <NewAgentMock />
+                  <ChatThinkingMock variant="reveal" />
                 </div>
               </div>
-              <AppCursor />
             </div>
           ),
         },
@@ -3551,7 +4037,7 @@
           stage: (
             <iframe
               className="console-embed"
-              src="microclaw-console.html"
+              src="microclaw-console.html?clip=pause"
               title="MicroClaw time console"
               scrolling="no"
             ></iframe>

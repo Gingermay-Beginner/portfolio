@@ -219,17 +219,18 @@
     /* ---------- Callout ---------- */
     .callout {
       margin-top: 20px; display: flex; gap: 14px; align-items: flex-start;
-      background: var(--ink); color: #fff; border-radius: 14px; padding: 20px 22px;
+      /* Light. A callout is the conclusion of the cards above it, not a banner
+         interrupting them, and an ink slab made it read as a different kind of
+         thing. This is what .callout--light already was — now the only kind. */
+      background: var(--card-2); border: 1px solid var(--line);
+      color: var(--ink); border-radius: 14px; padding: 20px 22px;
     }
     .callout strong {
       font-family: "JetBrains Mono", monospace; font-size: 11px;
       letter-spacing: 1.2px; text-transform: uppercase; color: var(--green);
       white-space: nowrap; padding-top: 2px;
     }
-    .callout span { font-size: 15.5px; line-height: 1.55; color: #e4e4e7; }
-    /* Light variant — the "not a black box" callout shouldn't read as one. */
-    .callout--light { background: var(--card-2); border: 1px solid var(--line); }
-    .callout--light span { color: var(--soft); }
+    .callout span { font-size: 15.5px; line-height: 1.55; color: var(--soft); }
 
     /* ---------- Proof figure ---------- */
     /* Frameless: the paired dark cards (with their own radius + shadow) sit
@@ -473,7 +474,7 @@
     <div class="wrap topbar-inner">
       <a class="back-link" href="portfolio.html">
         <span class="arw mono">&larr;</span>
-        <span>Bingnan Jiang</span>
+        <span>Home</span>
       </a>
       <div class="top-actions">
         <a class="btn" href="portfolio.html#work">All work</a>
@@ -595,7 +596,7 @@
               <p>Resolves spoken repairs, drops low-value noise, and outputs a cleaner structure for drafting.</p>
             </div>
           </div>
-          <div class="callout callout--light">
+          <div class="callout">
             <strong>Not a black box</strong>
             <span>Users can compare states and recover the raw transcript at any time — Intent is a view, not a rewrite.</span>
           </div>
@@ -778,7 +779,7 @@
     <div class="wrap foot-inner">
       <div class="foot-meta"><strong>Voice-first IME</strong> · Human &rarr; AI · Working prototype</div>
       <div class="top-actions">
-        <a class="btn" href="portfolio.html#work">Next work &rarr;</a>
+        <a class="btn" href="microclaw.html">Next: MicroClaw &rarr;</a>
       </div>
     </div>
   </footer>

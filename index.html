@@ -2,14 +2,14 @@
 <html lang="en"><head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bingnan Jiang — Reimagining Human-AI Interaction</title>
-  <meta name="description" content="Bingnan Jiang — AI product designer. Two years exploring how people and AI communicate: intent capture, workflow control, and transparent agents.">
+  <title>Bingnan Jiang — Product Designer &amp; Builder</title>
+  <meta name="description" content="Bingnan Jiang — product designer and builder. Exploring how people and AI communicate: intent capture, workflow control, and transparent agents.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <!-- Hero mascot rest frame — the only mascot asset on the critical path (54KB).
        The other 48 rotation frames are fetched in the background after load. -->
   <link rel="preload" as="image" href="assets/mascot/f00.webp" type="image/webp">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #f4f4f5;
@@ -115,15 +115,12 @@
     }
 
     .portrait {
-      display: grid;
+      display: block;
       width: 40px;
       height: 40px;
-      place-items: center;
       border-radius: 12px;
+      object-fit: cover;      /* fill the rounded square, crop if not square */
       background: var(--ink);
-      color: #fff;
-      font-size: 13px;
-      font-weight: 700;
       box-shadow: none;
     }
 
@@ -451,24 +448,24 @@
       gap: 14px;
     }
 
+    /* Three separate tiles, but flat — no shadow, no hover lift — so they read
+       as positioning statements, not tappable buttons. Frost stays for
+       legibility over the purple mascot behind them. */
     .feature-card {
       display: grid;
       grid-template-columns: 62px 1fr;
       min-height: 108px;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, .65);
+      border: 1px solid rgba(255, 255, 255, .6);
       border-radius: var(--radius);
-      background: rgba(250, 250, 251, .55);
+      background: rgba(250, 250, 251, .5);
       -webkit-backdrop-filter: blur(18px) saturate(1.4);
       backdrop-filter: blur(18px) saturate(1.4);
-      box-shadow: 0 10px 34px -20px rgba(24, 24, 27, .35);
-      transition: transform .2s ease, border-color .2s ease, background-color .2s ease;
-    }
-
-    .feature-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(24, 24, 27, .35);
-      background: rgba(255, 255, 255, .7);
+      /* Bottom edge dissolves into the purple mascot behind — the frost, border
+         and content all fade out over the last third, so there's no hard line
+         where the tile ends. */
+      -webkit-mask-image: linear-gradient(to bottom, #000 68%, transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 68%, transparent 100%);
     }
 
     .feature-art {
@@ -556,7 +553,7 @@
 
     .year-row {
       display: grid;
-      grid-template-columns: 90px minmax(0, 1fr);
+      grid-template-columns: 120px minmax(0, 1fr);
       gap: 18px;
       align-items: start;
     }
@@ -564,9 +561,15 @@
     .year {
       position: sticky;
       top: 96px;
+      /* Align the date's top line with the card title. The title's top is fixed
+         regardless of its (clamped) size: card pad 22 + work-copy pad 6 +
+         tags ~34 + h3 margin-top 18 ≈ 80. margin (not padding) keeps the stuck
+         position sane. line-height matches the title. */
+      margin-top: 80px;
+      line-height: .98;
       font-family: "JetBrains Mono", monospace;
       color: var(--accent);
-      font-size: 16px;
+      font-size: 24px;
       font-weight: 600;
       letter-spacing: 1px;
     }
@@ -666,6 +669,49 @@
       line-height: 1.5;
       font-family: Inter, sans-serif;
     }
+
+    /* Explicit "read case study" CTA, now living INSIDE each work card at the
+       bottom of the visual column (below the image, left-aligned to it). The
+       whole card is a link; this is the visible tap affordance. It's a <span>,
+       not an <a> — nesting <a> inside the card's <a> is illegal, and clicking
+       it still follows the card link. */
+    .case-cta {
+      align-self: flex-start;
+      margin-top: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 18px;
+      border: 1px solid transparent;
+      border-radius: 14px;                 /* rounded square, not a pill */
+      background: var(--a3);               /* theme green, filled */
+      color: #fff;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12.5px;
+      letter-spacing: .02em;
+      text-decoration: none;
+      box-shadow: 0 1px 2px rgba(16, 185, 129, .25);
+      transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+    .case-cta:hover {
+      transform: translateY(-1px);
+      background: #0ea371;                 /* a touch darker on hover */
+      box-shadow: 0 10px 20px -10px rgba(16, 185, 129, .6);
+    }
+    .case-cta__arrow { transition: transform .18s ease; }
+    .case-cta:hover .case-cta__arrow { transform: translateX(3px); }
+
+    /* Wraps the visual + CTA into the card's visual column so the button lands
+       inside the card, under the image. The visual keeps its own box (some
+       inner iframes are position:absolute against it), so re-assert stretch:
+       .visual--loom/--live set align-self:start for the grid, which in this
+       flex column would instead shrink their width. */
+    .work-visual-col {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .work-card .work-visual-col .visual { align-self: stretch; }
 
     .meta-grid {
       display: grid;
@@ -792,6 +838,9 @@
     .case-summary {
       position: sticky;
       top: 96px;
+      /* Above the sibling demo column so the hint, which bleeds out of this
+         card's right edge, is never painted over by the right-hand card. */
+      z-index: 3;
       padding: 26px;
     }
 
@@ -856,6 +905,56 @@
       font-size: 11px;
       letter-spacing: .08em;
       color: var(--a3);
+    }
+
+    /* Wayfinding hint at the foot of the sticky summary card: the three tool
+       cards to the RIGHT are interactive, which isn't obvious at rest. The
+       arrow nudges rightward, toward the demos. Hidden on mobile, where the
+       grid is single-column and the demos sit directly below (see media query). */
+    /* Handwritten margin note in the grey gutter just BELOW the sticky summary
+       card. Absolute + top:100% drops it onto the page grey (the card has no
+       overflow clip), and it rides along as the card sticks. Bigger + Caveat +
+       a slight tilt read as a penned annotation pointing at the live demos.
+       Hidden on mobile, where the grid is single-column (see media query). */
+    /* p.case-hint (element+class) so it ties, then wins by source order over
+       the earlier `.case-summary p` rule that would otherwise force Inter and
+       the muted grey — without that bump the handwriting font never applies. */
+    p.case-hint {
+      position: absolute;
+      z-index: 3;                 /* paint above the right-hand demo card where it overlaps */
+      top: calc(100% + 34px);
+      /* Anchor by the right edge and let it run just past the card into the demo
+         column on the right, so only the arrow's front half overlaps the
+         right-hand card (nowrap keeps it one line while it overflows). */
+      left: auto;
+      right: -32px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: "Caveat", ui-rounded, cursive;
+      font-size: 27px;
+      font-weight: 600;
+      line-height: 1.05;
+      color: var(--a3);
+      transform: rotate(-1.2deg);
+      transform-origin: left center;
+      transition: opacity .4s ease;
+    }
+    p.case-hint.is-spent { opacity: 0; pointer-events: none; }
+    .case-hint__arrow {
+      width: 58px;
+      height: auto;
+      flex: none;
+      color: var(--a3);       /* strokes are currentColor → theme green */
+      animation: case-hint-nudge 1.5s ease-in-out infinite;
+    }
+    @keyframes case-hint-nudge {
+      0%, 100% { transform: translateX(0); }
+      50%      { transform: translateX(5px); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .case-hint__arrow { animation: none; }
     }
 
     .process-stack {
@@ -1009,7 +1108,56 @@
     /* Cover-thumbnail variant — full-bleed image with a gradient scrim */
     .mini--cover { padding: 0; min-height: 200px; }
     .mini--cover::before { display: none; }
+    /* The recording's *file* is 16:9, but 162px of each side was black — the
+       captured window is 2442x1556. Cropping that out and matching the card to
+       what's left means the footage fills the card with nothing cut. CJKitty's
+       16:9 still loses ~6% of each margin here, which is pink and empty.
+       Scoped to the award cards: the four covers in #more-work are 4:3. */
+    .mini--project.mini--cover { aspect-ratio: 2442 / 1556; min-height: 0; }
+    /* This card needs both a scrim and the ↗ affordance, and there are only two
+       pseudo-elements. ::after is already the arrow — and because that rule is
+       written later at equal specificity, it had quietly replaced .mini--cover's
+       scrim here. So the scrim moves to ::before, which .mini--cover switches
+       off. z-index is not optional: ::before paints before the element's own
+       content, so without it the gradient would sit under the video. */
+    .mini--project.mini--cover::before {
+      display: block;
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      top: auto; left: 0; right: 0; bottom: 0;
+      width: auto; height: 44%;
+      border-radius: 0;
+      background: linear-gradient(to top, rgba(0,0,0,.66) 0%, rgba(0,0,0,.42) 32%, rgba(0,0,0,0) 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .mini--project.mini--cover .mini-cap { z-index: 2; }
+    /* Rules for one pseudo-element merge — they don't replace each other. So
+       this ::after was still carrying .mini--cover's gradient underneath
+       .mini--project's arrow, and because `top` and `height` were both set the
+       `bottom:0` was dropped: a second scrim, anchored to the top, over the
+       upper half of the card. Wipe every scrim property here; ::before is the
+       only gradient now. The arrow also sits on footage, not card stock. */
+    .mini--project.mini--cover::after {
+      background: none;
+      left: auto; bottom: auto; height: auto; width: auto;
+      top: 16px; right: 16px;
+      color: rgba(255,255,255,.82);
+      text-shadow: 0 1px 3px rgba(0,0,0,.45);
+      z-index: 2;
+    }
+    .mini--project.mini--cover:hover::after { color: #fff; }
 
+    /* Cover with no destination yet — image only, no click affordance */
+    .mini--cover-nolink { cursor: default; }
+    .mini--cover-nolink:hover { transform: none; box-shadow: none; }
+
+    /* Also used by a <video> and by an <iframe> cover. object-fit applies to the
+       first two; the frame just fills the box. pointer-events off on the frame:
+       the card is a button, and a live 3D scene would otherwise eat the click
+       and drag the camera instead of opening the project. */
+    .mini--cover iframe.mini-thumb { border: 0; pointer-events: none; }
     .mini--cover .mini-thumb {
       position: absolute;
       inset: 0;
@@ -1026,10 +1174,10 @@
       left: 0;
       right: 0;
       bottom: 0;
-      height: 62%;
+      height: 44%;
       background: linear-gradient(to top,
-        rgba(0,0,0,.88) 0%,
-        rgba(0,0,0,.62) 32%,
+        rgba(0,0,0,.66) 0%,
+        rgba(0,0,0,.42) 32%,
         rgba(0,0,0,0) 100%);
       pointer-events: none;
     }
@@ -1186,7 +1334,15 @@
     }
     .pj-desc p + p { margin-top: 10px; }
     .pj-desc em { color: var(--muted); font-style: italic; }
+    .pj-desc h4 {
+      margin: 18px 0 8px;
+      font-family: Inter, sans-serif;
+      font-size: 13px; font-weight: 600; color: var(--ink);
+    }
+    .pj-desc ul { margin: 0; padding-left: 18px; }
+    .pj-desc li + li { margin-top: 6px; }
 
+    .pj-award + .pj-award { margin-top: 8px; }
     .pj-award {
       margin-top: 20px;
       padding: 14px 16px;
@@ -1202,7 +1358,9 @@
       width: 34px;
       height: 34px;
       border-radius: 9px;
-      background: var(--ink);
+      /* The site's one colour pop, already in the palette — a gold trophy on
+         ink read as a logo tile rather than as a prize. */
+      background: var(--a3);
       color: #fff;
       display: grid;
       place-items: center;
@@ -1277,7 +1435,7 @@
     .hm-cover {
       display: block; position: relative; overflow: hidden;
       border: 1px solid var(--line); border-radius: var(--radius);
-      background: #0a0d0b url("assets/hailmary-cover.png") center/cover no-repeat;
+      background: #0a0d0b url("assets/hailmary-cover.webp") center/cover no-repeat;
       box-shadow: none; margin-bottom: 14px;
       transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
     }
@@ -1285,7 +1443,7 @@
     .hm-stage {
       position: relative; display: block; width: 100%; aspect-ratio: 2.7 / 1;
       background: #0a0d0b center/cover no-repeat;
-      background-image: url("assets/hailmary-cover.png");
+      background-image: url("assets/hailmary-cover.webp");
       border-bottom: 1px solid rgba(255,255,255,.1); overflow: hidden;
     }
     .hm-astro {
@@ -1414,7 +1572,11 @@
     .contact-links {
       display: grid;
       gap: 12px;
-      align-content: center;
+      /* Bottom, not top: the heading belongs with its buttons, so the group
+         moves as one and its last edge lands with the note's beside it.
+         Packing from the top left the free space under the buttons, which read
+         as unfinished rather than as breathing room. */
+      align-content: end;
       padding: 24px;
     }
 
@@ -1458,6 +1620,14 @@
       .letter {
         grid-template-columns: 1fr;
       }
+
+      /* Stacked layout — no pill row beside the date to align to */
+      .year { margin-top: 0; }
+
+      /* Single column: the demos sit directly below, so "on the right" is wrong
+         and a rightward arrow is misleading. Drop the hint. */
+      .case-hint { display: none; }
+      p.case-hint { display: none; }
 
       .feature-board {
         grid-template-columns: 1fr;
@@ -1671,26 +1841,30 @@
       border: 0;
     }
 
-    /* Work-card live prototype — the console mock runs itself inside the band.
-       Ratio matches the mock's own 956×760 shell so it scales edge to edge
+    /* Work-card live prototype — the MicroClaw cover runs itself inside the band.
+       Ratio matches the cover stage's own 16:10 so it scales edge to edge
        instead of letterboxing. pointer-events off: the card is a link, and a
        frame that swallowed the click would break it. */
-    /* Option A — frameless: the console mock is already a complete window (its
-       own 1px border, 14px radius, even window controls), so wrapping it in the
-       .visual card frame double-framed it — and the outer 18px radius clipped
-       the window's own corners. Drop the outer border / background / rounded
-       clip here and let the console window itself be the visual edge. The other
-       two cards (raw screenshot, raw Loom) keep the frame since they have no
-       chrome of their own. */
+    /* Frameless: the cover is its own framed window, so no border/background
+       here. But the corner clip lives on THIS band, not the stage — see the
+       compositing-layer note on .visual--live below. The other two cards (raw
+       screenshot, raw Loom) keep the frame since they have no chrome. */
     .work-card .visual--live {
       padding: 0;
       min-height: 0;
       align-self: start;
-      aspect-ratio: 956 / 760;
+      aspect-ratio: 16 / 10;
       border: 0;
       background: transparent;
-      border-radius: 0;
-      overflow: visible;
+      /* Round + clip HERE, not on the inner stage. The cover has compositing
+         layers (the confetti <canvas> and the scale(1.5) welcome mascot), and a
+         nested compositing layer escapes its parent's border-radius+overflow
+         clip — so the stage's warm-grey square corners poked out past its own
+         rounded corners. Squaring the stage (embed CSS) and clipping at this
+         outer band — which has no compositing child at its corners — makes the
+         rounding reliable. */
+      border-radius: var(--radius);
+      overflow: hidden;
     }
     .work-card .visual--live iframe {
       position: absolute;
@@ -1748,7 +1922,7 @@
       height: 100%;
       border: 0;
     }
-    .tool-embed--param { aspect-ratio: 4 / 3; }
+    .tool-embed--param { aspect-ratio: 10 / 9; }
     /* Render the parametric demo at a wider viewport, then scale down, so the
        voice bar reads smaller inside the card while still filling the box. */
     .tool-embed--param iframe {
@@ -1757,15 +1931,17 @@
       transform: scale(.82);
       transform-origin: top left;
     }
-    .tool-embed--devbar { aspect-ratio: 5 / 4; }
-    .tool-embed--placeholder {
-      aspect-ratio: 16 / 10;
-      display: grid;
-      place-items: center;
-      background:
-        repeating-linear-gradient(45deg, transparent 0 12px, rgba(24, 24, 27, .02) 12px 24px),
-        var(--bg-2);
-    }
+    /* At the demo's own zoom (Z=1.7, anchored top-left) the 1324x784 stage
+       renders about as tall as it is wide — 784 x 1.7 / 1324 = 1.007. At 5/4
+       the bottom ~116px of the panel was simply outside the frame. */
+    .tool-embed--devbar { aspect-ratio: 1 / 1.01; }
+    /* Taller than the video's own 16:9 so the card sits closer in height to the
+       two live demos above it (10/9 and 5/4). Loom letterboxes inside whatever
+       box it's given, so height past 16:9 is bought in bars: 3/2 costs about
+       8% top and bottom, 5/4 would cost 15%. Scaling the iframe up to fill
+       instead would crop the recording, which is the one thing a demo can't
+       afford. */
+    .tool-embed--loom { aspect-ratio: 3 / 2; background: var(--ink); }
     .tool-hint {
       position: absolute;
       z-index: 2;
@@ -1782,12 +1958,29 @@
       color: var(--soft);
       pointer-events: none;
     }
-    .tool-ph-label {
+    /* Cursor-following "you can interact" tip. JS sets left/top to the pointer
+       position inside the card (relayed from the same-origin demo iframe too),
+       and the transform floats the pill just above the cursor. */
+    .live-tip {
+      position: absolute;
+      z-index: 5;
+      left: 0; top: 0;
+      transform: translate(-50%, 16px);   /* float just below the cursor */
+      padding: 5px 11px;
+      border-radius: 999px;
+      background: var(--a3);               /* theme green */
+      color: #fff;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 12px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      color: var(--faint);
+      font-size: 11px;
+      letter-spacing: .01em;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .15s ease;
+    }
+    .tool-embed.show-tip .live-tip { opacity: 1; }
+    @media (prefers-reduced-motion: reduce) {
+      .live-tip { transition: none; }
     }
   </style>
 </head>
@@ -1795,19 +1988,19 @@
   <div class="wrap">
     <header class="nav-shell">
       <a class="identity" href="#top" aria-label="Home">
-        <span class="portrait">BJ</span>
+        <img class="portrait" src="assets/Avatar.jpg" alt="Bingnan Jiang" width="40" height="40">
         <span>Bingnan Jiang</span>
       </a>
 
       <nav class="pill-nav" aria-label="Primary">
         <a href="#top" class="is-active" aria-current="page">Home</a>
+        <a href="#work">Work</a>
         <a href="#play">Play</a>
-        <a href="#thinking">Thinking</a>
       </nav>
 
       <div class="top-actions">
         <a class="btn light" href="https://github.com/Gingermay-Beginner" target="_blank" rel="noreferrer">GitHub</a>
-        <a class="btn" href="https://gingermay-beginner.github.io/portfolio/" target="_blank" rel="noreferrer">Full deck</a>
+        <a class="btn" href="https://www.linkedin.com/in/bingnan-jiang-308b6b69" target="_blank" rel="noreferrer">LinkedIn</a>
       </div>
     </header>
 
@@ -1875,27 +2068,30 @@
 
         <div class="work-stack">
           <div class="year-row">
-            <div class="year">01</div>
+            <div class="year">2026/01</div>
             <a class="work-card" href="copilot-ime.html">
               <div class="work-copy">
                 <div>
                   <div class="tags">
                     <span class="tag">Human &rarr; AI</span>
-                    <span class="tag">IME</span>
                     <span class="tag">Concept system</span>
+                    <span class="tag">Prototype</span>
                   </div>
                   <h3>Copilot IME</h3>
                   <p>Bring AI into everyday input instead of requiring an app destination &mdash; from &ldquo;Open app &rarr; ask AI&rdquo; to &ldquo;Express intent &rarr; AI acts.&rdquo;</p>
                 </div>
               </div>
-              <div class="visual visual--shot">
-                <img src="assets/CopilotIME.png" alt="Copilot IME interface" loading="lazy">
+              <div class="work-visual-col">
+                <div class="visual visual--shot">
+                  <img src="assets/CopilotIME.webp" alt="Copilot IME interface" loading="lazy">
+                </div>
+                <span class="case-cta">Read case study <span class="case-cta__arrow" aria-hidden="true">&rarr;</span></span>
               </div>
             </a>
           </div>
 
           <div class="year-row">
-            <div class="year">02</div>
+            <div class="year">2026/03</div>
             <a class="work-card" href="voice-ime.html">
               <div class="work-copy">
                 <div>
@@ -1908,28 +2104,34 @@
                   <p>Move from speech-to-text toward speech-to-intent-to-action &mdash; a built, demoable behavior layer, not a mockup. See the full case study.</p>
                 </div>
               </div>
-              <div class="visual visual--loom">
-                <iframe src="https://www.loom.com/embed/df00ba8e2a904f8982008069091ae66e" allowfullscreen title="Voice-first IME first-run onboarding demo" loading="lazy"></iframe>
+              <div class="work-visual-col">
+                <div class="visual visual--loom">
+                  <iframe src="https://www.loom.com/embed/df00ba8e2a904f8982008069091ae66e" allowfullscreen title="Voice-first IME first-run onboarding demo" loading="lazy"></iframe>
+                </div>
+                <span class="case-cta">Read case study <span class="case-cta__arrow" aria-hidden="true">&rarr;</span></span>
               </div>
             </a>
           </div>
 
           <div class="year-row">
-            <div class="year">03</div>
+            <div class="year">2026/05</div>
             <a class="work-card" href="microclaw.html">
               <div class="work-copy">
                 <div>
                   <div class="tags">
+                    <span class="tag">AI &rarr; Human</span>
                     <span class="tag">Agentic AI</span>
-                    <span class="tag">Trust</span>
-                    <span class="tag">Onboarding</span>
+                    <span class="tag">Progressive trust</span>
                   </div>
                   <h3>MicroClaw &mdash; From FOMO to trust</h3>
                   <p>Designing agentic AI for novice users in China &mdash; turning FOMO-driven installs into trusted, repeat use through first wins, visible boundaries, and ambient habit loops.</p>
                 </div>
               </div>
-              <div class="visual visual--live">
-                <iframe src="microclaw-console.html?clip=pause" title="MicroClaw timeline console — the user halts a running plan and redirects it back to step 2" loading="lazy" scrolling="no"></iframe>
+              <div class="work-visual-col">
+                <div class="visual visual--live">
+                  <iframe src="microclaw-cover.html?embed" title="MicroClaw cover — one mascot doing eight kinds of work, with a confetti burst on the welcome mascot" loading="lazy" scrolling="no"></iframe>
+                </div>
+                <span class="case-cta">Read case study <span class="case-cta__arrow" aria-hidden="true">&rarr;</span></span>
               </div>
             </a>
           </div>
@@ -1942,7 +2144,6 @@
             <p class="label mono">Direct manipulation</p>
             <h2 id="case-title">Steering AI output</h2>
           </div>
-          <p class="section-note">Beyond prompting &mdash; three tools that let people steer AI directly: set parameters, navigate the process, and edit in context.</p>
         </div>
 
         <div class="case-grid">
@@ -1950,12 +2151,13 @@
             <h3>From prompting to direct manipulation.</h3>
             <p>Prompt-only interaction hides constraints and makes refining slow. These tools give people explicit control over the result.</p>
             <ul class="checklist">
-              <li>Two live, interactive demos; one in progress.</li>
+              <li>Two live, interactive demos; one on video.</li>
             </ul>
             <div class="builder-note">
-              <span class="builder-note__kicker mono">Sharpen your tools first</span>
-              I build the tools I wish I had, then use them to do the work better. These three came straight out of my own AI workflow.
+              <span class="builder-note__kicker mono">One tool, many shapes</span>
+              I don&rsquo;t build separate apps &mdash; I coax temporary interfaces out of my AI as I work. Human + AI, shape-shifting into the panel each job calls for.
             </div>
+            <p class="case-hint">Try the panels on the right &mdash; they&rsquo;re live<svg class="case-hint__arrow" viewBox="0 0 100 54" fill="none" aria-hidden="true"><path d="M2.00056 37.5541C17.5006 43.0541 34.0772 34.9775 43.0006 26.0541C55.0006 14.0541 45.0006 9.55414 36.5003 16.0541C26.8284 23.4501 25.5003 35.554 36.5003 37.554C50.0004 40.0086 64.5005 33.2646 93.0005 16.0541" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M78.3552 14.1153C83.6188 14.7001 92.9157 14.8088 95.1527 14.2593C97.3898 13.7099 89.1741 27.904 87.3426 29.4608" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg></p>
           </aside>
 
           <div class="tool-stack">
@@ -1977,19 +2179,18 @@
                 <p>A live remote-control panel for moving across the stages of an AI workflow &mdash; steerable while it runs.</p>
               </div>
               <div class="tool-embed tool-embed--devbar">
-                <span class="tool-hint">Live walkthrough &rarr;</span>
                 <iframe src="assets/devbar-demo.html" title="DevBar interactive demo" loading="lazy"></iframe>
               </div>
             </article>
 
             <article class="tool-card">
               <div class="tool-head">
-                <small class="mono">Click-Comment &amp; Edit</small>
+                <small class="mono">Point &amp; Refine</small>
                 <h3>Refine in context.</h3>
                 <p>Steer AI output directly through in-context clicks, comments, and edits &mdash; instead of re-prompting from scratch.</p>
               </div>
-              <div class="tool-embed tool-embed--placeholder">
-                <span class="tool-ph-label">Demo in progress</span>
+              <div class="tool-embed tool-embed--loom">
+                <iframe src="https://www.loom.com/embed/e8345d67d23e4bd283347bd056993222" allowfullscreen title="Point &amp; Refine — steering AI output through in-context clicks, comments and edits" loading="lazy"></iframe>
               </div>
             </article>
           </div>
@@ -2035,7 +2236,7 @@
 
         <div class="mini-gallery mini-gallery--2">
           <a class="mini mini--cover" href="https://www.figma.com/proto/xm6FF9Kyg2r5vZOgHiZIkv/Sharing_Daily-Water-Intake?node-id=327-134625&amp;viewport=1017%2C0%2C0.06&amp;t=bAdavarqs0C0aesD-1&amp;scaling=min-zoom&amp;content-scaling=fixed&amp;starting-point-node-id=327%3A134625&amp;page-id=327%3A101068" target="_blank" rel="noreferrer">
-            <img class="mini-thumb" src="assets/DailyWaterIntake_Cover_4-3.png" alt="Daily Water Intake prototype cover" loading="lazy">
+            <img class="mini-thumb" src="assets/DailyWaterIntake_Cover_4-3.webp" alt="Daily Water Intake prototype cover" loading="lazy">
             <span class="mini-cap">
               <strong>Daily Water Intake</strong>
               <span class="mini-tags mono">
@@ -2045,20 +2246,34 @@
               </span>
             </span>
           </a>
-          <div class="mini mini--cover">
-            <img class="mini-thumb" src="assets/Cover_Calendar.png" alt="Rich Calendar Answer on Bing cover" loading="lazy">
+          <a class="mini mini--cover" href="https://www.figma.com/proto/ID1j7ezV4rZIPbWrsJ5krH/Calendar-Experience-on-Content-Service?node-id=2024-66259&amp;viewport=1794%2C51%2C0.05&amp;t=IFJLtTyfY2Ox3TjG-1&amp;scaling=min-zoom&amp;content-scaling=fixed&amp;starting-point-node-id=2024%3A84403&amp;page-id=35%3A379573" target="_blank" rel="noreferrer">
+            <img class="mini-thumb" src="assets/Cover_Calendar.webp" alt="Calendar Experience on Edge New Tab Page cover" loading="lazy">
             <span class="mini-cap">
-              <strong>Rich Calendar Answer on Bing</strong>
+              <strong>Calendar Experience on Edge New Tab Page</strong>
+              <span class="mini-tags mono">
+                <span>Manga</span>
+                <span>Edge NTP</span>
+                <span>Mini Drama</span>
+              </span>
             </span>
-          </div>
-          <div class="mini mini--ph">
-            <small class="mono">Coming soon</small>
-            <strong>Xiaoice Audio Book System</strong>
-          </div>
-          <div class="mini mini--ph">
-            <small class="mono">Coming soon</small>
-            <strong>Character &amp; Skin for Copilot IME</strong>
-          </div>
+          </a>
+          <a class="mini mini--cover" href="https://www.figma.com/proto/qCDUUgxWhqiecvbPtAJeKM/CJK-Work-Share-Out-for-MD-Visit?node-id=331-10295&amp;viewport=-384%2C257%2C0.12&amp;t=8SpIIEQBfXEf2nnP-1&amp;scaling=contain&amp;content-scaling=fixed&amp;page-id=0%3A1" target="_blank" rel="noreferrer">
+            <img class="mini-thumb" src="assets/CJKgrowth.webp" alt="CJK Growth cover" loading="lazy">
+            <span class="mini-cap">
+              <strong>CJK Growth</strong>
+              <span class="mini-tags mono">
+                <span>Manga</span>
+                <span>Edge NTP</span>
+                <span>Mini Drama</span>
+              </span>
+            </span>
+          </a>
+          <a class="mini mini--cover" href="https://www.figma.com/proto/61hyIQo29kx3FvCNFnKACV/Font-Adjustment--Localizing-Typography-for-Chinese-Content?node-id=2-11103&amp;viewport=-395%2C785%2C0.18&amp;t=nBwVnNAXzxmz6Yuj-1&amp;scaling=scale-down-width&amp;content-scaling=fixed&amp;page-id=2%3A11071" target="_blank" rel="noreferrer">
+            <img class="mini-thumb" src="assets/Font.webp" alt="Font Adjustment — localizing typography for Chinese content cover" loading="lazy">
+            <span class="mini-cap">
+              <strong>Font Adjustment: Localizing Typography for Chinese Content</strong>
+            </span>
+          </a>
         </div>
       </section>
 
@@ -2068,7 +2283,6 @@
             <p class="label mono">Playground</p>
             <h2 id="play-title">Small things I make</h2>
           </div>
-          <p class="section-note">Finished, linkable experiments &mdash; the builder side of the work.</p>
         </div>
 
         <a class="hm-cover" id="hmCover" href="https://gingermay-beginner.github.io/Interactive-Web-Design-Inspired-by-Project-Hail-Mary/" target="_blank" rel="noreferrer" aria-label="Project Hail Mary interactive companion — Adrian, a green world in the Tau Ceti habitable zone. Hover to float the astronaut.">
@@ -2275,17 +2489,37 @@
         </script>
 
         <div class="mini-gallery" id="playGallery">
-          <button class="mini mini--project" type="button" data-project="cjkitty">
-            <strong>CJKitty</strong>
-            <span>Figma plugin &middot; Microsoft Hackathon 2025 winner. Open for the demo, story &amp; award.</span>
+          <button class="mini mini--project mini--cover" type="button" data-project="cjkitty">
+            <img class="mini-thumb" src="assets/CJKitty.png" alt="" loading="lazy">
+            <span class="mini-cap">
+              <strong>CJKitty</strong>
+              <span class="mini-tags mono">
+                <span>Microsoft Hackathon 2025</span>
+                <span>1st place</span>
+              </span>
+            </span>
           </button>
-          <button class="mini mini--project" type="button" data-project="project2">
-            <strong>Award project #2</strong>
-            <span>Placeholder &mdash; swap in the name, video &amp; certificate photo.</span>
+          <button class="mini mini--project mini--cover" type="button" data-project="project2">
+            <video class="mini-thumb" src="assets/redcard-cover.mp4" poster="assets/redcard-cover.jpg"
+                   autoplay muted loop playsinline aria-hidden="true"></video>
+            <span class="mini-cap">
+              <strong>Academic Salon</strong>
+              <span class="mini-tags mono">
+                <span>Studio8 Demo Day 2026</span>
+                <span>Winner</span>
+              </span>
+            </span>
           </button>
-          <button class="mini mini--project" type="button" data-project="project3">
-            <strong>Award project #3</strong>
-            <span>Placeholder &mdash; swap in the name, video &amp; certificate photo.</span>
+          <button class="mini mini--project mini--cover" type="button" data-project="project3">
+            <iframe class="mini-thumb" src="assets/momo-3d.html" loading="lazy" scrolling="no"
+                    title="" aria-hidden="true" tabindex="-1"></iframe>
+            <span class="mini-cap">
+              <strong>Pup Break</strong>
+              <span class="mini-tags mono">
+                <span>Make Something</span>
+                <span>2 awards</span>
+              </span>
+            </span>
           </button>
         </div>
         <!-- Preserved from the previous playground cards, in case you want them back:
@@ -2301,7 +2535,7 @@
       <section aria-labelledby="quote-title">
         <div class="testimonial">
           <p id="quote-title">&ldquo;Better AI isn't just more capable &mdash; it's more legible. Good design turns uncertainty into something people can inspect, steer, and trust.&rdquo;</p>
-          <footer>My working thesis across two years of human&ndash;AI interaction work.</footer>
+          <footer>My working thesis from human&ndash;AI interaction work.</footer>
         </div>
       </section>
 
@@ -2324,7 +2558,6 @@
           </div>
           <div class="contact-links">
             <h3>Let's connect</h3>
-            <p>The short version of the story &mdash; my resume. The full deck, with complete case studies and working demos, is linked above.</p>
             <a class="btn" href="assets/Bingnan-Jiang-PM-EN.pdf" target="_blank" rel="noreferrer">Resume</a>
             <a class="btn light" href="https://github.com/Gingermay-Beginner" target="_blank" rel="noreferrer">GitHub</a>
             <!-- Add your email / LinkedIn here, e.g.:
@@ -2344,50 +2577,76 @@
   <script>
   /* ---- "Small things I make" project modal ----
      To fill in a project: set `video` to a Loom EMBED url
-     (https://www.loom.com/embed/<id>), write `desc`, and replace the
-     placeholder `shots` count with real `images: [{src, alt}, ...]`. */
+     (https://www.loom.com/embed/<id>) or a local page, write `desc`, and add
+     `images: [{src, alt}, ...]` if it should carry a gallery. `award` takes one
+     object or an array of them. */
   (function () {
     var PROJECTS = {
       cjkitty: {
         kicker: 'Figma plugin',
         title: 'CJKitty',
-        video: null, // TODO: Loom embed url, e.g. 'https://www.loom.com/embed/xxxxxxxx'
+        video: 'https://www.loom.com/embed/55e120ad37fe48a6ba1edeb79c985604',
         desc: [
-          'A Figma plugin. <em>[Add 2–3 sentences on what CJKitty does and who it is for.]</em>'
+          'In CJK Growth, localization goes beyond translation. It must account for legal and brand rules, number formats, cultural context, and local expressions, while also adapting fonts and colors. As Kumo moves to the Copilot theme, frequent updates from Global Guidance create repeated and complex localization work.',
+          '<h4>How it works</h4>',
+          '<ul>' +
+            '<li>Hardcoded rules cover general terms and unit conversions for domains such as weather, finance, and sports.</li>' +
+            '<li>An API key unlocks AI translation.</li>' +
+            '<li>Users can upload a mapping list in CSV format to customize domain-specific terms such as brand &amp; legal terms, as well as font tokens.</li>' +
+          '</ul>'
         ],
         award: {
-          icon: '★',
+          icon: '🏆',
           title: 'Microsoft Hackathon 2025 — 1st place',
-          sub: 'Theme Challenge'
+          sub: 'Redesigning Design: AI as Your Creative Partner'
         },
         link: {
           href: 'https://innovationstudio.microsoft.com/hackathons/hackathon2025/project/99967',
           label: 'View on Innovation Studio ↗'
         },
         // Replace with real images, e.g. images:[{src:'assets/cjkitty-award.png',alt:'Award certificate'}]
-        shots: 2
       },
       project2: {
         kicker: 'Side project',
-        title: 'Award project #2',
-        video: null,
+        title: 'Academic Salon',
+        video: 'https://www.loom.com/embed/b2fa7b00e8e3432796f2c57a742edbc3',
         desc: [
-          '<em>[Placeholder] Replace with the project name and a short description.</em>'
+          'Academic Salon generates a panel of experts around a topic you want to think through, then lets you pick three of them to argue it out.',
+          'Each one makes their case in pictures as well as words. After two rounds, the salon writes the exchange up as a summary.'
         ],
-        award: { icon: '★', title: 'Award — add the name', sub: 'Category / year' },
-        link: null,
-        shots: 1
+        award: { icon: '🏆', title: 'Studio8 Demo Day 2026 — Winner' },
+        /* &amp; because this string is concatenated into innerHTML, where the
+           HTML parser reads the attribute and decodes entities. */
+        link: {
+          href: 'https://www.figma.com/make/QJ0u8U7swa4Qy9yROM2CKM/Academic-Salon-2026.1.23?fullscreen=1&amp;t=kCDxCCcs2XB2ki8P-1&amp;code-node-id=0-9',
+          label: 'View & play ↗'
+        },
       },
       project3: {
-        kicker: 'Side project',
-        title: 'Award project #3',
-        video: null,
+        kicker: 'Hackathon project',
+        title: 'Pup Break',
+        /* Momo isn't an image to lift — he's ~120 Three.js primitives assembled
+           at runtime. So the header runs the same self-contained embed the
+           concept page uses, and he arrives alive rather than as a still. */
+        video: 'assets/momo-3d.html',
         desc: [
-          '<em>[Placeholder] Replace with the project name and a short description.</em>'
+          'An AR dog that turns office sitting breaks into short, joyful neighborhood walks. Instead of another reminder telling you to stand up, an AR pup asks you to take it for a walk.',
+          '<ul>' +
+            '<li><strong>Problem</strong> — Office workers know they should take breaks, but wellness reminders feel like tasks and lack emotional pull.</li>' +
+            '<li><strong>Insight</strong> — People are not just completing steps; they are caring for a little dog that wants to go outside.</li>' +
+            '<li><strong>Solution</strong> — After a long sitting session, Momo appears and guides you into a 5/10/15-minute walk, sniff stop, and check-in.</li>' +
+            '<li><strong>Business</strong> — Employee wellness, office campus activation, local café discovery, and branded virtual pet items.</li>' +
+          '</ul>'
         ],
-        award: { icon: '★', title: 'Award — add the name', sub: 'Category / year' },
-        link: null,
-        shots: 1
+        award: [
+          { icon: '🏆', title: 'Make Something — Sponsor Prize, 2nd place' },
+          { icon: '🏆', title: 'Make Something — Guest Judge\u2019s Special Award',
+            sub: 'Chosen by the SpaceX judge from the whole field' }
+        ],
+        link: {
+          href: 'https://gingermay-beginner.github.io/pup-break-page/concept/hackathon.html',
+          label: 'View & play ↗'
+        },
       }
     };
 
@@ -2423,12 +2682,18 @@
     }
 
     function render(d) {
-      var descHtml = (d.desc || []).map(function (p) { return '<p>' + p + '</p>'; }).join('');
-      var awardHtml = d.award
-        ? '<div class="pj-award"><div class="pj-award-badge">' + (d.award.icon || '★') +
-          '</div><div class="pj-award-txt"><strong>' + d.award.title + '</strong>' +
-          (d.award.sub ? '<span>' + d.award.sub + '</span>' : '') + '</div></div>'
-        : '';
+      /* An entry that already starts with a tag is passed through, so a desc can
+         carry a list without ending up as a <ul> nested inside a <p>. */
+      var descHtml = (d.desc || []).map(function (p) {
+        return /^\s*</.test(p) ? p : '<p>' + p + '</p>';
+      }).join('');
+      /* A project can win more than one thing at the same event. */
+      var awards = d.award ? (Array.isArray(d.award) ? d.award : [d.award]) : [];
+      var awardHtml = awards.map(function (a) {
+        return '<div class="pj-award"><div class="pj-award-badge">' + (a.icon || '🏆') +
+          '</div><div class="pj-award-txt"><strong>' + a.title + '</strong>' +
+          (a.sub ? '<span>' + a.sub + '</span>' : '') + '</div></div>';
+      }).join('');
       var linkHtml = d.link
         ? '<a class="btn pj-link" href="' + d.link.href + '" target="_blank" rel="noreferrer">' +
           d.link.label + '</a>'
@@ -2733,6 +2998,110 @@
       hero.addEventListener('mouseenter', function () { hovering = true; kick(); });
       hero.addEventListener('mouseleave', function () { hovering = false; });
     }
+  })();
+  </script>
+
+  <script>
+  /* Hover tip on the live tool demos: a small pill follows the cursor to signal
+     the panel is interactive. Pointer events over an iframe don't reach the
+     parent, so we also listen inside each same-origin demo document and relay
+     the coordinates — compensating for the iframe's own CSS scale so the tip
+     tracks the real cursor. Skips the Loom card: it has an iframe like the
+     others, but it's a recording, and "Live — try it" over a video is a
+     promise the card can't keep. */
+  (function () {
+    if (!window.matchMedia || !matchMedia('(hover: hover)').matches) return;
+    document.querySelectorAll('.tool-embed').forEach(function (card) {
+      var iframe = card.querySelector('iframe');
+      if (!iframe || card.classList.contains('tool-embed--loom')) return;
+      var tip = document.createElement('span');
+      tip.className = 'live-tip';
+      tip.textContent = 'Live — try it';
+      card.appendChild(tip);
+
+      function place(clientX, clientY) {
+        var r = card.getBoundingClientRect();
+        tip.style.left = (clientX - r.left) + 'px';
+        tip.style.top = (clientY - r.top) + 'px';
+      }
+      function show() { card.classList.add('show-tip'); }
+      function hide() { card.classList.remove('show-tip'); }
+
+      card.addEventListener('pointermove', function (e) { place(e.clientX, e.clientY); show(); });
+      card.addEventListener('pointerleave', hide);
+
+      iframe.addEventListener('load', function () {
+        var doc;
+        try { doc = iframe.contentDocument; } catch (err) { return; }  // cross-origin: skip relay
+        if (!doc) return;
+        doc.addEventListener('pointermove', function (e) {
+          var ir = iframe.getBoundingClientRect();
+          var cw = iframe.clientWidth;                 // untransformed layout width
+          var scale = cw ? ir.width / cw : 1;          // param demo renders at 122% then scales .82
+          place(ir.left + e.clientX * scale, ir.top + e.clientY * scale);
+          show();
+        });
+        doc.addEventListener('pointerleave', hide);
+      });
+    });
+  })();
+
+  /* The hint invites you to try the panels on the right. By the time the last
+     card is on screen it has both done its job and stopped being true — that
+     one is a recording, not a live panel — so it stands down. It comes back on
+     the way up, because scrolling back is re-reading, not undoing. */
+  (function () {
+    var hint = document.querySelector('.case-hint');
+    var cards = document.querySelectorAll('#case .tool-card');
+    if (!hint || !cards.length || !('IntersectionObserver' in window)) return;
+    new IntersectionObserver(function (entries) {
+      hint.classList.toggle('is-spent', entries[0].isIntersecting);
+    }, { threshold: 0.3 }).observe(cards[cards.length - 1]);
+  })();
+
+  /* The nav follows the page. Each pill owns a section; the live one is the
+     last section whose top has passed under the floating nav. A click sets it
+     straight away as well, so the pill doesn't sit dead through the smooth
+     scroll and only catch up on arrival. */
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.pill-nav a'));
+    var items = links.map(function (a) {
+      return { a: a, el: document.getElementById(a.getAttribute('href').slice(1)) };
+    }).filter(function (i) { return i.el; });
+    if (items.length < 2) return;
+
+    var LINE = 120;   // a little below the nav, so a section counts once it's read
+
+    function setActive(item) {
+      items.forEach(function (i) {
+        var on = i === item;
+        i.a.classList.toggle('is-active', on);
+        if (on) i.a.setAttribute('aria-current', 'page');
+        else i.a.removeAttribute('aria-current');
+      });
+    }
+
+    var queued = false;
+    function sync() {
+      queued = false;
+      var current = items[0];
+      for (var i = 0; i < items.length; i++) {
+        if (items[i].el.getBoundingClientRect().top <= LINE) current = items[i];
+      }
+      setActive(current);
+    }
+
+    addEventListener('scroll', function () {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(sync);
+    }, { passive: true });
+
+    items.forEach(function (i) {
+      i.a.addEventListener('click', function () { setActive(i); });
+    });
+
+    sync();
   })();
   </script>
 

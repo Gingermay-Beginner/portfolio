@@ -49,9 +49,17 @@
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
+  /* When the host gives the iframe a fixed height taller than the content (the
+     portfolio card does), fill it. Center vertically, but STRETCH horizontally
+     so the controls panel sits at the right padding inset (its right margin
+     then matches the top/bottom margin) instead of floating in the middle with
+     a big gap on its right. */
+  html { height: 100%; }
+  body { min-height: 100%; display: grid; align-items: center; justify-items: stretch; }
 
   .stage {
     position: relative;
+    width: 100%;
     display: grid;
     grid-template-columns: 1fr 280px;
     gap: 32px;
