@@ -1827,86 +1827,36 @@
     /* Frozen frame shows the avatar at rest, no fade loop */
     .chat-static .chat-agent-avatar { animation: none; opacity: 1; }
 
-    /* ===== Gate 03 · Understand & steer — the thinking beat, played to its end =====
-       One-shot (iteration 1, fill: forwards): the trace streams row by row, holds,
-       then the body COLLAPSES, the working GIF FADES OUT, and the header cross-fades
-       "Thinking & Execution · 3s" → "Thought for 3s". As it folds, the itinerary
-       answer fills in below (no blank gap); the phone-auth card stays hidden — that
-       "first win" reveal is Gate 04's opening move. */
+    /* ===== Gate 03 · Understand & steer — the thinking beat, looping =====
+       Reuses the workbench's 12s infinite trace (thinking-step-N stagger, body
+       collapse, panel, chevron, final answer) so it loops seamlessly — the
+       default keyframes already zero out at 0%/100%. Gate 03's own differences:
+       the view is pinned (no autoscroll) so the fixed frame holds steady, the
+       working GIF rests on the map frame, the phone-auth card stays hidden (that
+       "first win" is Gate 04's opening move), and the header cross-fades
+       "Thinking & Execution · 3s" → "Thought for 3s" as the trace folds (~52%),
+       then swaps back on the reset (~92%) so the next cycle starts clean. */
     .chat-view-mock--think .chat-scroll { animation: none; transform: none; }
-    /* Phone-auth card stays hidden — that "first win" reveal belongs to Gate 04. */
-    .chat-view-mock--think .phone-auth-card { display: none; }
-    /* Answer opens as the trace collapses, so the panel doesn't leave a blank gap:
-       thinking finishes → header folds to "Thought for 3s" → the itinerary text
-       fills in below it. Holds on the last frame (forwards). */
-    .chat-view-mock--think .chat-bubble--final {
-      animation: think-answer-in 6.2s ease-in-out forwards;
-    }
-    @keyframes think-answer-in {
-      0%, 86% { max-height: 0;     opacity: 0; }
-      100%    { max-height: 900px; opacity: 1; }
-    }
     .chat-view-mock--think .chat-agent-avatar { animation: none; opacity: 1; }
-    /* Working GIF: rest on the map frame, then clear away as the trace collapses. */
-    .chat-view-mock--think .emoji-reaction-mock {
-      width: 150px; height: 150px; overflow: hidden;
-      animation: think-gif-out 6.2s ease-in-out forwards;
-    }
-    .chat-view-mock--think .emoji-gif {
-      animation: none; opacity: 0; width: 150px; height: 150px; top: 0;
-    }
+    /* Working GIF rests on the map frame; the default emoji-block-fade still
+       clears the block at ~50%, no per-emoji cycling. */
+    .chat-view-mock--think .emoji-gif { animation: none; opacity: 0; }
     .chat-view-mock--think .emoji-gif--map { opacity: 1; }
-    @keyframes think-gif-out {
-      0%, 90% { opacity: 1; height: 150px; }
-      100%    { opacity: 0; height: 0; padding: 0; }
-    }
-    /* Panel header stays; body opens, holds, then collapses shut. */
-    .chat-view-mock--think .thinking-panel-mock { animation: none; max-height: 720px; opacity: 1; }
-    .chat-view-mock--think .thinking-body { animation: think-body-1shot 6.2s ease-in-out forwards; }
-    @keyframes think-body-1shot {
-      0%   { height: 0;     opacity: 0; }
-      6%   { height: 132px; opacity: 1; }
-      90%  { height: 132px; opacity: 1; }
-      100% { height: 0;     opacity: 0; padding-top: 0; padding-bottom: 0; }
-    }
-    .chat-view-mock--think .thinking-panel-header .thinking-chevron {
-      animation: think-chevron-1shot 6.2s ease-in-out forwards;
-    }
-    @keyframes think-chevron-1shot {
-      0%   { transform: rotate(0deg); }
-      6%   { transform: rotate(90deg); }
-      90%  { transform: rotate(90deg); }
-      100% { transform: rotate(0deg); }
-    }
-    /* Header label cross-fade: live pair out, "Thought for 3s" in, timed to collapse. */
+    /* Phone-auth card stays hidden — that reveal belongs to Gate 04. */
+    .chat-view-mock--think .phone-auth-card { display: none; }
+    /* Header label cross-fade, looped: live pair out / "Thought for 3s" in as the
+       body collapses, then back on the reset. Timed to the default body collapse
+       (52%) and answer (54–88%). */
     .chat-view-mock--think .thinking-label--live,
     .chat-view-mock--think .thinking-duration {
-      animation: think-live-out 6.2s ease-in-out forwards;
+      animation: think-live-out 12s ease-in-out infinite;
     }
     .chat-view-mock--think .thinking-label--done {
       display: block;
-      animation: think-done-in 6.2s ease-in-out forwards;
+      animation: think-done-in 12s ease-in-out infinite;
     }
-    @keyframes think-live-out { 0%, 90% { opacity: 1; } 96%, 100% { opacity: 0; } }
-    @keyframes think-done-in  { 0%, 90% { opacity: 0; } 96%, 100% { opacity: 1; } }
-    /* Rows stream in on staggered fixed delays and hold (fill: forwards); the body
-       collapse clips them at the end. Bottom-anchored window + top mask = finished
-       rows age up and out of the fixed frame as new ones arrive. */
-    .chat-view-mock--think .thinking-step {
-      max-height: 0; opacity: 0; margin-bottom: 0;
-      animation: think-row-in 0.5s ease-out forwards;
-    }
-    .chat-view-mock--think .thinking-step--1 { animation-delay: 0.6s; }
-    .chat-view-mock--think .thinking-step--2 { animation-delay: 1.2s; }
-    .chat-view-mock--think .thinking-step--3 { animation-delay: 1.8s; }
-    .chat-view-mock--think .thinking-step--4 { animation-delay: 2.4s; }
-    .chat-view-mock--think .thinking-step--5 { animation-delay: 3.0s; }
-    .chat-view-mock--think .thinking-step--6 { animation-delay: 3.6s; }
-    .chat-view-mock--think .thinking-step--7 { animation-delay: 4.2s; }
-    @keyframes think-row-in {
-      from { max-height: 0;    opacity: 0; margin-bottom: 0; }
-      to   { max-height: 88px; opacity: 1; margin-bottom: 10px; }
-    }
+    @keyframes think-live-out { 0%, 48% { opacity: 1; } 54%, 88% { opacity: 0; } 94%, 100% { opacity: 1; } }
+    @keyframes think-done-in  { 0%, 48% { opacity: 0; } 54%, 88% { opacity: 1; } 94%, 100% { opacity: 0; } }
 
     /* ===== Gate 04 · First win — pick up from Gate 03, scroll, then confirm =====
        Starts on Gate 03's frozen end-frame: collapsed "Thought for 3s" header at
