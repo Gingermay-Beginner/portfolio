@@ -654,12 +654,13 @@
         <nav class="toc-list">
           <a href="#context"><span class="n">01</span><span>Context</span></a>
           <a href="#problem"><span class="n">02</span><span>Problem</span></a>
-          <a href="#approach"><span class="n">03</span><span>Approach</span></a>
-          <a href="#model"><span class="n">04</span><span>Interaction model</span></a>
-          <a href="#action"><span class="n">05</span><span>In action</span></a>
-          <a href="#capabilities"><span class="n">06</span><span>Capabilities</span></a>
-          <a href="#onboarding"><span class="n">07</span><span>Onboarding</span></a>
-          <a href="#reflection"><span class="n">08</span><span>Reflection</span></a>
+          <a href="#constraints"><span class="n">03</span><span>Design constraints</span></a>
+          <a href="#approach"><span class="n">04</span><span>Approach</span></a>
+          <a href="#model"><span class="n">05</span><span>Interaction model</span></a>
+          <a href="#action"><span class="n">06</span><span>In action</span></a>
+          <a href="#capabilities"><span class="n">07</span><span>Capabilities</span></a>
+          <a href="#onboarding"><span class="n">08</span><span>Onboarding</span></a>
+          <a href="#reflection"><span class="n">09</span><span>Reflection</span></a>
         </nav>
       </aside>
       <div class="content">
@@ -734,23 +735,58 @@
       </div>
     </section>
 
-    <!-- 03 APPROACH -->
+    <!-- 03 DESIGN CONSTRAINTS -->
+    <section class="block" id="constraints">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">03 / Design constraints</div>
+          <h2>Make voice useful without taking people out of their work</h2>
+          <p>The opportunity was not another destination AI app. It was a system layer that could help in the moment, without making speech feel less trustworthy.</p>
+        </div>
+        <div class="card">
+          <div class="duo">
+            <div class="def">
+              <div class="def-h"><span class="d"></span>Stay in the flow</div>
+              <p>Voice input has to remain close to the caret and the active task — not pull people into a separate AI workspace.</p>
+            </div>
+            <div class="def">
+              <div class="def-h"><span class="d"></span>Keep the source recoverable</div>
+              <p>Quotes, numbers, and commitments matter. Any cleaner interpretation must keep the original words available.</p>
+            </div>
+            <div class="def">
+              <div class="def-h"><span class="d"></span>Avoid a feature menu</div>
+              <p>One bar cannot become another complex command surface; it needs to surface the next useful action from context.</p>
+            </div>
+            <div class="def">
+              <div class="def-h"><span class="d"></span>Work across real desktop tasks</div>
+              <p>The model must stretch from long-form writing to cross-language work and prompt editing — not solve a single demo case.</p>
+            </div>
+          </div>
+          <div class="callout">
+            <strong>Design implication</strong>
+            <span>The system needs one stable entry point, context-aware actions, and a visible boundary between what was said and what AI resolved.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 APPROACH -->
     <section class="block" id="approach">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">03 / Approach</div>
-          <h2>Two modes, one clip — nothing lost</h2>
-          <p>A desktop-first, intent-aware voice input that gives explicit control between keeping every word and resolving it into clean intent.</p>
+          <div class="sec-num">04 / Approach</div>
+          <h2>One bar that turns context into the next action</h2>
+          <p>Rather than another destination AI app, Voice IME stays close to the caret: one entry point, context-aware actions, and explicit control over transformation.</p>
         </div>
         <div class="card">
-          <p class="lead">The goal: a voice input experience that —</p>
+          <p class="lead">The system is built around three principles:</p>
           <ul class="points">
-            <li>supports the <b>right tradeoff by scenario</b>, instead of one fixed output style;</li>
-            <li>keeps users <b>aware of the transformation</b> happening to their words;</li>
-            <li>allows <b>fast switching and verification</b> between views.</li>
+            <li><b>One entry point</b> — every voice task starts from the same lightweight bar, rather than a scattered set of tools.</li>
+            <li><b>Context-aware actions</b> — the selection, caret, clipboard, and active app determine what the bar can do next.</li>
+            <li><b>Control before automation</b> — users can choose the right reading of speech and verify what changes before accepting it.</li>
           </ul>
 
-          <div class="mini-h"><span class="mk">The solution</span>Explicit control between two modes</div>
+          <div class="mini-h"><span class="mk">The control layer</span>Two modes, one clip — nothing lost</div>
           <div class="duo">
             <div class="def">
               <div class="def-h"><span class="d"></span>Verbatim Mode</div>
@@ -818,7 +854,7 @@
     <section class="block" id="model">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">04 / Interaction model</div>
+          <div class="sec-num">05 / Interaction model</div>
           <h2>One handle. The context picks the verb.</h2>
           <p>Where your cursor or selection sits is the universal handle. The whole loop — bring context in, produce, refine — lands on the same bar, and context decides which verb it offers. Five features stop being a menu and fall into place.</p>
         </div>
@@ -953,19 +989,19 @@
       </div>
     </section>
 
-    <!-- 05 IN ACTION — show the proof before listing the capability taxonomy -->
+    <!-- 06 IN ACTION — show the proof before listing the capability taxonomy -->
     <section class="block" id="action">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">05 / In action</div>
-          <h2>See it on real speech</h2>
-          <p>Three scenarios the design has to handle — from a single slipped word to a whole rambling monologue.</p>
+          <div class="sec-num">06 / In action</div>
+          <h2>See it in the work people already do</h2>
+          <p>Each scenario follows the same arc: current context, a spoken request, an interpreted action, and a result the user can still check.</p>
         </div>
         <div class="card">
           <div class="scenes">
-            <div class="scene"><div class="scene-k">Word-level</div><div class="scene-t">Word-level repair</div><div class="scene-d">&ldquo;month-over-month… sorry, year-over-year…&rdquo;</div></div>
-            <div class="scene"><div class="scene-k">Sentence-level</div><div class="scene-t">Sentence-level restart</div><div class="scene-d">&ldquo;Let me rephrase that…&rdquo;</div></div>
-            <div class="scene"><div class="scene-k">Long-form</div><div class="scene-t">Long-form cleanup</div><div class="scene-d">Mixed business content + side chatter &rarr; a structured, usable draft.</div></div>
+            <div class="scene"><div class="scene-k">Long-form writing</div><div class="scene-t">From spoken thought to draft</div><div class="scene-d">A writer dictates a rough idea in <b>Verbatim</b>, then uses <b>Intent</b> to turn it into a sendable paragraph — with the original always available.</div></div>
+            <div class="scene"><div class="scene-k">Cross-language work</div><div class="scene-t">Transform a selected passage</div><div class="scene-d">A user selects Chinese text and asks for natural English in a professional tone. The bar uses the selection as context and returns an editable preview.</div></div>
+            <div class="scene"><div class="scene-k">Vibe coding</div><div class="scene-t">Make a request executable</div><div class="scene-d">A developer selects a loose requirement and says, “turn this into a clear task for my agent.” The result becomes a structured, inspectable prompt.</div></div>
           </div>
           <div class="video-wrap">
             <p class="video-cap">Demo · modes &amp; cleanup</p>
@@ -975,11 +1011,11 @@
       </div>
     </section>
 
-    <!-- 06 CAPABILITIES -->
+    <!-- 07 CAPABILITIES -->
     <section class="block" id="capabilities">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">06 / Capabilities</div>
+          <div class="sec-num">07 / Capabilities</div>
           <h2>What Intent Mode actually does</h2>
           <p>Click a capability to see its raw &rarr; output transformation. Same spoken input on top, resolved output below.</p>
         </div>
@@ -1034,7 +1070,7 @@
     <section class="block" id="onboarding">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">07 / Onboarding</div>
+          <div class="sec-num">08 / Onboarding</div>
           <h2>Getting to first success</h2>
           <p>A new user reaches their first win by solving exactly three things — nothing more in the way.</p>
         </div>
@@ -1056,7 +1092,7 @@
     <section class="block" id="reflection">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">08 / Reflection</div>
+          <div class="sec-num">09 / Reflection</div>
           <h2>From character entry to intent transfer</h2>
         </div>
         <div class="reflect">
