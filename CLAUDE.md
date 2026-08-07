@@ -111,6 +111,16 @@ app; a gap is a bug, not a choice.
 
 ## Conventions
 
+### Prototype integration rule
+
+When a confirmed standalone prototype is incorporated into a case study, port
+its component **verbatim first**: markup, CSS geometry, paths, motion logic,
+and state mapping. Scope those original selectors for the destination page;
+do not hand-recreate a simplified look-alike and then tune it by eye. Delete
+the replaced case-study implementation only after the port matches its source.
+The standalone prototype remains the single source of truth until the port is
+explicitly verified.
+
 - Chip text sits at 10px, which hits the 4.5:1 contrast floor long before the
   muted grey does. Check contrast before lightening small type — past a point it
   stops being quiet and starts being unreadable.

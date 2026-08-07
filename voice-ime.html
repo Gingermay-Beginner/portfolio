@@ -328,6 +328,30 @@
     .interaction-rule { margin-top: 18px; border-left: 2px solid var(--green); padding: 9px 11px; background: #f1faf7; color: var(--muted); font-size: 12px; line-height: 1.5; }
     .interaction-rule b { color: var(--ink); }
 
+    /* Confirmed Voice IME state model — shared shell, three entry contexts. */
+    .im2-flow { margin-top: 18px; }
+    .im2-flow + .im2-flow { border-top: 1px solid var(--line); padding-top: 18px; }
+    .im2-head { display:flex; gap:10px; align-items:baseline; margin-bottom:12px; }
+    .im2-head b { font-family:"JetBrains Mono",monospace; font-size:10px; letter-spacing:1px; color:var(--green); }
+    .im2-head span { color:var(--muted); font-size:12px; }
+    .im2-grid { display:grid; grid-template-columns:repeat(4,1fr); overflow:hidden; border:1px solid var(--line); border-radius:14px; background:var(--card); }
+    .im2-grid--selection { grid-template-columns:1.25fr repeat(2,1fr); }
+    .im2-state { min-height:178px; padding:17px; display:flex; flex-direction:column; }
+    .im2-name { color:var(--muted); text-align:center; font:10px "JetBrains Mono",monospace; letter-spacing:1px; text-transform:uppercase; }
+    .im2-note { margin:12px 0 0; text-align:center; color:var(--muted); font-size:12px; }
+    .im2-note b { color:var(--ink); }
+    .im2-pill { position:relative; align-self:center; width:88px; height:36px; margin-top:auto; margin-bottom:0; border-radius:12px; background:#1F2431; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(31,36,49,.18); }
+    .im2-pill--wide { width:140px; justify-content:space-between; padding:0 6px; }
+    .im2-spring { width:72px; height:14px; overflow:visible; }.im2-spring path { fill:none; stroke-linecap:round; stroke-linejoin:round; stroke-width:1.2; }.im2-spring .bg { stroke:rgba(255,255,255,.18); }.im2-spring .fg { stroke:#fff; }
+    .im2-tip { position:absolute; bottom:calc(100% + 7px); padding:5px 7px; border-radius:7px; background:#1F2431; color:#fff; font-size:10px; white-space:nowrap; }
+    .im2-key { padding:2px 5px; border-radius:4px; background:rgba(255,255,255,.14); font:10px "JetBrains Mono",monospace; }
+    .im2-icon { position:relative; display:grid; place-items:center; width:24px; height:24px; border-radius:7px; color:#fff; background:rgba(255,255,255,.08); font-size:13px; }.im2-icon--done { background:#fff; color:#1F2431; }
+    .im2-icon--done .im2-tip { bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); }
+    .im2-caret-stage { position:relative; align-self:center; width:140px; height:60px; margin-top:auto; margin-bottom:0; }.im2-caret { position:absolute; top:0; left:50%; width:2px; height:20px; border-radius:1px; background:#1F2431; transform:translateX(-50%); }.im2-caret-stage .im2-pill { position:absolute; bottom:0; left:50%; margin:0; transform:translateX(-50%); }
+    .im2-selection { min-height:24px; margin:auto 0 2px; display:flex; align-items:center; color:#3E4760; font-size:16px; }.im2-selection mark { padding:2px 3px; border-radius:3px; background:#0A84FF; color:#fff; }.im2-selection .im2-caret-inline { display:inline-block; width:2px; height:20px; margin-left:5px; margin-right:1px; background:#1F2431; }
+    .im2-actions { display:inline-flex; align-self:center; margin-top:auto; padding:4px; border-radius:12px; background:#fff; box-shadow:0 4px 18px rgba(31,36,49,.12); }.im2-grid--selection .im2-state:first-child .im2-actions { margin-top:0; }.im2-action { display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:0 10px; border-radius:8px; color:#1F2431; font-size:12px; white-space:nowrap; }.im2-action--on { background:#1F2431; color:#fff; }.im2-action svg { width:16px; height:16px; fill:currentColor; }
+    .im2-quote { margin:auto 0 0; color:#0A84FF; text-align:center; font-size:16px; }.im2-grid--selection .im2-pill { margin-top:auto; }
+
     /* ---------- Three tiers (Verbatim annotation legend) ----------
        Explains the side-by-side figure above it. The self-correction accent is
        the same indigo the figure uses (#5e6ad2) — the legend swatch must point at
@@ -588,6 +612,8 @@
       .caps { grid-template-columns: 1fr; }
       .voice-entry-grid { grid-template-columns: 1fr; }
       .context-grid { grid-template-columns: 1fr; }
+      .im2-grid { grid-template-columns: repeat(2, 1fr); }
+      .im2-grid--selection { grid-template-columns: 1fr; }
       .vtabs { flex-direction: column; }
       .scenes { grid-template-columns: 1fr; }
       .scenes > * + * { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; }
@@ -917,41 +943,24 @@
           <div class="mini-h"><span class="mk">Interaction architecture</span>One shell, three ways in</div>
           <div class="bar-anatomy">
             <div class="bar-stage">
-              <div class="flow-group">
-                <div class="flow-group-head"><b>VOICE INPUT</b><span>Same lifecycle; different entry and placement.</span></div>
-                <div class="voice-entry-grid">
-                  <div class="entry-flow">
-                    <div class="bar-state-head">01 · Persistent entry · mouse click</div>
-                    <h4>Start voice from anywhere</h4>
-                    <div class="bar-state-note">A visible launcher makes voice discoverable before there is a text target.</div>
-                    <div class="bpill bpill--idle"><span class="bidle">Click &amp; Speak</span><span class="bkey">&#8997;</span></div>
-                    <div class="state-path"><span>Ready</span><i>&rarr;</i><span>Listening</span><i>&rarr;</i><span>Resolve</span><i>&rarr;</i><span>Review result</span></div>
-                  </div>
-                  <div class="entry-flow">
-                    <div class="bar-state-head">02 · Cursor entry · hotkey</div>
-                    <h4>Speak directly into the cursor</h4>
-                    <div class="bar-state-note">A hotkey invokes the same bar at the active caret, so the result returns to the work in progress.</div>
-                    <div class="bpill bpill--listen"><span class="caret-mark" aria-hidden="true"></span><svg class="bwave" viewBox="0 0 72 14" preserveAspectRatio="none"><path class="bg" d="M0 7 H72"/><path class="fg" d="M0 7 Q3 3 6 7 Q9 11 12 7 Q15 2 18 7 Q21 12 24 7 Q27 4 30 7 Q33 10 36 7 Q39 3 42 7 Q45 11 48 7 Q51 5 54 7 Q57 9 60 7 Q63 3 66 7 Q69 11 72 7"/></svg><span class="bkey">&#8984;</span></div>
-                    <div class="state-path"><span>Ready at caret</span><i>&rarr;</i><span>Listening</span><i>&rarr;</i><span>Resolve</span><i>&rarr;</i><span>Insert / review</span></div>
-                  </div>
-                </div>
-              </div>
-              <div class="flow-group">
-                <div class="flow-group-head"><b>CONTEXT-TRIGGERED INTELLIGENCE</b><span>Selection changes what the shell can help with.</span></div>
-                <div class="context-grid">
-                  <div class="context-copy">
-                    <div class="bar-state-head">03 · Selection surface</div>
-                    <h4>Speak an instruction, or choose a suggestion.</h4>
-                    <p>After text is selected, the bar can take a spoken instruction or recommend actions based on the selection.</p>
-                  </div>
-                  <div class="selection-demo">
-                    <div class="selection-text">Please <mark>postpone the launch</mark> until the localization review is complete.</div>
-                    <div class="bpill bpill--refine"><span class="bverbs"><span class="bverb bverb--on">Formalize</span><span class="bverb">Rewrite</span><span class="bverb">Translate</span><span class="bverb bverb--voice">Speak instruction</span></span></div>
-                    <div class="state-path"><span>Selection ready</span><i>&rarr;</i><span>Speak / choose action</span><i>&rarr;</i><span>Apply</span><i>&rarr;</i><span>Preview · accept · edit · undo</span></div>
-                  </div>
-                </div>
-                <div class="interaction-rule"><b>State rule:</b> Listening is a voice-input state. Translate, Formalize, and Rewrite are context actions — every transformation ends in a reviewable result.</div>
-              </div>
+              <div class="im2-flow"><div class="im2-head"><b>01 · Persistent voice entry</b><span>Mouse click</span></div><div class="im2-grid">
+                <div class="im2-state"><div class="im2-name">Ready</div><div class="im2-pill"><span class="im2-tip">Click &amp; Speak <span class="im2-key">⌥</span></span><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M20 7 Q26 1 32 7 T44 7 T52 7"/></svg></div><p class="im2-note">click → <b>start speaking</b></p></div>
+                <div class="im2-state"><div class="im2-name">Capture speech</div><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7"/></svg></div><p class="im2-note">speaking…</p></div>
+                <div class="im2-state"><div class="im2-name">Finish</div><div class="im2-pill im2-pill--wide"><span class="im2-icon">×</span><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7"/></svg><span class="im2-icon im2-icon--done">✓<span class="im2-tip">Finish <span class="im2-key">⌥</span></span></span></div><p class="im2-note">× cancel · ✓ finish</p></div>
+                <div class="im2-state"><div class="im2-name">Interpret the clip</div><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M8 7 Q14 1 20 7 T32 7"/></svg></div><p class="im2-note">speech → <b>intent</b></p></div>
+              </div></div>
+              <div class="im2-flow"><div class="im2-head"><b>02 · Cursor voice entry</b><span>Hotkey at caret</span></div><div class="im2-grid">
+                <div class="im2-state"><div class="im2-name">Caret</div><div class="im2-caret-stage"><span class="im2-caret"></span></div><p class="im2-note">press ⌥ → invoke</p></div>
+                <div class="im2-state"><div class="im2-name">Listening</div><div class="im2-caret-stage"><span class="im2-caret"></span><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7"/></svg></div></div><p class="im2-note">speak <b>in place</b></p></div>
+                <div class="im2-state"><div class="im2-name">Finish</div><div class="im2-caret-stage"><span class="im2-caret"></span><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7"/></svg></div></div><p class="im2-note">press ⌥ → <b>finish</b></p></div>
+                <div class="im2-state"><div class="im2-name">Resolve</div><div class="im2-caret-stage"><span class="im2-caret"></span><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M36 7 Q42 1 48 7 T60 7"/></svg></div></div><p class="im2-note">resolve <b>at caret</b></p></div>
+              </div></div>
+              <div class="im2-flow"><div class="im2-head"><b>03 · Context-triggered intelligence</b><span>Text selection</span></div><div class="im2-grid im2-grid--selection">
+                <div class="im2-state"><div class="im2-name">Ready</div><div class="im2-selection">Please&nbsp;<mark>postpone the launch</mark><span class="im2-caret-inline"></span>.</div><div class="im2-actions"><span class="im2-action">✎ Formalize</span><span class="im2-action">↔ Translate</span><span class="im2-action im2-action--on">● Smart Voice</span></div><p class="im2-note">selection → suggestions</p></div>
+                <div class="im2-state"><div class="im2-name">Listening</div><div class="im2-quote">“Make this more diplomatic.”</div><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7"/></svg></div><p class="im2-note">say what should change</p></div>
+                <div class="im2-state"><div class="im2-name">Resolve</div><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M36 7 Q42 1 48 7 T60 7"/></svg></div><p class="im2-note">apply → <b>transform</b></p></div>
+              </div></div>
+              <div class="interaction-rule"><b>State rule:</b> Listening is a voice-input state. Translate and Formalize are context actions; Smart Voice accepts a spoken instruction from the selection.</div>
             </div>
           </div>
         </div>
@@ -1042,7 +1051,7 @@
         <div class="card">
           <div class="scenes">
             <div class="scene"><div class="scene-k">Step 1</div><div class="scene-t">Authorization</div><div class="scene-d">Grant microphone access — clearly, and once.</div></div>
-            <div class="scene"><div class="scene-k">Step 2</div><div class="scene-t">Hotkey</div><div class="scene-d">Learn the push-to-talk shortcut — hold &#8997; Space.</div></div>
+            <div class="scene"><div class="scene-k">Step 2</div><div class="scene-t">Hotkey</div><div class="scene-d">Learn the voice shortcut — press &#8997;.</div></div>
             <div class="scene"><div class="scene-k">Step 3</div><div class="scene-t">First success (practice)</div><div class="scene-d">A guided practice line, so the first result feels like a win.</div></div>
           </div>
           <div class="video-wrap">
@@ -1095,7 +1104,6 @@
     //      real coiled-spring geometry, not an approximation. Drawn once, static. ----
     (function () {
       var wave = document.querySelector('.bar-anatomy .bwave');
-      if (!wave) return;
       var SPRING_W = 72;
       function buildSpringPath(numCoils, archSpread, dipHeight, dipSpread) {
         var overlap = 4, MARGIN = 4;
@@ -1125,8 +1133,41 @@
         }
         return d.trim();
       }
-      var d = buildSpringPath(9, -0.15, 2.0, 0.25);   // demo defaults
-      wave.querySelectorAll('path').forEach(function (p) { p.setAttribute('d', d); });
+      var d = buildSpringPath(9, -0.15, 2.6, 0.25);   // taller crest for case-study legibility
+      if (wave) wave.querySelectorAll('path').forEach(function (p) { p.setAttribute('d', d); });
+      // The interaction-model cards reuse the same production spring geometry.
+      document.querySelectorAll('.im2-spring').forEach(function (spring) {
+        spring.querySelectorAll('path').forEach(function (p) { p.setAttribute('d', d); });
+      });
+      // Same state motion as the standalone preview: centre-breathing idle,
+      // live-volume listening, and a travelling resolve comet.
+      var imSprings = Array.prototype.slice.call(document.querySelectorAll('.im2-spring')).map(function (spring, index) {
+        var label = (spring.closest('.im2-state').querySelector('.im2-name').textContent || '').toLowerCase();
+        var state = /ready|caret/.test(label) ? 'idle' : (/interpret|resolve/.test(label) ? 'processing' : 'listening');
+        var fg = spring.querySelector('.fg');
+        return { fg: fg, length: fg.getTotalLength(), state: state, index: index };
+      });
+      function animateInteractionSprings(now) {
+        imSprings.forEach(function (item) {
+          var fg = item.fg, length = item.length;
+          if (item.state === 'listening') {
+            var volume = .08 + .72 * (.5 + .5 * Math.sin(now / 120 + item.index * 1.9));
+            var lit = length * (1 - Math.exp(-5 * volume));
+            fg.setAttribute('stroke-dasharray', lit + ' ' + length);
+            fg.setAttribute('stroke-dashoffset', '0'); fg.setAttribute('stroke-opacity', '1');
+          } else if (item.state === 'processing') {
+            var t = (now / 1400) % 1, windowLength = length * .30;
+            fg.setAttribute('stroke-dasharray', windowLength + ' ' + length);
+            fg.setAttribute('stroke-dashoffset', windowLength - t * (length + windowLength)); fg.setAttribute('stroke-opacity', '.7');
+          } else {
+            var waveT = .5 + .5 * Math.sin(now / 3500 * 2 * Math.PI), idleLength = length * (.25 + .73 * waveT);
+            fg.setAttribute('stroke-dasharray', idleLength + ' ' + length);
+            fg.setAttribute('stroke-dashoffset', (idleLength - length) / 2); fg.setAttribute('stroke-opacity', (.10 + .30 * waveT).toFixed(3));
+          }
+        });
+        requestAnimationFrame(animateInteractionSprings);
+      }
+      if (imSprings.length) requestAnimationFrame(animateInteractionSprings);
     })();
 
     // ---- Capabilities tabs (click to switch; auto-advances unless reduced-motion) ----
