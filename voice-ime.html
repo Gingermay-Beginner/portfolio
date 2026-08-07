@@ -134,18 +134,8 @@
       margin: 22px 0 0;
     }
     .hero .lede em { font-style: normal; color: var(--ink); font-weight: 600; }
-    .hero-prototype { margin-top: 32px; }
-    .hero-prototype figcaption { font-size: 14px; color: var(--soft); }
-    .hero-detail {
-      display: inline-flex;
-      margin-top: 16px;
-      color: var(--ink);
-      font-size: 14px;
-      font-weight: 600;
-      border-bottom: 1px solid var(--line-strong);
-      padding-bottom: 3px;
-    }
-    .hero-detail:hover { border-color: var(--ink); }
+    .hero-recording { margin-top: 32px; }
+    .hero-recording .video-cap { margin-bottom: 10px; }
     .meta-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -655,11 +645,10 @@
         <div class="kicker"><span class="dot"></span>Desktop IME · one bar, the whole loop</div>
         <h1>One bar. The whole loop.</h1>
         <p class="lede">Desktop AI work is a loop — <em>bring context in</em>, <em>produce</em> your output, <em>refine</em> it. Today it's scattered across apps, the clipboard, a translator, a chat box, and every hop drops context on the floor. This IME keeps the whole loop on one always-present bar, right where your cursor already is.</p>
-        <figure class="figure-dark hero-prototype">
-          <div class="figure-pad"><img src="assets/voice-dark-sidebyside.png" alt="Voice IME prototype showing the same spoken clip in Verbatim and Intent modes" loading="eager"></div>
-          <figcaption>A working prototype: the same clip can stay raw in Verbatim or resolve into a structured, editable Intent view.</figcaption>
-        </figure>
-        <a class="hero-detail" href="#action">Watch the full interaction walkthrough &rarr;</a>
+        <div class="hero-recording">
+          <p class="video-cap">Working prototype · modes &amp; cleanup</p>
+          <div class="loom-embed-box"><iframe src="https://www.loom.com/embed/c245ef2097c94586b0984e083cabd4cf" allowfullscreen title="Voice IME working prototype demonstration"></iframe></div>
+        </div>
         <div class="meta-grid">
           <div class="meta-cell"><div class="k">Format</div><div class="v">Working prototype — real code, not a mockup</div></div>
           <div class="meta-cell"><div class="k">Role</div><div class="v">End-to-end — insight, interaction, prototype logic, implementation</div></div>
@@ -986,10 +975,6 @@
             <div class="scene"><div class="scene-k">Long-form writing</div><div class="scene-t">From spoken thought to draft</div><div class="scene-d">A writer dictates a rough idea in <b>Verbatim</b>, then uses <b>Intent</b> to turn it into a sendable paragraph — with the original always available.</div></div>
             <div class="scene"><div class="scene-k">Cross-language work</div><div class="scene-t">Transform a selected passage</div><div class="scene-d">A user selects Chinese text and asks for natural English in a professional tone. The bar uses the selection as context and returns an editable preview.</div></div>
             <div class="scene"><div class="scene-k">Vibe coding</div><div class="scene-t">Make a request executable</div><div class="scene-d">A developer selects a loose requirement and says, “turn this into a clear task for my agent.” The result becomes a structured, inspectable prompt.</div></div>
-          </div>
-          <div class="video-wrap">
-            <p class="video-cap">Demo · modes &amp; cleanup</p>
-            <div class="loom-embed-box"><iframe src="https://www.loom.com/embed/c245ef2097c94586b0984e083cabd4cf" allowfullscreen></iframe></div>
           </div>
         </div>
       </div>
