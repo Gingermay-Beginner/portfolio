@@ -18,10 +18,10 @@
     .flow { padding:28px 0 34px; border-top:1px solid var(--line); }
     .flow-head { display:grid; grid-template-columns:260px 1fr; gap:28px; margin-bottom:20px; align-items:end; }
     .flow-index { color:var(--green); font-size:11px; }.flow-head h2 { margin:8px 0 0; font-size:25px; letter-spacing:-.7px; }.flow-head p { margin:0; color:var(--muted); line-height:1.52; max-width:610px; }
-    .state-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+    .state-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:0; overflow:hidden; border:1px solid var(--line); border-radius:16px; background:var(--card); }
     .state-grid--selection { grid-template-columns:1.25fr repeat(2,1fr); }
-    .state { min-height:178px; padding:17px; border:1px solid var(--line); border-radius:16px; background:var(--card); display:flex; flex-direction:column; }
-    .state-name { color:var(--muted); font-size:10px; }.state-note { margin:13px 0 0; color:var(--muted); font-size:12px; line-height:1.45; text-align:center; }.state-note b { color:var(--ink); }
+    .state { min-height:178px; padding:17px; background:transparent; display:flex; flex-direction:column; }
+    .state-name { color:var(--muted); font-size:10px; text-align:center; }.state-note { margin:13px 0 0; color:var(--muted); font-size:12px; line-height:1.45; text-align:center; }.state-note b { color:var(--ink); }
     /* Actual VoiceIndicator-inspired pill */
     .pill { position:relative; align-self:center; width:88px; height:36px; border-radius:12px; background:var(--pill); display:flex; align-items:center; padding:0 8px; color:#fff; box-shadow:0 2px 5px rgba(0,0,0,.18); margin-top:auto; }
     .pill--bottom-finish { width:140px; }
