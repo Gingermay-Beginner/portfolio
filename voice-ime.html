@@ -134,33 +134,18 @@
       margin: 22px 0 0;
     }
     .hero .lede em { font-style: normal; color: var(--ink); font-weight: 600; }
-    .hero-proof {
+    .hero-prototype { margin-top: 32px; }
+    .hero-prototype figcaption { font-size: 14px; color: var(--soft); }
+    .hero-detail {
       display: inline-flex;
-      align-items: center;
-      gap: 11px;
-      margin-top: 28px;
-      padding: 12px 15px;
-      border: 1px solid var(--line-strong);
-      border-radius: 12px;
-      background: var(--card);
+      margin-top: 16px;
       color: var(--ink);
       font-size: 14px;
       font-weight: 600;
-      transition: transform .2s ease, border-color .2s ease;
+      border-bottom: 1px solid var(--line-strong);
+      padding-bottom: 3px;
     }
-    .hero-proof:hover { transform: translateY(-1px); border-color: var(--ink); }
-    .hero-proof .play {
-      display: grid;
-      place-items: center;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: var(--ink);
-      color: var(--bg);
-      font-size: 9px;
-      padding-left: 1px;
-    }
-    .hero-proof small { color: var(--muted); font-weight: 500; }
+    .hero-detail:hover { border-color: var(--ink); }
     .meta-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -670,7 +655,11 @@
         <div class="kicker"><span class="dot"></span>Desktop IME · one bar, the whole loop</div>
         <h1>One bar. The whole loop.</h1>
         <p class="lede">Desktop AI work is a loop — <em>bring context in</em>, <em>produce</em> your output, <em>refine</em> it. Today it's scattered across apps, the clipboard, a translator, a chat box, and every hop drops context on the floor. This IME keeps the whole loop on one always-present bar, right where your cursor already is.</p>
-        <a class="hero-proof" href="#action"><span class="play">▶</span><span>See the working prototype <small>— three speech-to-intent scenarios</small></span></a>
+        <figure class="figure-dark hero-prototype">
+          <div class="figure-pad"><img src="assets/voice-dark-sidebyside.png" alt="Voice IME prototype showing the same spoken clip in Verbatim and Intent modes" loading="eager"></div>
+          <figcaption>A working prototype: the same clip can stay raw in Verbatim or resolve into a structured, editable Intent view.</figcaption>
+        </figure>
+        <a class="hero-detail" href="#action">Watch the full interaction walkthrough &rarr;</a>
         <div class="meta-grid">
           <div class="meta-cell"><div class="k">Format</div><div class="v">Working prototype — real code, not a mockup</div></div>
           <div class="meta-cell"><div class="k">Role</div><div class="v">End-to-end — insight, interaction, prototype logic, implementation</div></div>
@@ -801,11 +790,6 @@
             <strong>Not a black box</strong>
             <span>Users can compare states and recover the raw transcript at any time — Intent is a view, not a rewrite.</span>
           </div>
-
-          <figure class="figure-dark">
-            <div class="figure-pad"><img src="assets/voice-dark-sidebyside.png" alt="The same clip in two views side by side: Verbatim keeping every word on the left, Intent's structured, resolved output on the right" loading="lazy"></div>
-            <figcaption>The same clip, both modes. Verbatim keeps every word (fillers, a lunch tangent, a mid-sentence &ldquo;no wait&rdquo;); Intent resolves the repairs, drops the noise, and structures what's left. The original transcript stays recoverable.</figcaption>
-          </figure>
 
           <div class="tiers">
             <div class="mini-h"><span class="mk">Verbatim annotation</span>Three tiers, three treatments</div>
