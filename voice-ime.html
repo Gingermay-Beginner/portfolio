@@ -248,26 +248,24 @@
       padding: 16px 2px 0; color: var(--muted); font-size: 13px; line-height: 1.55;
     }
 
-    /* ---------- Bar anatomy — one surface, four states ----------
-       The persistent voice bar, rebuilt static from the parametric demo's live
-       pill (88×36, r12, #14141A, submit = light circle / dark icon). Idle
-       summons it; the same shell becomes Listening / Translating / Refining as
-       context picks the verb. Listening reveals its ✕/✓ on hover, exactly like
-       the caret-follow bar in the running demo. */
+    /* ---------- Interaction anatomy — two voice entries + one selection surface ---------- */
     .bar-anatomy { margin-top: 24px; }
     .bar-stage {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-      padding: 34px 18px 24px; border-radius: 14px;
+      padding: 26px; border-radius: 14px;
       background: var(--card-2); border: 1px solid var(--line);
     }
-    .bar-state { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+    .flow-group + .flow-group { border-top: 1px solid var(--line); margin-top: 26px; padding-top: 26px; }
+    .flow-group-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; }
+    .flow-group-head b { font-family: "Space Grotesk", sans-serif; font-size: 14px; letter-spacing: -.1px; }
+    .flow-group-head span { color: var(--muted); font-size: 12.5px; }
+    .voice-entry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .entry-flow { min-width: 0; padding: 17px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
     .bar-state-head {
       font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 1px;
       text-transform: uppercase; color: var(--muted);
     }
-    .bar-state-note {
-      color: var(--muted); font-size: 12px; line-height: 1.5; text-align: center; max-width: 200px;
-    }
+    .entry-flow h4 { margin: 7px 0 0; font-family: "Space Grotesk", sans-serif; font-size: 17px; letter-spacing: -.2px; }
+    .bar-state-note { color: var(--muted); font-size: 12.5px; line-height: 1.5; margin: 7px 0 14px; }
     .bar-state-note b { color: var(--ink); font-weight: 600; }
 
     /* the pill shell — one shape, four fills */
@@ -308,23 +306,27 @@
       background: var(--line); border-radius: 4px; padding: 1px 5px; color: var(--ink);
     }
 
-    /* translating */
-    .blang {
-      flex-shrink: 0; font-family: "JetBrains Mono", monospace; font-size: 9px;
-      color: #b6a6ff; border: 1px solid rgba(124,92,255,.5); border-radius: 999px; padding: 2px 6px;
-    }
-    .blines { display: flex; flex-direction: column; gap: 2px; text-align: left; }
-    .bline { font-size: 11px; line-height: 1.25; white-space: nowrap; }
-    .bline--src { color: rgba(236,236,241,.45); }
-    .bline--dst { color: #ececf1; }
-
-    /* refining */
+    /* selection actions */
     .bverbs { display: flex; gap: 5px; }
     .bverb {
       font-size: 10px; border-radius: 999px; padding: 3px 8px; white-space: nowrap;
       background: rgba(255,255,255,.08); color: rgba(236,236,241,.7);
     }
     .bverb--on { background: #ececf1; color: #14141a; }
+    .bverb--voice { background: #6b68b6; color: #fff; margin-left: auto; }
+    .state-path { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 14px; }
+    .state-path span { font-family: "JetBrains Mono", monospace; font-size: 9.5px; letter-spacing: .3px; color: var(--muted); background: var(--line); border-radius: 4px; padding: 3px 5px; }
+    .state-path span:last-child { background: #e9e8ff; color: #5551ad; }
+    .state-path i { color: var(--faint); font-style: normal; font-size: 11px; }
+    .caret-mark { width: 2px; height: 19px; margin-left: 7px; background: #ececf1; }
+    .context-grid { display: grid; grid-template-columns: minmax(180px, .75fr) minmax(0, 1.25fr); gap: 22px; align-items: center; }
+    .context-copy h4 { margin: 7px 0; font-family: "Space Grotesk", sans-serif; font-size: 17px; letter-spacing: -.2px; }
+    .context-copy p { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.5; }
+    .selection-demo { padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+    .selection-text { margin-bottom: 12px; color: var(--soft); font-size: 13px; line-height: 1.5; }
+    .selection-text mark { border-radius: 3px; padding: 1px 3px; background: #d9d8ff; color: var(--ink); }
+    .interaction-rule { margin-top: 18px; border-left: 2px solid var(--green); padding: 9px 11px; background: #f1faf7; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .interaction-rule b { color: var(--ink); }
 
     /* ---------- Three tiers (Verbatim annotation legend) ----------
        Explains the side-by-side figure above it. The self-correction accent is
@@ -584,7 +586,8 @@
       .meta-cell:nth-child(1), .meta-cell:nth-child(2) { border-bottom: 1px solid var(--line); }
       .duo { grid-template-columns: 1fr; }
       .caps { grid-template-columns: 1fr; }
-      .bar-stage { grid-template-columns: repeat(2, 1fr); row-gap: 26px; }
+      .voice-entry-grid { grid-template-columns: 1fr; }
+      .context-grid { grid-template-columns: 1fr; }
       .vtabs { flex-direction: column; }
       .scenes { grid-template-columns: 1fr; }
       .scenes > * + * { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; }
@@ -911,56 +914,44 @@
 
           </div>
 
-          <div class="mini-h"><span class="mk">Anatomy</span>Same shell, four states</div>
+          <div class="mini-h"><span class="mk">Interaction architecture</span>One shell, three ways in</div>
           <div class="bar-anatomy">
             <div class="bar-stage">
-
-              <!-- Idle -->
-              <div class="bar-state">
-                <div class="bar-state-head">Idle</div>
-                <div class="bpill bpill--idle">
-                  <span class="bidle">Click &amp; Speak</span><span class="bkey">&#8997;</span>
+              <div class="flow-group">
+                <div class="flow-group-head"><b>VOICE INPUT</b><span>Same lifecycle; different entry and placement.</span></div>
+                <div class="voice-entry-grid">
+                  <div class="entry-flow">
+                    <div class="bar-state-head">01 · Persistent entry · mouse click</div>
+                    <h4>Start voice from anywhere</h4>
+                    <div class="bar-state-note">A visible launcher makes voice discoverable before there is a text target.</div>
+                    <div class="bpill bpill--idle"><span class="bidle">Click &amp; Speak</span><span class="bkey">&#8997;</span></div>
+                    <div class="state-path"><span>Ready</span><i>&rarr;</i><span>Listening</span><i>&rarr;</i><span>Resolve</span><i>&rarr;</i><span>Review result</span></div>
+                  </div>
+                  <div class="entry-flow">
+                    <div class="bar-state-head">02 · Cursor entry · hotkey</div>
+                    <h4>Speak directly into the cursor</h4>
+                    <div class="bar-state-note">A hotkey invokes the same bar at the active caret, so the result returns to the work in progress.</div>
+                    <div class="bpill bpill--listen"><span class="caret-mark" aria-hidden="true"></span><svg class="bwave" viewBox="0 0 72 14" preserveAspectRatio="none"><path class="bg" d="M0 7 H72"/><path class="fg" d="M0 7 Q3 3 6 7 Q9 11 12 7 Q15 2 18 7 Q21 12 24 7 Q27 4 30 7 Q33 10 36 7 Q39 3 42 7 Q45 11 48 7 Q51 5 54 7 Q57 9 60 7 Q63 3 66 7 Q69 11 72 7"/></svg><span class="bkey">&#8984;</span></div>
+                    <div class="state-path"><span>Ready at caret</span><i>&rarr;</i><span>Listening</span><i>&rarr;</i><span>Resolve</span><i>&rarr;</i><span>Insert / review</span></div>
+                  </div>
                 </div>
-                <div class="bar-state-note">Always in reach at the cursor. <b>One key</b> to summon.</div>
               </div>
-
-              <!-- Listening (hover to reveal ✕ / ✓) -->
-              <div class="bar-state">
-                <div class="bar-state-head">Listening</div>
-                <div class="bpill bpill--listen">
-                  <button class="bbtn bbtn--cancel" type="button" aria-label="Cancel"><svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><path d="M1 1 L7 7 M7 1 L1 7"/></svg></button>
-                  <svg class="bwave" viewBox="0 0 72 14" preserveAspectRatio="none"><path class="bg" d="M0 7 H72"/><path class="fg" d="M0 7 Q3 3 6 7 Q9 11 12 7 Q15 2 18 7 Q21 12 24 7 Q27 4 30 7 Q33 10 36 7 Q39 3 42 7 Q45 11 48 7 Q51 5 54 7 Q57 9 60 7 Q63 3 66 7 Q69 11 72 7"/></svg>
-                  <button class="bbtn bbtn--submit" type="button" aria-label="Finish"><svg viewBox="0 0 8 8" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 4.5 L3.3 6.3 L6.8 1.7"/></svg></button>
+              <div class="flow-group">
+                <div class="flow-group-head"><b>CONTEXT-TRIGGERED INTELLIGENCE</b><span>Selection changes what the shell can help with.</span></div>
+                <div class="context-grid">
+                  <div class="context-copy">
+                    <div class="bar-state-head">03 · Selection surface</div>
+                    <h4>Speak an instruction, or choose a suggestion.</h4>
+                    <p>After text is selected, the bar can take a spoken instruction or recommend actions based on the selection.</p>
+                  </div>
+                  <div class="selection-demo">
+                    <div class="selection-text">Please <mark>postpone the launch</mark> until the localization review is complete.</div>
+                    <div class="bpill bpill--refine"><span class="bverbs"><span class="bverb bverb--on">Formalize</span><span class="bverb">Rewrite</span><span class="bverb">Translate</span><span class="bverb bverb--voice">Speak instruction</span></span></div>
+                    <div class="state-path"><span>Selection ready</span><i>&rarr;</i><span>Speak / choose action</span><i>&rarr;</i><span>Apply</span><i>&rarr;</i><span>Preview · accept · edit · undo</span></div>
+                  </div>
                 </div>
-                <div class="bpill-hint">hover &rarr; <span class="k">&#215;</span> cancel &middot; <span class="k">&#10003;</span> finish</div>
+                <div class="interaction-rule"><b>State rule:</b> Listening is a voice-input state. Translate, Formalize, and Rewrite are context actions — every transformation ends in a reviewable result.</div>
               </div>
-
-              <!-- Translating -->
-              <div class="bar-state">
-                <div class="bar-state-head">Translating</div>
-                <div class="bpill bpill--translate">
-                  <span class="blang">EN&rarr;&#20013;</span>
-                  <span class="blines">
-                    <span class="bline bline--src">postpone the launch</span>
-                    <span class="bline bline--dst">&#25512;&#36831;&#21457;&#24067;</span>
-                  </span>
-                </div>
-                <div class="bar-state-note">Select a foreign phrase &mdash; rendered in place, <b>original recoverable</b>.</div>
-              </div>
-
-              <!-- Refining -->
-              <div class="bar-state">
-                <div class="bar-state-head">Refining</div>
-                <div class="bpill bpill--refine">
-                  <span class="bverbs">
-                    <span class="bverb bverb--on">Formalize</span>
-                    <span class="bverb">Rewrite</span>
-                    <span class="bverb">Translate</span>
-                  </span>
-                </div>
-                <div class="bar-state-note">Select your own draft &mdash; refine it <b>without re-dictating</b>.</div>
-              </div>
-
             </div>
           </div>
         </div>
