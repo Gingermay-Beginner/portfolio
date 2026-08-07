@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voice IME — four-state preview</title>
+  <style>
+    /* Pill geometry and spring behavior are adapted from
+       Preview_voicebar-visual/voicebar-spring.html, the project's spring prototype. */
+    :root { --ink:#20212a; --muted:#70727d; --line:#dedfe5; --paper:#fbfbfc; --card:#fff; --pill:rgb(20,17,24); --pill-soft:rgb(39,35,32); --violet:#817fd4; --green:#00b878; }
+    * { box-sizing:border-box; } body { margin:0; background:var(--paper); color:var(--ink); font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    main { max-width:1440px; margin:0 auto; padding:72px 56px 92px; }
+    .mono,.eyebrow,.flow-index,.state-name,.step { font-family:"SF Mono","JetBrains Mono",ui-monospace,monospace; letter-spacing:1.3px; text-transform:uppercase; }
+    .eyebrow { color:var(--green); font-size:12px; font-weight:700; } h1 { margin:14px 0 12px; max-width:850px; font-size:clamp(38px,5vw,68px); line-height:1.03; letter-spacing:-2.6px; }
+    .lede { max-width:720px; margin:0; color:var(--muted); font-size:18px; line-height:1.55; }
+    .rule { display:flex; gap:10px; margin:34px 0; padding:14px 16px; background:#f1faf7; border-left:3px solid var(--green); color:#50535d; font-size:14px; line-height:1.5; }
+    .rule b { color:var(--ink); white-space:nowrap; }
+    .flow { padding:28px 0 34px; border-top:1px solid var(--line); }
+    .flow-head { display:grid; grid-template-columns:260px 1fr; gap:28px; margin-bottom:20px; align-items:end; }
+    .flow-index { color:var(--green); font-size:11px; }.flow-head h2 { margin:8px 0 0; font-size:25px; letter-spacing:-.7px; }.flow-head p { margin:0; color:var(--muted); line-height:1.52; max-width:610px; }
+    .state-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+    .state-grid--selection { grid-template-columns:1.25fr repeat(2,1fr); }
+    .state { min-height:178px; padding:17px; border:1px solid var(--line); border-radius:16px; background:var(--card); display:flex; flex-direction:column; }
+    .state-name { color:var(--muted); font-size:10px; }.state-note { margin:13px 0 0; color:var(--muted); font-size:12px; line-height:1.45; text-align:center; }.state-note b { color:var(--ink); }
+    /* Actual VoiceIndicator-inspired pill */
+    .pill { position:relative; align-self:center; width:88px; height:36px; border-radius:12px; background:var(--pill); display:flex; align-items:center; padding:0 8px; color:#fff; box-shadow:0 2px 5px rgba(0,0,0,.18); margin-top:auto; }
+    .pill--bottom-finish { width:140px; }
+    .pill-tip { position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:6px; padding:5px 7px; border-radius:7px; background:#1a1a1f; color:#ececf1; white-space:nowrap; box-shadow:0 4px 12px rgba(0,0,0,.24); font-size:10px; font-weight:500; }
+    .tip-key { padding:2px 5px; border-radius:4px; background:rgba(255,255,255,.14); font:10px "SF Mono","JetBrains Mono",monospace; }
+    .btn-tip { position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:5px; padding:5px 7px; border-radius:7px; background:#1a1a1f; color:#ececf1; white-space:nowrap; box-shadow:0 4px 12px rgba(0,0,0,.24); font-size:10px; font-weight:500; }
+    .click-copy { font-size:15px; }.key { margin-left:auto; display:grid; place-items:center; min-width:26px; height:26px; border-radius:7px; padding:0 6px; background:rgba(255,255,255,.14); color:#e9e7ec; font-size:11px; }
+    .caret { width:2px; height:20px; margin-left:8px; background:#fff; }.spring { width:72px; height:14px; overflow:visible; margin:auto; }.spring path { fill:none; stroke-linecap:round; stroke-linejoin:round; stroke-width:1.2; }.spring .bg { stroke:rgba(255,255,255,.18); }.spring .fg { stroke:#fff; }
+    .cursor-stage { position:relative; align-self:center; width:140px; height:60px; margin-top:auto; }
+    .cursor-stage .caret-anchor { position:absolute; top:0; left:50%; width:2px; height:20px; background:var(--ink); border-radius:1px; transform:translateX(-50%); }
+    .cursor-stage .pill { position:absolute; bottom:0; left:50%; margin:0; transform:translateX(-50%); }
+    .icon { position:relative; display:grid; place-items:center; width:24px; height:24px; border-radius:7px; font-size:12px; }.cancel{background:rgba(255,255,255,.08); color:#fff;}.done{background:#fff; color:#171118;}.processing { justify-content:center; gap:10px; }
+    .result-surface { width:100%; min-height:73px; margin-top:auto; padding:10px; border-radius:12px; background:var(--pill); color:#fff; }.review-top { display:flex; gap:5px; }.mode { padding:5px 8px; border-radius:7px; background:#2b2931; color:#acaab1; font-size:10px; }.mode.on { background:#7573c0; color:#fff; }.review-text { margin-top:9px; color:#efedf1; font-size:11px; line-height:1.35; }
+    .selection-line { min-height:42px; margin-top:auto; color:#494b56; font-size:16px; line-height:1.5; }.selection-line mark { background:#0A84FF; color:#fff; border-radius:3px; padding:2px 3px; }
+    .flow:nth-of-type(3) .state:first-child .selection-line { display:flex; align-items:center; min-height:24px; margin-top:auto; margin-bottom:2px; transform:none; }
+    .flow:nth-of-type(3) .state:first-child .selection-stage { margin-top:0; }
+    .selection-caret { display:inline-block; width:2px; height:20px; margin-left:5px; margin-right:1px; vertical-align:-4px; background:var(--ink); border-radius:1px; }
+    .selection-stage { position:relative; align-self:center; width:100%; height:44px; margin-top:auto; }
+    .selection-stage .selection-actions { position:absolute; bottom:0; left:50%; margin:0; transform:translateX(-50%); }
+    /* Copilot IME candidate bar: one shell; selection lives inside it. */
+    .selection-actions { align-self:center; display:inline-flex; align-items:stretch; gap:0; margin-top:auto; padding:4px; border-radius:12px; background:#fff; box-shadow:0 4px 18px rgba(0,0,0,.12),0 0 1px rgba(0,0,0,.18); }
+    .verb { display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:0 10px; border:0; border-radius:8px; background:transparent; color:#242424; font:12px "Segoe Sans","Segoe UI",Inter,ui-sans-serif,sans-serif; white-space:nowrap; }
+    .verb svg { width:16px; height:16px; fill:currentColor; }
+    .verb:hover { background:rgba(0,0,0,.05); }.verb.active { background:#242424; color:#fff; }.verb.voice { color:#242424; }.verb.voice.active { color:#fff; }
+    .result-diff .old { color:rgba(255,255,255,.42); text-decoration:line-through; font-size:11px; }.result-diff .new { margin-top:5px; color:#fff; font-size:12px; }.result-diff .tools { float:right; color:#bbb9e8; font-size:10px; }
+    @media(max-width:900px){main{padding:48px 20px 72px}.flow-head{grid-template-columns:1fr;gap:12px}.state-grid{grid-template-columns:repeat(2,1fr)}} @media(max-width:540px){.state-grid{grid-template-columns:1fr}.state{min-height:205px}}
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">Interaction architecture · component preview</div>
+    <h1>Three entry flows.<br>One four-step grammar.</h1>
+    <p class="lede">Each flow uses the same state sequence: <b>Ready → Listening → Resolve → Review result</b>. What changes is how the bar is invoked, what context it receives, and where the result returns.</p>
+    <p class="rule"><b>State rule</b><span>Listening is a voice-input state. Translate, Formalize, and Rewrite are actions chosen during Resolve — not parallel system states.</span></p>
+
+    <section class="flow">
+      <div class="flow-head"><div><div class="flow-index">01 · Persistent voice entry</div><h2>Mouse click</h2></div><p>A visible launcher makes voice discoverable before the user has chosen a text target. The result opens as a reviewable voice output.</p></div>
+      <div class="state-grid">
+        <article class="state"><div class="state-name">Ready</div><div class="pill"><span class="pill-tip">Click &amp; Speak <span class="tip-key">⌥</span></span><svg class="spring spring--idle" viewBox="0 0 72 14" preserveAspectRatio="none"><path class="bg"/><path class="fg"/></svg></div><p class="state-note">click &rarr; <b>start speaking</b></p></article>
+        <article class="state"><div class="state-name">Capture speech</div><div class="pill"><svg class="spring spring--listening" viewBox="0 0 72 14" preserveAspectRatio="none"><path class="bg"/><path class="fg"/></svg></div><p class="state-note">speaking…</p></article>
+        <article class="state"><div class="state-name">Finish</div><div class="pill pill--bottom-finish"><span class="icon cancel">×</span><svg class="spring spring--listening" viewBox="0 0 72 14" preserveAspectRatio="none"><path class="bg"/><path class="fg"/></svg><span class="icon done">✓<span class="btn-tip">Finish <span class="tip-key">⌥</span></span></span></div><p class="state-note"><span class="mono">×</span> cancel · <span class="mono">✓</span> finish</p></article>
+        <article class="state"><div class="state-name">Interpret the clip</div><div class="pill processing"><svg class="spring spring--processing" viewBox="0 0 72 14" preserveAspectRatio="none"><path class="bg"/><path class="fg"/></svg></div><p class="state-note">speech &rarr; <b>intent</b></p></article>
+      </div>
+    </section>
+
+    <section class="flow">
+      <div class="flow-head"><div><div class="flow-index">02 · Cursor voice entry</div><h2>Hotkey at caret</h2></div><p>The same voice flow starts directly at the active cursor. Its review result can be inserted back into the document the user was already writing.</p></div>
+      <div class="state-grid">
+        <article class="state"><div class="state-name">Caret</div><div class="cursor-stage" aria-label="Text cursor"><span class="caret-anchor" aria-hidden="true"></span></div><p class="state-note">press <span class="mono">⌥</span> &rarr; invoke</p></article>
+        <article class="state"><div class="state-name">Listening</div><div class="cursor-stage"><span class="caret-anchor" aria-hidden="true"></span><div class="pill"><svg class="spring spring--listening" viewBox="0 0 72 14" preserveAspectRatio="none"><path class="bg"/><path class="fg"/></svg></div></div><p class="state-note">speak <b>in place</b></p></article>
+        <article class="state"><div class="state-name">Finish</div><div class="cursor-stage"><span class="caret-anchor" aria-hidden="true"></span><div class="pill"><svg class="spring spring--listening" viewBox="0 0 72 14" preserveAspectRatio="none"><path class="bg"/><path class="fg"/></svg></div></div><p class="state-note">press <span class="mono">⌥</span> &rarr; <b>finish</b></p></article>
+        <article class="state"><div class="state-name">Resolve</div><div class="cursor-stage"><span class="caret-anchor" aria-hidden="true"></span><div class="pill processing"><svg class="spring spring--processing" viewBox="0 0 72 14" preserveAspectRatio="none"><path class="bg"/><path class="fg"/></svg></div></div><p class="state-note">resolve <b>at caret</b></p></article>
+      </div>
+    </section>
+
+    <section class="flow">
+      <div class="flow-head"><div><div class="flow-index">03 · Context-triggered intelligence</div><h2>Text selection</h2></div><p>Selecting text creates a context-aware surface. It can take a spoken instruction or suggest Translate, Formalize, and Rewrite from the selected content.</p></div>
+      <div class="state-grid state-grid--selection">
+        <article class="state"><div class="state-name">Ready</div><div class="selection-line">Please <mark>postpone the launch</mark><span class="selection-caret" aria-label="Text cursor"></span>.</div><div class="selection-stage"><div class="selection-actions" aria-label="Copilot IME writing suggestions"><button class="verb"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2c.21 0 .4.13.47.33l1.86 5.22-.78.78L6.08 7H3.92l-.95 2.67a.5.5 0 0 1-.94-.34l2.5-7A.5.5 0 0 1 5 2Zm.72 4L5 3.99 4.28 6h1.44Zm7.72-.44a1.91 1.91 0 0 0-2.7 0l-4.67 4.66c-.34.35-.58.8-.68 1.28l-.38 1.9a.5.5 0 0 0 .59.6l1.9-.4c.49-.09.93-.33 1.28-.67l4.66-4.66c.75-.75.75-1.96 0-2.7Zm-2 .7a.91.91 0 1 1 1.3 1.3l-4.67 4.66c-.2.2-.47.35-.76.4l-1.17.24.23-1.17c.06-.29.2-.55.41-.76l4.66-4.66Z"/></svg>Formalize</button><button class="verb"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.57 2.76a3.7 3.7 0 0 1 1.92.04c.74.21 1.14.69 1.34 1.23.17.5.17 1.03.17 1.4V9a.5.5 0 0 1-1 0v-.36c-.16.09-.33.17-.5.24-.57.25-1.31.43-2.07.2-1.7-.53-1.92-2.82-.46-3.71a3.9 3.9 0 0 1 2.37-.35c.24.03.46.06.65.1 0-.28-.03-.53-.1-.75-.1-.27-.27-.5-.68-.61a2.7 2.7 0 0 0-1.96.17.5.5 0 0 1-.5-.86l.02-.02a1.93 1.93 0 0 1 .22-.1c.14-.06.34-.13.58-.2ZM6 6.14a7.5 7.5 0 0 0-.77-.12c-.67-.08-1.33-.04-1.74.2-.75.47-.61 1.64.23 1.9.44.13.92.04 1.39-.16.35-.14.65-.33.89-.48V6.14Zm5.1-.63a.5.5 0 0 1 .39.6l-.14.66a13.1 13.1 0 0 0 1.53-.26.5.5 0 0 1 .23.98c-.6.14-1.26.24-1.92.3l-.1.84c.32-.08.62-.13.9-.15a.5.5 0 0 1 1 .02v.03c.22.05.42.1.6.19.72.31 1.2.9 1.38 1.57.36 1.37-.46 2.97-2.3 3.68a.5.5 0 0 1-.35-.94c1.46-.56 1.89-1.7 1.68-2.48-.1-.39-.37-.72-.8-.91a1.86 1.86 0 0 0-.3-.1 5.13 0 0 1-1.56 2.91l.13.38a.5.5 0 0 1-.94.34 5.8 5.8 0 0 1-.04-.12c-.22.11-.44.2-.66.24-.47.1-1.01.07-1.4-.32-.55-.57-.59-1.5-.2-2.3.33-.65.93-1.25 1.84-1.67.02-.36.05-.74.1-1.14a13 13 0 0 1-1.2-.03.5.5 0 1 1 .06-1c.42.03.85.04 1.3.02.05-.3.1-.63.18-.96a.5.5 0 0 1 .6-.38Zm-1.06 4.64c-.46.3-.75.64-.9.96-.28.55-.16.98.01 1.16.04.04.17.11.47.05.18-.04.38-.13.6-.27-.1-.52-.17-1.15-.18-1.9Zm1.07 1.09c.35-.45.64-1.04.79-1.74a4.59 4.59 0 0 0-.86.19c-.01.6.02 1.1.07 1.55Z"/></svg>Translate</button><button class="verb voice active"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5.5 4.5a2.5 2.5 0 0 1 5 0V8a2.5 2.5 0 0 1-5 0V4.5ZM8 3c-.83 0-1.5.67-1.5 1.5V8a1.5 1.5 0 1 0 3 0V4.5C9.5 3.67 8.83 3 8 3ZM4 7.5c.28 0 .5.22.5.5a3.5 3.5 0 1 0 7 0 .5.5 0 0 1 1 0 4.5 4.5 0 0 1-4 4.47v1.03a.5.5 0 0 1-1 0v-1.03A4.5 4.5 0 0 1 3.5 8c0-.28.22-.5.5-.5Z"/></svg>Smart Voice</button></div></div><p class="state-note">selection &rarr; suggestions</p></article>
+        <article class="state"><div class="state-name">Listening</div><div class="selection-line">“Make this more diplomatic.”</div><div class="pill"><svg class="spring spring--listening" viewBox="0 0 72 14" preserveAspectRatio="none"><path class="bg"/><path class="fg"/></svg></div><p class="state-note">say what should change</p></article>
+        <article class="state"><div class="state-name">Resolve</div><div class="pill processing"><svg class="spring spring--processing" viewBox="0 0 72 14" preserveAspectRatio="none"><path class="bg"/><path class="fg"/></svg></div><p class="state-note">apply &rarr; transform</p></article>
+      </div>
+    </section>
+  </main>
+  <script>
+    // Directly adapted from voicebar-spring.html's default spring geometry.
+    function buildSpringPath() {
+      const visibleStart = 4, visibleEnd = 68, coils = 9, overlap = 4;
+      const step = (visibleEnd - visibleStart) / (coils - 1), W = step + overlap;
+      const archOffX = W * -0.15, dipOffX = overlap * 0.25, dipCtrlY = -1;
+      const round = n => +n.toFixed(2); let d = '', previousEnd = null;
+      const firstStart = visibleStart - W / 2;
+      for (let i = 0; i < coils; i++) {
+        const s = firstStart + i * step, e = s + W, mid = (s + e) / 2;
+        if (i === 0) {
+          d += `M ${round(mid)} 13 C ${round(.25*s + .75*e - archOffX/4)} 13, ${round(e - archOffX/2)} 9, ${round(e)} 1 `;
+        } else if (i === coils - 1) {
+          d += `C ${round(previousEnd - dipOffX)} ${dipCtrlY}, ${round(s + dipOffX)} ${dipCtrlY}, ${round(s)} 1 `;
+          d += `C ${round(s + archOffX/2)} 9, ${round(.75*s + .25*e + archOffX/4)} 13, ${round(mid)} 13 `;
+        } else {
+          d += `C ${round(previousEnd - dipOffX)} ${dipCtrlY}, ${round(s + dipOffX)} ${dipCtrlY}, ${round(s)} 1 `;
+          d += `C ${round(s + archOffX)} 17, ${round(e - archOffX)} 17, ${round(e)} 1 `;
+        }
+        previousEnd = e;
+      }
+      return d.trim();
+    }
+    const springStates = [];
+    document.querySelectorAll('.spring').forEach(spring => {
+      const d = buildSpringPath();
+      spring.querySelectorAll('path').forEach(path => path.setAttribute('d', d));
+      const length = spring.querySelector('.fg').getTotalLength();
+      springStates.push({ spring, fg: spring.querySelector('.fg'), length });
+    });
+    // Same defaults as voicebar-spring.html: idle C (center expand), listening's
+    // exponential volume-to-light mapping, and the processing comet scan.
+    function animateSprings(now) {
+      springStates.forEach(({ spring, fg, length }, index) => {
+        if (spring.classList.contains('spring--listening')) {
+          const simulatedVolume = .08 + .72 * (0.5 + 0.5 * Math.sin(now / 120 + index * 1.9));
+          const litLength = length * (1 - Math.exp(-5 * simulatedVolume));
+          fg.setAttribute('stroke-dasharray', `${litLength} ${length}`);
+          fg.setAttribute('stroke-dashoffset', '0');
+          fg.setAttribute('stroke-opacity', '1');
+        } else if (spring.classList.contains('spring--processing')) {
+          const t = (now / 1400) % 1, windowLength = length * .30;
+          fg.setAttribute('stroke-dasharray', `${windowLength} ${length}`);
+          fg.setAttribute('stroke-dashoffset', `${windowLength - t * (length + windowLength)}`);
+          fg.setAttribute('stroke-opacity', '.55');
+        } else {
+          const phase = now / 3500 * 2 * Math.PI, wave = .5 + .5 * Math.sin(phase);
+          const windowLength = length * (.25 + .73 * wave), opacity = .10 + .30 * wave;
+          fg.setAttribute('stroke-dasharray', `${windowLength} ${length}`);
+          fg.setAttribute('stroke-dashoffset', `${(windowLength - length) / 2}`);
+          fg.setAttribute('stroke-opacity', opacity.toFixed(3));
+        }
+      });
+      requestAnimationFrame(animateSprings);
+    }
+    requestAnimationFrame(animateSprings);
+  </script>
+</body>
+</html>
