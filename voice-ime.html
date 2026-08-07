@@ -134,6 +134,33 @@
       margin: 22px 0 0;
     }
     .hero .lede em { font-style: normal; color: var(--ink); font-weight: 600; }
+    .hero-proof {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      margin-top: 28px;
+      padding: 12px 15px;
+      border: 1px solid var(--line-strong);
+      border-radius: 12px;
+      background: var(--card);
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform .2s ease, border-color .2s ease;
+    }
+    .hero-proof:hover { transform: translateY(-1px); border-color: var(--ink); }
+    .hero-proof .play {
+      display: grid;
+      place-items: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--ink);
+      color: var(--bg);
+      font-size: 9px;
+      padding-left: 1px;
+    }
+    .hero-proof small { color: var(--muted); font-weight: 500; }
     .meta-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -629,8 +656,8 @@
           <a href="#problem"><span class="n">02</span><span>Problem</span></a>
           <a href="#approach"><span class="n">03</span><span>Approach</span></a>
           <a href="#model"><span class="n">04</span><span>Interaction model</span></a>
-          <a href="#capabilities"><span class="n">05</span><span>Capabilities</span></a>
-          <a href="#action"><span class="n">06</span><span>In action</span></a>
+          <a href="#action"><span class="n">05</span><span>In action</span></a>
+          <a href="#capabilities"><span class="n">06</span><span>Capabilities</span></a>
           <a href="#onboarding"><span class="n">07</span><span>Onboarding</span></a>
           <a href="#reflection"><span class="n">08</span><span>Reflection</span></a>
         </nav>
@@ -642,6 +669,7 @@
         <div class="kicker"><span class="dot"></span>Desktop IME · one bar, the whole loop</div>
         <h1>One bar. The whole loop.</h1>
         <p class="lede">Desktop AI work is a loop — <em>bring context in</em>, <em>produce</em> your output, <em>refine</em> it. Today it's scattered across apps, the clipboard, a translator, a chat box, and every hop drops context on the floor. This IME keeps the whole loop on one always-present bar, right where your cursor already is.</p>
+        <a class="hero-proof" href="#action"><span class="play">▶</span><span>See the working prototype <small>— three speech-to-intent scenarios</small></span></a>
         <div class="meta-grid">
           <div class="meta-cell"><div class="k">Format</div><div class="v">Working prototype — real code, not a mockup</div></div>
           <div class="meta-cell"><div class="k">Role</div><div class="v">End-to-end — insight, interaction, prototype logic, implementation</div></div>
@@ -665,8 +693,7 @@
           <p>As AI becomes a daily collaborator, what matters is how fast and how faithfully you can hand it a complex intent.</p>
         </div>
         <div class="card">
-          <p class="lead">As AI becomes a daily collaborator, input quality is no longer only about typing speed — it's about how completely you can express intent.</p>
-          <p class="lead">On desktop, the core workflows are still office productivity and development. Users need to get complex intent across quickly — especially for <em>long-form writing</em> and <em>Vibe Coding</em> prompts, where speaking is far faster than typing.</p>
+          <p class="lead">On desktop, the core workflows are still office productivity and development. The design question is not just how to capture speech, but how to let people hand off a complex intent quickly enough to keep their work moving — especially in <em>long-form writing</em> and <em>Vibe Coding</em>.</p>
         </div>
       </div>
     </section>
@@ -926,11 +953,33 @@
       </div>
     </section>
 
-    <!-- 04 CAPABILITIES -->
+    <!-- 05 IN ACTION — show the proof before listing the capability taxonomy -->
+    <section class="block" id="action">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">05 / In action</div>
+          <h2>See it on real speech</h2>
+          <p>Three scenarios the design has to handle — from a single slipped word to a whole rambling monologue.</p>
+        </div>
+        <div class="card">
+          <div class="scenes">
+            <div class="scene"><div class="scene-k">Word-level</div><div class="scene-t">Word-level repair</div><div class="scene-d">&ldquo;month-over-month… sorry, year-over-year…&rdquo;</div></div>
+            <div class="scene"><div class="scene-k">Sentence-level</div><div class="scene-t">Sentence-level restart</div><div class="scene-d">&ldquo;Let me rephrase that…&rdquo;</div></div>
+            <div class="scene"><div class="scene-k">Long-form</div><div class="scene-t">Long-form cleanup</div><div class="scene-d">Mixed business content + side chatter &rarr; a structured, usable draft.</div></div>
+          </div>
+          <div class="video-wrap">
+            <p class="video-cap">Demo · modes &amp; cleanup</p>
+            <div class="loom-embed-box"><iframe src="https://www.loom.com/embed/c245ef2097c94586b0984e083cabd4cf" allowfullscreen></iframe></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 CAPABILITIES -->
     <section class="block" id="capabilities">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">05 / Capabilities</div>
+          <div class="sec-num">06 / Capabilities</div>
           <h2>What Intent Mode actually does</h2>
           <p>Click a capability to see its raw &rarr; output transformation. Same spoken input on top, resolved output below.</p>
         </div>
@@ -976,28 +1025,6 @@
                 <div class="vbubble vbubble--out">Given today's workload constraints, we should postpone the launch.<span class="vzh">鉴于今天的工作负载较高，我们应当推迟发布。</span></div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 05 IN ACTION -->
-    <section class="block" id="action">
-      <div class="wrap">
-        <div class="sec-head">
-          <div class="sec-num">06 / In action</div>
-          <h2>See it on real speech</h2>
-          <p>Three scenarios the design has to handle — from a single slipped word to a whole rambling monologue.</p>
-        </div>
-        <div class="card">
-          <div class="scenes">
-            <div class="scene"><div class="scene-k">Word-level</div><div class="scene-t">Word-level repair</div><div class="scene-d">&ldquo;month-over-month… sorry, year-over-year…&rdquo;</div></div>
-            <div class="scene"><div class="scene-k">Sentence-level</div><div class="scene-t">Sentence-level restart</div><div class="scene-d">&ldquo;Let me rephrase that…&rdquo;</div></div>
-            <div class="scene"><div class="scene-k">Long-form</div><div class="scene-t">Long-form cleanup</div><div class="scene-d">Mixed business content + side chatter &rarr; a structured, usable draft.</div></div>
-          </div>
-          <div class="video-wrap">
-            <p class="video-cap">Demo · modes &amp; cleanup</p>
-            <div class="loom-embed-box"><iframe src="https://www.loom.com/embed/c245ef2097c94586b0984e083cabd4cf" allowfullscreen></iframe></div>
           </div>
         </div>
       </div>
