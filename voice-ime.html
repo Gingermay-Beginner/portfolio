@@ -250,10 +250,7 @@
 
     /* ---------- Interaction anatomy — two voice entries + one selection surface ---------- */
     .bar-anatomy { margin-top: 24px; }
-    .bar-stage {
-      padding: 26px; border-radius: 14px;
-      background: var(--card-2); border: 1px solid var(--line);
-    }
+    .bar-stage { padding:0; background:transparent; border:0; }
     .flow-group + .flow-group { border-top: 1px solid var(--line); margin-top: 26px; padding-top: 26px; }
     .flow-group-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; }
     .flow-group-head b { font-family: "Space Grotesk", sans-serif; font-size: 14px; letter-spacing: -.1px; }
@@ -329,8 +326,8 @@
     .interaction-rule b { color: var(--ink); }
 
     /* Confirmed Voice IME state model — shared shell, three entry contexts. */
-    .im2-flow { margin-top: 18px; }
-    .im2-flow + .im2-flow { border-top: 1px solid var(--line); padding-top: 18px; }
+    .im2-flow { padding:26px; border:1px solid var(--line); border-radius:14px; background:var(--card-2); }
+    .im2-flow + .im2-flow { margin-top:16px; }
     .im2-head { display:flex; gap:10px; align-items:baseline; margin-bottom:12px; }
     .im2-head b { font-family:"JetBrains Mono",monospace; font-size:10px; letter-spacing:1px; color:var(--green); }
     .im2-head span { color:var(--muted); font-size:12px; }
