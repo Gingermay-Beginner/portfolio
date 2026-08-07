@@ -1,0 +1,17 @@
+node_modules/
+.env
+.env.local
+.DS_Store
+*.tsbuildinfo
+.vite/
+.vibecanvas/
+.claude
+
+# Local previews and superseded portfolio experiments. The active entry point is
+# portfolio.html; these files remain available locally as reference material.
+.preview-work.png
+index.html
+portfolio-template-第四轮.html
+font-compare.html
+font-stencil.html
+_ab-schibsted.html

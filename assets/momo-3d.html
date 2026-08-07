@@ -1,0 +1,781 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Momo 3D Embed</title>
+  <style>
+    :root {
+      --bg: #fff4df;
+      --ink: #241812;
+      --muted: #7d6758;
+      --brand: #ff9551;
+      --brown: #8b4f27;
+      font-family: ui-rounded, "SF Pro Rounded", "Avenir Next", Inter, system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 16% 9%, rgba(255, 204, 126, .62), transparent 30%),
+        radial-gradient(circle at 85% 16%, rgba(144, 199, 228, .55), transparent 28%),
+        linear-gradient(135deg, #fff0d4, #f7fff1 50%, #edf8ff);
+      color: var(--ink);
+      overflow: hidden;
+    }
+    .layout {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+    }
+    .panel {
+      padding: 34px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      z-index: 2;
+      background: linear-gradient(90deg, rgba(255,250,240,.92), rgba(255,250,240,.52), transparent);
+      backdrop-filter: blur(12px);
+    }
+    .eyebrow { color:#c95d22; font-size:13px; font-weight:900; letter-spacing:.08em; text-transform:uppercase; }
+    h1 { font-size: 54px; line-height:.92; letter-spacing:-.06em; margin: 14px 0 16px; }
+    p { color: var(--muted); font-size: 18px; line-height:1.42; margin:0 0 22px; }
+    .chips { display:flex; flex-wrap:wrap; gap:10px; margin: 4px 0 26px; }
+    .chip { border-radius:999px; background:rgba(255,255,255,.75); border:1px solid rgba(36,24,18,.1); padding:9px 12px; font-weight:850; color:#5b4537; }
+    .note {
+      border-left:5px solid var(--brand);
+      background: rgba(255,255,255,.62);
+      border-radius: 18px;
+      padding: 16px;
+      font-size: 16px;
+      color:#4c3a2e;
+    }
+    .hint { margin-top: 16px; font-size: 14px; color:#8c7567; }
+    .actions { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:22px; }
+    .action { border:0; border-radius:18px; background:#241812; color:white; font-weight:900; font-size:14px; padding:13px 10px; cursor:pointer; box-shadow:0 14px 28px rgba(36,24,18,.18); }
+    .action.secondary { background:#fff; color:#241812; border:1px solid rgba(36,24,18,.1); box-shadow:none; }
+    #stage { position: relative; width: 100%; height: 100vh; }
+    canvas { display:block; width:100%; height:100%; }
+    .label {
+      position: absolute;
+      right: 28px;
+      bottom: 26px;
+      background: rgba(255,255,255,.74);
+      border: 1px solid rgba(36,24,18,.09);
+      border-radius: 22px;
+      padding: 14px 16px;
+      color:#574234;
+      box-shadow: 0 16px 40px rgba(72,42,22,.12);
+      backdrop-filter: blur(10px);
+      max-width: 310px;
+    }
+    .label strong { display:block; color:var(--ink); margin-bottom:4px; }
+    .error {
+      position:absolute; inset:0; display:none; align-items:center; justify-content:center; padding:30px; text-align:center;
+      background:#fff7eb; color:#4d392e; font-size:18px; line-height:1.45;
+    }
+    @media (max-width: 820px) {
+      .layout { grid-template-columns: 1fr; }
+      .panel { min-height: 42vh; padding: 24px; background: rgba(255,250,240,.84); }
+      h1 { font-size: 42px; }
+      #stage { height: 58vh; }
+      .label { left:16px; right:16px; bottom:16px; }
+    }
+
+    /* Embed mode. The AR overlay on the concept page needed a see-through body;
+       here Momo stands on grass. cover + fixed so the texture fills whatever
+       shape the frame is — the same file backs a wide cover card and a taller
+       dialog header, and `contain` would letterbox one of them. The renderer
+       runs with alpha, so this shows through the canvas. */
+    html, body { height: 100%; }
+    body {
+      /* No `fixed`: inside an iframe it attaches the image to the viewport
+         rather than the element and browsers disagree about the result. */
+      background: #4fc94f url("grass.webp") center / cover no-repeat;
+    }
+    .layout { min-height:100vh; display:block; }
+    .panel, .label { display:none !important; }
+    #stage { width:100vw; height:100vh; }
+    canvas { border-radius: 0; }
+  </style>
+</head>
+<body>
+  <main class="layout">
+    <section class="panel">
+      <div class="eyebrow">Pup Break · 3D prototype v3.69</div>
+      <h1>Balloon Dog</h1>
+      <p>A polished spatial sketch for Momo: a soft caramel balloon body, light continuous paper-fold legs, innocent face, and whole-body tilt actions.</p>
+      <div class="chips">
+        <span class="chip">drag to rotate</span>
+        <span class="chip">balloon shine</span>
+        <span class="chip">whole-body tilt</span>
+        <span class="chip">04.30 drop</span>
+      </div>
+      <div class="note">This version focuses on balloon-body logic: the whole body tilts like a soft inflated shape instead of relying on big limb motion.Front-down means sniff. Back-down creates a Daily Drop.</div>
+      <div class="actions"><button class="action" id="standBtn">Stand</button><button class="action" id="sniffBtn">Sniff</button><button class="action" id="peeBtn">Bubble</button><button class="action" id="dropBtn">Daily Drop</button></div><div class="hint">Tip: drag to rotate. Use the buttons to switch balloon-body poses.</div>
+    </section>
+    <section id="stage" aria-label="3D balloon dog viewer">
+      <div class="label"><strong>The Daily Drop</strong>Front-down tilt = sniff. Back-down tilt = daily drop. The body leads; limbs stay small.</div>
+      <div class="error" id="error">3D library failed to load. Please open this file with internet access because the prototype uses Three.js CDN.</div>
+    </section>
+  </main>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module">
+    window.addEventListener('error', () => {
+      const error = document.getElementById('error');
+      if (error) error.style.display = 'flex';
+    });
+    window.addEventListener('unhandledrejection', () => {
+      const error = document.getElementById('error');
+      if (error) error.style.display = 'flex';
+    });
+
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+    const stage = document.getElementById('stage');
+    const scene = new THREE.Scene();
+    scene.background = null;
+
+    const camera = new THREE.PerspectiveCamera(48, stage.clientWidth / stage.clientHeight, 0.1, 100);
+    camera.position.set(-3.13, 2.07, 2.66);   // same angle, pulled in to ~4.6
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(stage.clientWidth, stage.clientHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    stage.prepend(renderer.domElement);
+    const loadError = document.getElementById('error');
+    if (loadError) loadError.style.display = 'none';
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.target.set(0.15, 0.82, 0);
+    /* Was 7.0, which quietly overrode the camera position above: OrbitControls
+       clamps on its first update, so the framing was the floor, not the choice. */
+    controls.minDistance = 4.2;
+    controls.maxDistance = 14;
+    controls.maxPolarAngle = Math.PI * 0.48;
+
+    const hemi = new THREE.HemisphereLight(0xffffff, 0xb58a60, 2.2);
+    scene.add(hemi);
+    const key = new THREE.DirectionalLight(0xffffff, 3.2);
+    key.position.set(4, 6, 5);
+    key.castShadow = true;
+    key.shadow.mapSize.set(2048, 2048);
+    scene.add(key);
+    const rim = new THREE.DirectionalLight(0x9fd8ff, 1.4);
+    rim.position.set(-4, 3, -3);
+    scene.add(rim);
+
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0xcce5b5, roughness: .72, metalness: 0 });
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(3.6, 96), floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    floor.visible = false;
+    scene.add(floor);
+
+    const dog = new THREE.Group();
+    scene.add(dog);
+    let poseMode = 'sniff';
+    let poseValue = 0; // -1 sniff/front-down, 0 stand, .55 pee/side-back tilt, 1 drop/back-down
+
+    const balloonMat = new THREE.MeshPhysicalMaterial({
+      color: 0xa35c2c,
+      roughness: 0.18,
+      metalness: 0.02,
+      clearcoat: 0.95,
+      clearcoatRoughness: 0.12,
+      sheen: 0.4,
+      reflectivity: 0.72
+    });
+    const darkMat = new THREE.MeshPhysicalMaterial({ color: 0x6a371a, roughness: 0.24, clearcoat: 0.86, clearcoatRoughness: 0.13 });
+    const blackMat = new THREE.MeshStandardMaterial({ color: 0x1d120c, roughness: 0.35 });
+    const shineMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.42 });
+    const noteMat = new THREE.MeshPhysicalMaterial({ color: 0x9a5a2f, roughness: 0.24, clearcoat: 0.85, clearcoatRoughness: 0.14 });
+    const creamMat = new THREE.MeshBasicMaterial({ color: 0xfff2d0 });
+
+    function capsule(name, radius, depth, mat, pos, rot = [0,0,0], scale = [1,1,1]) {
+      const geo = new THREE.CapsuleGeometry(radius, depth, 32, 32);
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.name = name;
+      mesh.position.set(...pos);
+      mesh.rotation.set(...rot);
+      mesh.scale.set(...scale);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      dog.add(mesh);
+      return mesh;
+    }
+    function sphere(name, radius, mat, pos, scale = [1,1,1]) {
+      const mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 48, 32), mat);
+      mesh.name = name;
+      mesh.position.set(...pos);
+      mesh.scale.set(...scale);
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      dog.add(mesh);
+      return mesh;
+    }
+
+    // Main balloon-dog structure: simple primitives for a fast AR-readable silhouette.
+    const body = capsule('single puffy balloon body', .48, 1.42, balloonMat, [0, .98, 0], [0, 0, Math.PI/2], [1.08, 1.02, 1]);
+            // Removed rear bead/knot for a cleaner continuous body silhouette.
+
+    const neck = capsule('neck', .2, .52, balloonMat, [.82, 1.36, 0], [0, 0, -.08], [1, 1, 1]);
+    const collarMat = new THREE.MeshPhysicalMaterial({ color: 0xffb24f, roughness: .32, clearcoat: .65, clearcoatRoughness: .18 });
+    const dogCollar = new THREE.Mesh(new THREE.TorusGeometry(.32, .032, 14, 64), collarMat);
+    dogCollar.name = 'proper collar around balloon dog neck';
+    dogCollar.position.set(.84, 1.43, 0);
+    dogCollar.rotation.set(Math.PI / 2 + THREE.MathUtils.degToRad(20), 0, 0);
+    dogCollar.scale.set(1, .86, 1);
+    dogCollar.castShadow = true;
+    dogCollar.visible = false; // replaced by explicit level ellipse collar
+    dog.add(dogCollar);
+    const collarTag = new THREE.Mesh(new THREE.SphereGeometry(.045, 18, 12), collarMat);
+    collarTag.name = 'tiny collar tag';
+    collarTag.position.set(.88, 1.32, .12);
+    collarTag.scale.set(.85,1,.36);
+    collarTag.castShadow = true;
+    dog.add(collarTag);
+
+    // Explicit collar ellipse: lateral left/right axis is Z, so both sides share the same height.
+    // The other axis leans 60° toward the chest/front without twisting left/right.
+    const collarCenter = new THREE.Vector3(.88, 1.45, 0);
+    const collarSideAxis = new THREE.Vector3(0, 0, 1).multiplyScalar(.47);
+    const chestLean = THREE.MathUtils.degToRad(60);
+    const collarChestAxis = new THREE.Vector3(Math.sin(chestLean), -Math.cos(chestLean), 0).multiplyScalar(.34);
+    const collarPts = [];
+    for (let i = 0; i <= 96; i++) {
+      const a = (i / 96) * Math.PI * 2;
+      collarPts.push(
+        collarCenter.clone()
+          .add(collarSideAxis.clone().multiplyScalar(Math.cos(a)))
+          .add(collarChestAxis.clone().multiplyScalar(Math.sin(a)))
+      );
+    }
+    const explicitCollar = new THREE.Mesh(
+      new THREE.TubeGeometry(new THREE.CatmullRomCurve3(collarPts, true), 96, .032, 12, true),
+      collarMat
+    );
+    explicitCollar.name = 'explicit level ellipse collar';
+    explicitCollar.castShadow = true;
+    dog.add(explicitCollar);
+
+    const head = sphere('round head', .42, balloonMat, [1.1, 1.72, 0], [1.08, 1.02, .96]);
+    const snout = capsule('soft snout', .18, .48, balloonMat, [1.50, 1.67, 0], [0, 0, Math.PI/2], [1.05, .86, .86]);
+    const nose = sphere('soft black nose', .09, blackMat, [1.78, 1.67, 0], [1.08, .86, .9]);
+    const ear = capsule('near flattened balloon ear', .108, .54, darkMat, [.88, 1.66, -.44], [.26, -.56, -.74], [.68, 1, .44]);
+    const ear2 = capsule('far flattened balloon ear', .108, .54, darkMat, [.88, 1.66, .44], [-.26, .56, -.74], [.68, 1, .44]);
+
+    const tail = capsule('thin buoyant tail', .072, .64, balloonMat, [-1.08, 1.18, 0], [0, 0, Math.PI/2 - .55], [1, .82, .82]);
+    const tailTip = sphere('tail tip knot', .095, balloonMat, [-1.42, 1.44, 0], [.95,.95,.95]);
+    const peeNozzle = new THREE.Group();
+    peeNozzle.name = 'flared rear balloon mouth for bubbles';
+    const nozzleStem = new THREE.Mesh(new THREE.CylinderGeometry(.038, .048, .16, 28), darkMat);
+    nozzleStem.name = 'balloon mouth stem';
+    nozzleStem.rotation.z = Math.PI / 2;
+    nozzleStem.castShadow = true;
+    peeNozzle.add(nozzleStem);
+    const nozzleFlare = new THREE.Mesh(new THREE.ConeGeometry(.105, .12, 36, 1, true), darkMat);
+    nozzleFlare.name = 'trumpet flared balloon mouth';
+    nozzleFlare.rotation.z = -Math.PI / 2;
+    nozzleFlare.position.x = -.13;
+    nozzleFlare.scale.set(1, .76, .76);
+    nozzleFlare.castShadow = true;
+    peeNozzle.add(nozzleFlare);
+    const nozzleRim = new THREE.Mesh(new THREE.TorusGeometry(.079, .014, 10, 36), darkMat);
+    nozzleRim.name = 'rounded lip of balloon mouth';
+    nozzleRim.rotation.y = Math.PI / 2;
+    nozzleRim.position.x = -.145;
+    nozzleRim.scale.set(1, .76, .76);
+    nozzleRim.castShadow = true;
+    peeNozzle.add(nozzleRim);
+    peeNozzle.position.set(-1.15, .71, .23);
+    peeNozzle.rotation.set(0, .72, -.14);
+    peeNozzle.visible = false;
+    dog.add(peeNozzle);
+
+    const legGroups = [];
+    function accordionLeg(name, x, z, frontBias) {
+      const group = new THREE.Group();
+      group.name = name;
+      group.position.set(x, .70, z);
+      group.userData.baseX = x;
+      group.userData.baseZ = z;
+      group.userData.frontBias = frontBias;
+      group.userData.isPeeLeg = (frontBias < 0 && z > 0);
+      const paperMatA = new THREE.MeshStandardMaterial({
+        color: 0x7a421f,
+        roughness: 0.84,
+        metalness: 0,
+        side: THREE.DoubleSide
+      });
+      const paperMatB = new THREE.MeshStandardMaterial({
+        color: 0x9a5a2d,
+        roughness: 0.86,
+        metalness: 0,
+        side: THREE.DoubleSide
+      });
+      // One continuous zig-zag paper strip: each fold shares an edge with the next.
+      // Width is on X; the side silhouette is a connected Z-axis accordion line.
+      const width = .25;
+      const points = [];
+      for (let j = 0; j < 9; j++) {
+        points.push({ y: -j * .072, z: (j % 2 ? .052 : -.052) });
+      }
+      const verts = [];
+      points.forEach(pt => {
+        verts.push(-width / 2, pt.y, pt.z, width / 2, pt.y, pt.z);
+      });
+      const indices = [];
+      for (let j = 0; j < points.length - 1; j++) {
+        const a = j * 2, b = a + 1, c = a + 2, d = a + 3;
+        indices.push(a, c, b, b, c, d);
+      }
+      const stripGeo = new THREE.BufferGeometry();
+      stripGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+      stripGeo.setIndex(indices);
+      stripGeo.computeVertexNormals();
+      for (let j = 0; j < points.length - 1; j++) {
+        stripGeo.addGroup(j * 6, 6, j % 2);
+      }
+      const strip = new THREE.Mesh(stripGeo, [paperMatA, paperMatB]);
+      strip.name = name + ' continuous z-fold paper strip';
+      strip.castShadow = true;
+      strip.receiveShadow = true;
+      group.add(strip);
+
+      const creaseMat = new THREE.MeshBasicMaterial({ color: 0x4f2814, transparent: true, opacity: .26 });
+      points.slice(1, -1).forEach((pt, j) => {
+        const crease = new THREE.Mesh(new THREE.BoxGeometry(width + .012, .008, .006), creaseMat);
+        crease.name = name + ' shared fold edge ' + j;
+        crease.position.set(0, pt.y, pt.z);
+        group.add(crease);
+      });
+      dog.add(group);
+      legGroups.push(group);
+      return group;
+    }
+    accordionLeg('rear near accordion leg', -.48, -.25, -1);
+    accordionLeg('front near accordion leg', .48, -.25, 1);
+    accordionLeg('rear far accordion leg', -.48, .25, -1);
+    accordionLeg('front far accordion leg', .48, .25, 1);
+
+    // Graphic, readable character eyes: one clear near-side bean eye, one subtle far-side eye.
+    const eyeMat = new THREE.MeshPhysicalMaterial({ color: 0x1d120c, roughness: .18, clearcoat: .9, clearcoatRoughness: .08 });
+    const eyeLeft = sphere('big readable near eye', .075, eyeMat, [1.42, 1.78, -.32], [.78, 1.12, .34]);
+    const eyeRight = sphere('small far eye', .045, eyeMat, [1.39, 1.78, .24], [.72, 1.0, .30]);
+    const eyeGlintL = sphere('large eye glint', .018, shineMat, [1.455, 1.805, -.352], [1,1,.35]);
+    const eyeGlintR = sphere('small far eye glint', .010, shineMat, [1.41, 1.795, .215], [1,1,.35]);
+
+    // White balloon highlights.
+    const shine1 = capsule('body highlight', .035, .52, shineMat, [.18, 1.24, -.36], [0.08, .2, Math.PI/2 - .18], [1, .55, .55]);
+    const shine2 = capsule('head highlight', .026, .28, shineMat, [1.02, 1.91, -.28], [.1, .08, Math.PI/2 - .4], [1, .6, .6]);
+    const shine3 = capsule('snout highlight', .018, .20, shineMat, [1.43, 1.57, -.16], [.1, .2, Math.PI/2], [1, .5, .5]);
+    const cheekMat = new THREE.MeshBasicMaterial({ color: 0xffc58f, transparent: true, opacity: .26 });
+    const cheek = sphere('soft cheek glow', .07, cheekMat, [1.48, 1.62, -.31], [1.3, .55, .22]);
+    // Current direction: no facial eyes for now; keep the clean balloon-object feeling.
+    eyeLeft.visible = false;
+    eyeRight.visible = false;
+    eyeGlintL.visible = false;
+    eyeGlintR.visible = false;
+    cheek.visible = false;
+
+    // Smell dots near the nose.
+    const smell = new THREE.Group();
+    [[2.02,.94,-.12,.04],[2.17,1.05,.04,.032],[1.93,1.12,.15,.026]].forEach(([x,y,z,r]) => {
+      const dot = new THREE.Mesh(new THREE.SphereGeometry(r, 18, 12), new THREE.MeshBasicMaterial({ color: 0x6e4a33, transparent:true, opacity:.52 }));
+      dot.position.set(x,y,z);
+      smell.add(dot);
+    });
+    scene.add(smell);
+    smell.visible = false;
+
+    // Bubble Mark scene: transparent pale-yellow bubbles, not realistic liquid.
+    const pee = new THREE.Group();
+    const peeMat = new THREE.MeshPhysicalMaterial({
+      color: 0xffe27a,
+      roughness: 0.015,
+      transmission: 0.55,
+      thickness: 0.28,
+      ior: 1.28,
+      clearcoat: 1,
+      clearcoatRoughness: 0.01,
+      transparent: true,
+      opacity: .46
+    });
+    const bubbleRimMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: .78 });
+    // Bubble origin is computed from the flared mouth every frame.
+    // The nozzle is attached to the dog, so fixed world coordinates drift when the body tilts.
+    const bubbleMouthLocal = new THREE.Vector3(-.145, 0, 0);
+    const bubbleFlowLocal = new THREE.Vector3(-.58, .46, -.58);
+    const bubbleOriginWorld = new THREE.Vector3();
+    const bubbleFlowWorld = new THREE.Vector3();
+    const nozzleWorldQuat = new THREE.Quaternion();
+    const bubbleSpecs = [
+      { delay: .00, r: .040, wobble: .10, burst: 0 },
+      { delay: .08, r: .058, wobble: .16, burst: 0 },
+      { delay: .16, r: .044, wobble: .13, burst: 0 },
+      { delay: .36, r: .070, wobble: .18, burst: 1 },
+      { delay: .45, r: .052, wobble: .14, burst: 1 },
+      { delay: .55, r: .036, wobble: .20, burst: 1 }
+    ];
+    bubbleSpecs.forEach((spec, i) => {
+      const bubbleGroup = new THREE.Group();
+      bubbleGroup.name = 'flowing reflective bubble group ' + i;
+      bubbleGroup.userData = { ...spec, phase: i * 1.37 };
+      const d = new THREE.Mesh(new THREE.SphereGeometry(spec.r, 40, 24), peeMat);
+      d.name = 'reflective flowing bubble sphere ' + i;
+      d.castShadow = true;
+      bubbleGroup.add(d);
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(spec.r * .82, spec.r * .035, 8, 48), bubbleRimMat);
+      rim.name = 'bright flowing bubble highlight rim ' + i;
+      rim.position.set(-spec.r * .22, spec.r * .22, -spec.r * .52);
+      rim.rotation.x = Math.PI / 2.2;
+      rim.rotation.z = .35;
+      bubbleGroup.add(rim);
+      const sparkle = new THREE.Mesh(new THREE.SphereGeometry(spec.r * .18, 16, 10), bubbleRimMat);
+      sparkle.name = 'bubble hard specular dot ' + i;
+      sparkle.position.set(spec.r * .28, spec.r * .30, -spec.r * .36);
+      bubbleGroup.add(sparkle);
+      pee.add(bubbleGroup);
+    });
+    scene.add(pee);
+    pee.visible = false;
+
+    // Daily Drop: stacked balloon loops first, then a readable date label on the front.
+    const note = new THREE.Group();
+    const loopMat = new THREE.MeshPhysicalMaterial({
+      color: 0x9a5a2f,
+      roughness: 0.18,
+      clearcoat: 0.94,
+      clearcoatRoughness: 0.12
+    });
+    const loopSpecs = [
+      { y: .00, r: .145, tube: .036, sx: 1.02 },
+      { y: .055, r: .110, tube: .032, sx: .94 }
+    ];
+    loopSpecs.forEach((spec, i) => {
+      const loop = new THREE.Mesh(new THREE.TorusGeometry(spec.r, spec.tube, 24, 72), loopMat);
+      loop.name = 'stacked balloon drop loop ' + i;
+      loop.rotation.x = Math.PI / 2;
+      loop.rotation.z = i * .35;
+      loop.position.y = spec.y;
+      loop.scale.x = spec.sx;
+      loop.castShadow = true;
+      loop.receiveShadow = true;
+      note.add(loop);
+      const shine = new THREE.Mesh(new THREE.TorusGeometry(spec.r * .82, spec.tube * .18, 12, 40), shineMat);
+      shine.name = 'drop loop highlight ' + i;
+      shine.rotation.x = Math.PI / 2;
+      shine.rotation.z = i * .35 + .45;
+      shine.position.set(-spec.r * .12, spec.y + spec.tube * .58, -spec.r * .18);
+      shine.scale.x = spec.sx;
+      note.add(shine);
+    });
+    const topKnot = new THREE.Mesh(new THREE.SphereGeometry(.105, 28, 18), loopMat);
+    topKnot.name = 'top balloon knot drop';
+    topKnot.position.set(.010, .102, 0);
+    topKnot.scale.set(.72, .58, .72);
+    topKnot.castShadow = true;
+    note.add(topKnot);
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 512; canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0,0,512,256);
+    ctx.fillStyle = '#fff1cd';
+    ctx.font = '900 92px Arial Rounded MT Bold, Arial, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('04.30', 256, 132);
+    const tex = new THREE.CanvasTexture(canvas);
+    // No number on the drop in the character prototype; keep it as a pure balloon-poop form.
+    note.position.set(-1.86, .105, 0);
+    note.rotation.set(-.08, 0, .05);
+    scene.add(note);
+    note.visible = false;
+
+    // Small calendar page behind the note.
+    const cal = new THREE.Group();
+    const page = new THREE.Mesh(new THREE.BoxGeometry(1.15, 1.45, .045), new THREE.MeshPhysicalMaterial({ color: 0xfffbf0, roughness:.45, clearcoat:.4 }));
+    page.castShadow = true; page.receiveShadow = true; cal.add(page);
+    const header = new THREE.Mesh(new THREE.BoxGeometry(1.15, .22, .052), new THREE.MeshBasicMaterial({ color: 0xffd9a8 }));
+    header.position.y = .61; cal.add(header);
+    const gridMat = new THREE.MeshBasicMaterial({ color: 0x9a5a2f });
+    for (let i=0; i<6; i++) {
+      const mini = new THREE.Mesh(new THREE.BoxGeometry(.2,.13,.056), gridMat);
+      mini.position.set(-.33 + (i%3)*.33, .19 - Math.floor(i/3)*.27, .01);
+      mini.rotation.z = (i%2 ? .08 : -.06);
+      cal.add(mini);
+    }
+    cal.position.set(2.0, .73, -.98);
+    cal.rotation.set(-.18, .38, -.08);
+    scene.add(cal);
+    cal.visible = false;
+    cal.userData.removedFromV3 = true;
+
+    // Leash + person hint, to keep it clearly dog-walking rather than abstract object.
+    const leashMat = new THREE.MeshBasicMaterial({ color: 0x4e392b });
+    const leashCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-2.15, 1.7, -.08),
+      new THREE.Vector3(-1.38, 1.55, -.42),
+      new THREE.Vector3(-.12, 1.50, -.40),
+      new THREE.Vector3(.61, 1.61, 0)
+    ]);
+    const leash = new THREE.Mesh(new THREE.TubeGeometry(leashCurve, 42, .015, 8), leashMat);
+    scene.add(leash);
+    leash.visible = false; // replaced by dog-local leash so collar connection follows neck
+    const handle = new THREE.Mesh(new THREE.TorusGeometry(.16, .018, 12, 48), leashMat);
+    handle.position.set(-2.18, 1.72, -.08);
+    handle.rotation.set(.2,.6,.2);
+    scene.add(handle);
+    handle.visible = false;
+    const leashClip = new THREE.Mesh(new THREE.TorusGeometry(.082, .013, 10, 32), leashMat);
+    leashClip.name = 'leash clip on collar';
+    leashClip.position.set(.78, 1.40, -.30);
+    leashClip.rotation.set(Math.PI/2, .15, .08);
+    leashClip.castShadow = true;
+    scene.add(leashClip);
+    leashClip.visible = false;
+
+    const localLeashCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(.61, 1.61, 0),
+      new THREE.Vector3(.30, 1.48, -.42),
+      new THREE.Vector3(-.42, 1.52, -.48),
+      new THREE.Vector3(-1.05, 1.57, -.50)
+    ]);
+    const localLeash = new THREE.Mesh(new THREE.TubeGeometry(localLeashCurve, 42, .015, 8), leashMat);
+    localLeash.name = 'dog-local leash segment from collar';
+    dog.add(localLeash);
+    const localLeashClip = new THREE.Mesh(new THREE.TorusGeometry(.082, .013, 10, 32), leashMat);
+    localLeashClip.name = 'dog-local leash clip on collar';
+    localLeashClip.position.set(.61, 1.61, 0);
+    localLeashClip.rotation.set(Math.PI/2, 0, 0);
+    localLeashClip.castShadow = true;
+    dog.add(localLeashClip);
+
+    function makeCollarData(sniffAmount = 0) {
+      const center = new THREE.Vector3(
+        lerp(.88, .98, sniffAmount),
+        lerp(1.47, 1.32, sniffAmount),
+        0
+      );
+      const lean = THREE.MathUtils.degToRad(lerp(60, 45, sniffAmount));
+      const sideAxis = new THREE.Vector3(0, 0, 1).multiplyScalar(.47);
+      const chestAxis = new THREE.Vector3(Math.sin(lean), -Math.cos(lean), 0).multiplyScalar(.34);
+      const pts = [];
+      for (let i = 0; i <= 96; i++) {
+        const a = (i / 96) * Math.PI * 2;
+        pts.push(center.clone().add(sideAxis.clone().multiplyScalar(Math.cos(a))).add(chestAxis.clone().multiplyScalar(Math.sin(a))));
+      }
+      return { pts, top: center.clone().sub(chestAxis) };
+    }
+    function updateCollarAndLeash(sniffAmount = 0) {
+      const data = makeCollarData(sniffAmount);
+      explicitCollar.geometry.dispose();
+      explicitCollar.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(data.pts, true), 96, .032, 12, true);
+      localLeashClip.position.copy(data.top);
+      const leashPts = [
+        data.top.clone(),
+        data.top.clone().add(new THREE.Vector3(-.34, -.02, -.36)),
+        data.top.clone().add(new THREE.Vector3(-1.03, -.06, -.48)),
+        data.top.clone().add(new THREE.Vector3(-1.66, -.04, -.50))
+      ];
+      localLeash.geometry.dispose();
+      localLeash.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(leashPts), 42, .015, 8);
+    }
+    updateCollarAndLeash(0);
+
+    // Human figure removed: keep the 3D scene focused on Momo.
+
+    const buttons = {
+      stand: document.getElementById('standBtn'),
+      sniff: document.getElementById('sniffBtn'),
+      pee: document.getElementById('peeBtn'),
+      drop: document.getElementById('dropBtn')
+    };
+    function setMode(mode){
+      poseMode = mode;
+      Object.entries(buttons).forEach(([k, btn]) => btn?.classList.toggle('secondary', k !== mode));
+    }
+    buttons.stand?.addEventListener('click', () => setMode('stand'));
+    buttons.sniff?.addEventListener('click', () => setMode('sniff'));
+    buttons.pee?.addEventListener('click', () => setMode('pee'));
+    buttons.drop?.addEventListener('click', () => setMode('drop'));
+    window.addEventListener('message', (event) => {
+      const data = event?.data;
+      if (data?.type === 'pupbreak:set-pose' && data.mode) setMode(data.mode);
+    });
+    setMode('stand');
+    window.addEventListener('click', (event) => {
+      if (event.target?.closest?.('.actions, .action')) return;
+      if (poseMode === 'drop') {
+        window.parent?.postMessage({ type: 'pupbreak:drop-click' }, '*');
+      }
+    });
+
+    function lerp(a,b,t){ return a + (b-a)*t; }
+    function setPos(mesh, stand, target, t){ mesh.position.set(lerp(stand[0], target[0], t), lerp(stand[1], target[1], t), lerp(stand[2], target[2], t)); }
+    function setScale(mesh, stand, target, t){ mesh.scale.set(lerp(stand[0], target[0], t), lerp(stand[1], target[1], t), lerp(stand[2], target[2], t)); }
+
+    const base = {
+      dogPos:[0,0,0], dogRot:[0,0,0],
+      neck:[.82,1.36,0], head:[1.1,1.72,0], snout:[1.50,1.67,0], nose:[1.78,1.67,0], ear:[.88,1.66,-.44], ear2:[.88,1.66,.44],
+      eyeLeft:[1.42,1.78,-.32], eyeRight:[1.39,1.78,.24], eyeGlintL:[1.455,1.805,-.352], eyeGlintR:[1.41,1.795,.215],
+      bodyScale:[1.08,1.02,1], note:[-1.86,.105,0], cal:[2.0,.73,-.98]
+    };
+
+    // Gentle animation.
+    const clock = new THREE.Clock();
+    function animate(){
+      const t = clock.getElapsedTime();
+      const targetPose = poseMode === 'sniff' ? -1 : poseMode === 'pee' ? .55 : poseMode === 'drop' ? 1 : 0;
+      poseValue += (targetPose - poseValue) * 0.075;
+      const sniffAmount = Math.max(0, -poseValue);
+      const dropAmount = Math.max(0, poseMode === 'drop' ? poseValue : 0);
+      const peeAmount = Math.max(0, poseMode === 'pee' ? poseValue / .55 : 0);
+      controls.update();
+
+      // Balloon logic: the whole dog tilts as one soft object.
+      const actionAmount = Math.max(sniffAmount, peeAmount, dropAmount);
+      const standFloat = 1 - actionAmount;
+      const sniffSearch = sniffAmount * Math.sin(t * 7.8) * 0.075;
+      const sniffBob = sniffAmount * Math.sin(t * 11.2) * 0.012;
+      const floatBob = standFloat * Math.sin(t * 1.65) * .036;
+      const floatDrift = standFloat * Math.sin(t * 1.05) * .026;
+      const floatTilt = standFloat * Math.sin(t * 1.28) * .035;
+      dog.rotation.z = lerp(0, -0.52, sniffAmount) + lerp(0, -0.34, peeAmount) + lerp(0, 0.46, dropAmount) + sniffSearch * .28 + floatTilt;
+      dog.rotation.y = lerp(0, -0.26, peeAmount) + sniffSearch + standFloat * Math.sin(t * .92) * .028;
+      dog.position.y = floatBob - sniffAmount * .13 - peeAmount * .055 - dropAmount * .10 + sniffBob;
+      dog.position.x = sniffAmount * Math.sin(t * 7.8) * .018 + floatDrift;
+      setScale(body, base.bodyScale, [1.16,.99,1], Math.max(sniffAmount, dropAmount));
+
+      // Parts only micro-adjust, so it does not feel like normal leg/head acting.
+      setPos(neck, base.neck, [.94,1.25,0], sniffAmount);
+      neck.rotation.z = lerp(-.08, -.38, sniffAmount);
+      setPos(head, base.head, [1.18,1.58,0], sniffAmount);
+      head.position.z += sniffSearch * .42;
+      setPos(snout, base.snout, [1.62,1.45,0], sniffAmount);
+      snout.position.z += sniffSearch * .62;
+      snout.rotation.y = sniffSearch * .55;
+      setPos(nose, base.nose, [1.92,1.38,0], sniffAmount);
+      nose.position.z += sniffSearch * .78;
+      setScale(nose, [1.08,.86,.9], [1.45,.55,.9], sniffAmount);
+      setPos(ear, base.ear, [.96,1.52,-.46], sniffAmount);
+      setPos(ear2, base.ear2, [.96,1.52,.46], sniffAmount);
+      setPos(eyeLeft, base.eyeLeft, [1.48,1.50,-.32], sniffAmount);
+      setPos(eyeRight, base.eyeRight, [1.44,1.50,.24], sniffAmount);
+      setPos(eyeGlintL, base.eyeGlintL, [1.515,1.525,-.352], sniffAmount);
+      setPos(eyeGlintR, base.eyeGlintR, [1.46,1.515,.215], sniffAmount);
+      updateCollarAndLeash(sniffAmount);
+      const collarLowerAmount = Math.max(peeAmount, dropAmount);
+      if (collarLowerAmount > 0.01) {
+        explicitCollar.position.y = -0.045 * collarLowerAmount;
+        localLeash.position.y = -0.045 * collarLowerAmount;
+        localLeashClip.position.y -= 0.045 * collarLowerAmount;
+      } else {
+        explicitCollar.position.y = 0;
+        localLeash.position.y = 0;
+      }
+
+      // Light Z-fold paper-strip legs hang with gravity and flutter loosely with the balloon body.
+      legGroups.forEach((leg, i) => {
+        const lag = leg.userData.frontBias * poseValue;
+        const flutter = Math.sin(t * 5.2 + i * 1.7) * 0.055 + Math.sin(t * 8.1 + i) * 0.025 + sniffAmount * Math.sin(t * 10.4 + i) * .025 + standFloat * Math.sin(t * 3.0 + i * 1.9) * .026;
+        const sway = Math.sin(t * 3.4 + i * 2.3) * 0.018 + sniffAmount * Math.sin(t * 7.8 + i) * .012 + standFloat * Math.sin(t * 2.4 + i) * .014;
+        const peeLift = leg.userData.isPeeLeg ? peeAmount : 0;
+        const softFlutter = flutter * (1 - peeLift);
+        leg.rotation.z = -dog.rotation.z * 0.62 + lag * 0.08 + softFlutter - peeLift * 0.40;
+        // Pee leg pivots from the body attachment: root stays connected, far end lifts outward.
+        leg.rotation.x = Math.sin(t * 3.1 + i) * 0.055 * (1 - peeLift) + poseValue * 0.04 - peeLift * 1.08;
+        leg.rotation.y = sway * (1 - peeLift) + peeLift * 0.82;
+        leg.position.y = .68 - Math.abs(poseValue) * .055 + Math.sin(t * 4.6 + i) * 0.012 * (1 - peeLift) + peeLift * .08;
+        leg.position.x = leg.userData.baseX + poseValue * leg.userData.frontBias * .02 + sway * 0.035 * (1 - peeLift) - peeLift * .03;
+        leg.position.z = leg.userData.baseZ + peeLift * .08;
+
+        // Each fold flutters when loose, but the peeing-side rear leg becomes a firmer lifted paper strip.
+        leg.children.forEach((child, j) => {
+          if (child.name.includes('continuous z-fold')) {
+            child.rotation.x = Math.sin(t * 6.4 + i + j) * 0.035 * (1 - peeLift) - peeLift * .10;
+            child.rotation.z = Math.sin(t * 4.8 + i * 1.3) * 0.025 * (1 - peeLift);
+          }
+        });
+      });
+
+      // Daily Drop appears when the rear tilts down.
+      smell.visible = sniffAmount > .18;
+      pee.visible = peeAmount > .18;
+      peeNozzle.visible = peeAmount > .18;
+      dog.updateMatrixWorld(true);
+      bubbleOriginWorld.copy(bubbleMouthLocal);
+      peeNozzle.localToWorld(bubbleOriginWorld);
+      peeNozzle.getWorldQuaternion(nozzleWorldQuat);
+      bubbleFlowWorld.copy(bubbleFlowLocal).applyQuaternion(nozzleWorldQuat);
+      pee.children.forEach((bubble, i) => {
+        const data = bubble.userData || { delay: 0, r: .04, wobble: .1, phase: i, burst: 0 };
+        const cycle = 2.65;              // one puff every ~2.6s
+        const burstWindow = 1.28;        // visible lifetime of each puff
+        const local = (t + data.burst * .32 - data.delay) % cycle;
+        const life = local / burstWindow;
+        const active = peeAmount > .18 && local >= 0 && local < burstWindow;
+        const ease = Math.max(0, Math.min(1, life));
+        const drift = ease * ease * (3 - 2 * ease);
+        const fade = Math.sin(Math.PI * ease); // appear, float, disappear
+        const wobbleX = Math.sin(t * 3.2 + data.phase) * data.wobble * .08 * drift;
+        const wobbleZ = Math.cos(t * 2.7 + data.phase) * data.wobble * .04 * drift;
+        bubble.position.set(
+          bubbleOriginWorld.x + bubbleFlowWorld.x * drift + wobbleX,
+          bubbleOriginWorld.y + bubbleFlowWorld.y * drift + ease * .30 + Math.sin(t * 4.0 + data.phase) * .014,
+          bubbleOriginWorld.z + bubbleFlowWorld.z * drift + wobbleZ
+        );
+        const grow = .28 + drift * .95;
+        const pulse = grow * (1 + Math.sin(t * 5.6 + data.phase) * .045);
+        bubble.scale.set(pulse, pulse, pulse);
+        bubble.visible = active;
+        bubble.traverse(obj => {
+          if (obj.material && 'opacity' in obj.material) {
+            obj.material.opacity = obj.name.includes('rim') || obj.name.includes('specular') ? .78 * fade : .46 * fade;
+          }
+        });
+      });
+      note.visible = dropAmount > .22;
+      cal.visible = false;
+      note.position.set(base.note[0], base.note[1] + dropAmount * .025, base.note[2]);
+      note.scale.setScalar(0.68 + dropAmount * 0.32);
+      tail.rotation.z = Math.PI/2 - .55 + Math.sin(t * 9) * .22 + Math.sin(t * 7.8) * .06;
+      tailTip.position.y = 1.44 + Math.sin(t * 9) * .09;
+      tailTip.position.x = -1.42 + Math.cos(t * 9) * .025;
+      smell.children.forEach((dot, i) => {
+        dot.material.opacity = .22 + Math.abs(Math.sin(t * 1.8 + i)) * .42;
+        dot.position.y += Math.sin(t * 2.4 + i) * .0009;
+      });
+      note.rotation.z = -.08 + Math.sin(t * 1.8) * .035;
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    function resize(){
+      camera.aspect = stage.clientWidth / stage.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(stage.clientWidth, stage.clientHeight);
+    }
+    window.addEventListener('resize', resize);
+  </script>
+  <script nomodule>
+    document.getElementById('error').style.display = 'flex';
+  </script>
+</body>
+</html>
