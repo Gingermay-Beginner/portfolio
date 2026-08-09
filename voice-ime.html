@@ -370,7 +370,7 @@
     .selection-demo { padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
     .selection-text { margin-bottom: 12px; color: var(--soft); font-size: 13px; line-height: 1.5; }
     .selection-text mark { border-radius: 3px; padding: 1px 3px; background: #d9d8ff; color: var(--ink); }
-    .interaction-rule { margin-top: 18px; border-left: 2px solid var(--green); padding: 9px 11px; background: #f1faf7; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .interaction-rule { margin-top: 18px; padding: 0; background: transparent; color: var(--muted); font-size: 12px; line-height: 1.5; }
     .interaction-rule b { color: var(--ink); }
 
     /* Confirmed Voice IME state model — shared shell, three entry contexts. */
@@ -394,7 +394,16 @@
     .im2-icon--done .im2-tip { bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); }
     .im2-caret-stage { position:relative; align-self:center; width:140px; height:60px; margin-top:auto; margin-bottom:0; }.im2-caret { position:absolute; top:0; left:50%; width:2px; height:20px; border-radius:1px; background:#1F2431; transform:translateX(-50%); }.im2-caret-stage .im2-pill { position:absolute; bottom:0; left:50%; margin:0; transform:translateX(-50%); }
     .im2-selection { min-height:24px; margin:auto 0 2px; display:flex; align-items:center; color:#3E4760; font-size:16px; }.im2-selection mark { padding:2px 3px; border-radius:3px; background:#0A84FF; color:#fff; }.im2-selection .im2-caret-inline { display:inline-block; width:2px; height:20px; margin-left:5px; margin-right:1px; background:#1F2431; }
-    .im2-actions { display:inline-flex; align-self:center; margin-top:auto; padding:4px; border-radius:12px; background:#fff; box-shadow:0 4px 18px rgba(31,36,49,.12); }.im2-grid--selection .im2-state:first-child .im2-actions { margin-top:0; }.im2-action { display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:0 10px; border-radius:8px; color:#1F2431; font-size:12px; white-space:nowrap; }.im2-action--on { background:#1F2431; color:#fff; }.im2-action svg { width:16px; height:16px; fill:currentColor; }
+    .im2-actions { display:inline-flex; align-self:center; margin-top:auto; padding:4px; border-radius:12px; background:#fff; box-shadow:0 4px 18px rgba(31,36,49,.12); }.im2-grid--selection .im2-state:first-child .im2-actions { margin-top:12px; }.im2-action { display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:0 10px; border-radius:8px; color:#1F2431; font-size:12px; white-space:nowrap; }.im2-action--on { order:-1; background:#1F2431; color:#fff; }.im2-action svg { width:16px; height:16px; fill:currentColor; }
+    .im2-grid--selection .im2-state:first-child .im2-selection mark { position:relative; z-index:0; isolation:isolate; display:inline-block; padding:2px 3px; background:transparent; color:#3E4760; }
+    .im2-grid--selection .im2-state:first-child .im2-selection mark::before { content:""; position:absolute; z-index:-1; top:0; bottom:0; left:0; width:0; border-radius:3px; background:#0A84FF; animation:selection-sweep 6.4s ease-in-out infinite; }
+    .im2-grid--selection .im2-state:first-child .im2-selection mark::after { content:""; position:absolute; right:auto; top:-3px; width:2px; height:28px; border-radius:1px; background:#1F2431; animation:selection-caret 6.4s ease-in-out infinite; }
+    .im2-grid--selection .im2-state:first-child .im2-caret-inline { display:none; }
+    .im2-grid--selection .im2-state:first-child .im2-actions { animation: selection-bar-arrive 6.4s ease-in-out infinite; }
+    @keyframes selection-sweep { 0%, 10% { width:0; opacity:1; } 30%, 90% { width:100%; opacity:1; } 90.01%, 100% { width:100%; opacity:0; } }
+    @keyframes selection-caret { 0%, 10% { left:0; opacity:1; } 30%, 78% { left:calc(100% + 3px); opacity:1; } 92%, 100% { left:calc(100% + 3px); opacity:0; } }
+    @keyframes selection-bar-arrive { 0%, 30% { opacity:0; transform:translateY(-7px) scale(.96); } 41%, 78% { opacity:1; transform:translateY(0) scale(1); } 92%, 100% { opacity:0; transform:translateY(-7px) scale(.96); } }
+    @media (prefers-reduced-motion: reduce) { .im2-grid--selection .im2-state:first-child .im2-selection mark::before, .im2-grid--selection .im2-state:first-child .im2-selection mark::after, .im2-grid--selection .im2-state:first-child .im2-actions { animation:none; } .im2-grid--selection .im2-state:first-child .im2-selection mark::before { width:100%; } }
     .im2-quote { margin:auto 0 0; color:#0A84FF; text-align:center; font-size:16px; }.im2-grid--selection .im2-pill { margin-top:auto; }
 
     /* ---------- Three tiers (Verbatim annotation legend) ----------
@@ -855,7 +864,7 @@
       <div class="wrap">
         <div class="kicker"><span class="dot"></span>Desktop IME · one bar, the whole loop</div>
         <h1>Speak. Shape. Keep working.</h1>
-        <p class="lede"><em>Reading</em> brings in context. <em>Speaking</em> catches a thought before it slips away. <em>Writing</em> is where people test, shape, and refine it into something useful. But these moves are scattered across apps, the clipboard, a translator, and a chat box; every hop breaks momentum and drops context on the floor. Looop offers several ways to start in the moment — from an always-on docked bar to a bar that lands at your cursor — then keeps the work moving in one continuous place.</p>
+        <p class="lede"><em>Reading</em> brings in context. <em>Speaking</em> catches a thought before it slips away. <em>Writing</em> is where people test, shape, and refine it into something useful. But these moves are scattered across apps, the clipboard, a translator, and a chat box; every hop <b>breaks momentum and drops context</b> on the floor. Looop offers several ways to start in the moment — from an always-on docked bar to a bar that lands at your cursor — then keeps the work moving in <b>one continuous place</b>.</p>
         <div class="hero-recording">
           <p class="video-cap">Working prototype · modes &amp; cleanup</p>
           <div class="loom-embed-box"><iframe src="https://www.loom.com/embed/c245ef2097c94586b0984e083cabd4cf" allowfullscreen title="Voice IME working prototype demonstration"></iframe></div>
@@ -1344,19 +1353,19 @@
       <div class="wrap">
         <div class="sec-head">
           <div class="sec-num">10 / Reflection</div>
-          <h2>From character entry to intent transfer</h2>
+          <h2>From a spoken thought to work in progress</h2>
         </div>
         <div class="reflect">
           <div class="rk">The reframe</div>
-          <div class="big">Voice input isn't <span class="fade">character entry.</span> It's intent transfer.</div>
+          <div class="big">Voice input isn't just <span class="fade">transcription.</span> It's a way to catch a thought, shape it, and keep working.</div>
           <div class="reflect-grid">
             <div class="rc">
               <strong>Why it matters</strong>
-              <p>Reframing voice from character entry to intent transfer means faster capture, lower post-edit cost, and higher trust in the generated text — because you can always see and recover what was actually said.</p>
+              <p>The value is not simply faster text entry. It is preserving momentum while people turn a fragment, correction, or instruction into something they can read, revise, and use — while keeping the original speech recoverable.</p>
             </div>
             <div class="rc">
               <strong>End-to-end ownership</strong>
-              <p>Driven from insight to execution: problem framing, interaction model, capability logic, and an implementation-aligned demo. Not only a UI concept — shipped as a working, demonstrable behavior layer.</p>
+              <p>I carried the work from problem framing through interaction model, capability logic, visual expression, and an implementation-aligned demo — turning the concept into behavior people can inspect and experience.</p>
             </div>
           </div>
         </div>
