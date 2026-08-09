@@ -375,7 +375,9 @@
     /* "What it is" cell = a dark mini-bubble (how the tier actually reads in the
        Verbatim view, matching the figure above) over a plain-text example. */
     .tk-demo {
-      background: var(--ink); color: #fff;
+      /* Match the blue-charcoal surface used by the Verbatim / Intent pair,
+         rather than the page's near-black text token. */
+      background: #1F2431; color: #f7f8fc;
       border-radius: 9px; padding: 9px 12px; margin-bottom: 9px;
       font-size: 13px; line-height: 1.65;
     }
@@ -456,8 +458,8 @@
     .vact svg { width: 13px; height: 13px; }
 
     /* ---------- Scene / step columns (not cards — divided by hairlines) ---------- */
-    .scenes { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: clamp(20px, 2.6vw, 34px); }
-    .scenes > * + * { border-left: 1px solid var(--line); padding-left: clamp(20px, 2.6vw, 34px); }
+    .scenes { display: grid; grid-template-columns: repeat(3, 1fr); column-gap:14px; }
+    .scenes > * + * { padding-left:0; }
     .scene-k {
       font-family: "JetBrains Mono", monospace; font-size: 10px;
       letter-spacing: 1.1px; text-transform: uppercase; color: var(--faint);
@@ -467,6 +469,38 @@
       font-size: 15px; letter-spacing: -0.2px; margin: 9px 0 6px;
     }
     .scene-d { color: var(--muted); font-size: 13px; line-height: 1.5; }
+    /* The three case scenes are direct ports of the 480 × 320 Figma frames.
+       They deliberately share the Figma canvas ratio and component dimensions. */
+    .scene-viz { position:relative; container-type:inline-size; aspect-ratio:3 / 2; margin-bottom:15px; overflow:hidden; border:1px solid #e4e4e7; border-radius:10px; background:#e4e4e7; }
+    .sv-surface { position:absolute; overflow:hidden; border-radius:6.25%; background:#fff; }
+    .sv-surface--dark { background:#14141a; box-shadow:0 2px 3px rgba(0,0,0,.35); }
+    .sv-lines { position:absolute; display:flex; flex-direction:column; gap:5%; }
+    .sv-lines i { display:block; height:8%; min-height:2px; border-radius:999px; background:#d4d4d8; }
+    .sv-lines--dark i { background:rgba(212,212,216,.3); }
+    .sv-voice { position:absolute; display:flex; align-items:center; gap:7.3%; box-sizing:border-box; width:17.08%; height:8.125%; padding:0 4.17%; border-radius:10px; background:#14141a; box-shadow:0 2px 3px rgba(0,0,0,.35); }
+    .sv-voice i { width:7.32%; aspect-ratio:1; border-radius:4px; background:#fff; }
+    .sv-default { position:absolute; width:8.33%; height:2.5%; border-radius:200px; background:rgba(20,20,26,.4); }
+    .sv-cursor { position:absolute; width:5%; height:7.5%; object-fit:contain; }
+    .sv-caret { position:absolute; width:.625%; height:8.125%; border-radius:2px; background:#18181b; }
+    .sv-key { position:absolute; display:grid; place-items:center; width:5%; aspect-ratio:1; border-radius:8px; color:#e4e4e7; background:#71717a; font:500 clamp(7px,1.7vw,16px)/1 "JetBrains Mono", monospace; }
+    .sv-send { position:absolute; display:grid; place-items:center; width:6.67%; aspect-ratio:1; border-radius:100px; background:#71717a; }
+    .sv-send img { width:66%; height:66%; transform:rotate(180deg) scaleY(-1); }
+    /* 01 — Long-form output surface (Figma 40000029:3665). */
+    /* Use paired horizontal/vertical radii: a single percentage made the
+       shorter panel's corners flatten vertically as the card resized. */
+    .scene-viz--writing .sv-surface { left:28.96%; top:34.69%; display:flex; gap:12%; width:41.67%; height:30.63%; padding:4.17%; border-radius:7.143% / 14.286%; }
+    .sv-write-col, .sv-write-list { display:flex; flex:1; min-width:0; flex-direction:column; justify-content:space-between; }
+    .sv-write-col { gap:8%; }.sv-write-col i, .sv-write-row i { display:block; height:8%; min-height:2px; border-radius:999px; background:rgba(212,212,216,.3); }.sv-write-col i:last-child { width:28%; }
+    .sv-write-row { display:flex; align-items:center; gap:12%; height:8%; }.sv-write-row i { height:100%; }.sv-write-row i:first-child { width:auto; height:100%; aspect-ratio:1; flex:0 0 auto; }.sv-write-row i:last-child { flex:1; }
+    /* 02 — Hotkey at the caret (Figma 40000027:3562). */
+    .scene-viz--vibe .sv-surface { left:23.54%; top:35.31%; width:50%; height:28.75%; padding:5%; border-radius:8.333% / 21.739%; }
+    .scene-viz--vibe .sv-lines { left:10%; top:26.09%; width:80%; height:26.09%; justify-content:space-between; gap:0; }.scene-viz--vibe .sv-lines i { flex:0 0 33.33%; height:33.33%; }.scene-viz--vibe .sv-lines i:nth-child(2) { width:46.67%; }
+    .scene-viz--vibe .sv-caret { left:46.15%; top:44.38%; }.scene-viz--vibe .sv-voice { left:calc(46.15% - 20px); top:calc(44.38% + 17px); width:40px; height:14px; }.scene-viz--vibe .sv-key { left:calc(46.15% - 6.5px); top:88.75%; width:13px; height:13px; aspect-ratio:auto; border-radius:4px; font-size:9px; }.scene-viz--vibe .sv-send { right:10%; top:60.87%; width:8.33%; }
+    /* 03 — Context-triggered selection (Figma 40000027:3601). */
+    .scene-viz--language .sv-surface { left:24.79%; top:18.4375%; width:50%; height:62.5%; padding:10%; border-radius:8.333% / 10%; }
+    .scene-viz--language .sv-lines { left:10%; top:12%; width:80%; height:28%; justify-content:space-between; gap:0; }.scene-viz--language .sv-lines i { flex:0 0 14.286%; height:14.286%; background:#0A84FF; }.scene-viz--language .sv-lines i:first-child { width:90.625%; margin-left:9.375%; }.scene-viz--language .sv-lines i:nth-child(3) { width:43.75%; }
+    .scene-viz--language .sv-letter { position:absolute; left:10%; top:10%; color:#0A84FF; font:800 3.333cqw/1 "JetBrains Mono", monospace; }
+    .scene-viz--language .sv-caret { left:47.604%; top:38.4375%; }.scene-viz--language .sv-voice { left:39.583%; top:47.1875%; width:16.667%; height:8.125%; }
 
     /* ---------- Loom video ---------- */
     .loom-embed-box {
@@ -575,29 +609,41 @@
        selection. ---- */
     .entry-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 16px; }
     .entry-card { display: flex; flex-direction: column; }
-    .es-screen { position:relative; height:176px; border-radius:10px; background:#e4e4e7; border:1px solid #e4e4e7; padding:0; overflow:hidden; }
+    .es-screen {
+      /* Portfolio diagrams scale as a single 350px-wide reference canvas. */
+      --voice-bar-w: max(40px, 11.43cqw);
+      --voice-bar-h: max(14px, 4cqw);
+      --option-size: max(13px, 3.71cqw);
+      --dock-compact-w: max(28px, 8cqw);
+      --dock-compact-h: max(4px, 1.14cqw);
+      --dock-expanded-w: var(--voice-bar-w);
+      --dock-expanded-h: 14px;
+      position:relative; container-type:inline-size; aspect-ratio:3 / 2; height:auto; border-radius:10px; background:#e4e4e7; border:1px solid #e4e4e7; padding:0; overflow:hidden;
+    }
     .es-app { position:absolute; width:50%; height:62.5%; border-radius:10px; background:#fff; overflow:hidden; }
     .es-hotkey .es-app { left:23.5%; top:15.3%; }
     .es-pick .es-app { left:25%; top:15.6%; }
-    .es-lines { display: flex; flex-direction: column; gap: 7px; }
-    .es-line { height: 4px; border-radius: 2px; background: var(--line-strong); }
+    .es-lines { display: flex; flex-direction: column; gap:max(7px, 2cqw); }
+    .es-line { height:max(4px, 1.14cqw); border-radius:999px; background: var(--line-strong); }
     .es-line.w1 { width: 72%; } .es-line.w2 { width: 90%; } .es-line.w3 { width: 56%; }
     /* Figma source of truth: the same compact bar is placed by each trigger. */
-    .es-pill { height: 13px; width: 40px; border-radius: 5px; background: #14141a; box-shadow: 0 1px 3px rgba(0,0,0,.35); display: flex; align-items: center; gap: 3px; padding: 0 10px; }
-    .es-pill i { width: 3px; height: 3px; border-radius: 2px; background: #fff; display: block; flex: 0 0 3px; }
+    .es-pill { height: var(--voice-bar-h); width: var(--voice-bar-w); border-radius: 5px; background: #14141a; box-shadow: 0 1px 3px rgba(0,0,0,.35); display: flex; align-items: center; gap: 3px; padding: 0 10px; }
+    .es-pill i { width:max(3px,.86cqw); height:max(3px,.86cqw); border-radius:2px; background:#fff; display:block; flex:0 0 max(3px,.86cqw); }
     /* 1 — docked, with the pointer at the compact entry affordance */
     .es-dock .es-lines { display: none; }
-    .es-dock-trigger { position:absolute; left:45.6%; top:82.5%; width:14%; height:12%; transform:none; border:0; padding:0; background:transparent; cursor:pointer; }
-    .es-default { position:absolute; left:0; top:18.2%; width:59.5%; height:20.8%; border-radius:999px; background:rgba(20,20,26,.4); animation:es-dock-compact 4s ease-in-out infinite; }
-    .es-mouse { position:absolute; left:52%; top:0; width:35.7%; height:89.3%; object-fit:contain; pointer-events:none; z-index:2; animation:es-mouse-sweep 4s ease-in-out infinite; }
-    .es-dock-expanded { position:absolute; left:-29.6%; top:-28.7%; width:122%; height:67.7%; transform:scale(.88); display:flex; align-items:center; gap:3px; padding:0 10px; box-sizing:border-box; border-radius:10px; background:#14141a; box-shadow:0 2px 3px rgba(0,0,0,.35); opacity:0; z-index:1; animation:es-dock-expand 4s ease-in-out infinite; }
-    .es-dock-expanded i { width:3px; height:3px; border-radius:3px; background:#fff; display:block; flex:0 0 3px; }
+    .es-dock-trigger { position:absolute; left:calc(50% - (var(--dock-expanded-w) / 2)); top:calc(87% - var(--dock-expanded-h)); width:var(--dock-expanded-w); height:var(--dock-expanded-h); transform:none; border:0; padding:0; background:transparent; cursor:pointer; }
+    .es-default { position:absolute; left:50%; bottom:0; width:var(--dock-compact-w); height:var(--dock-compact-h); border-radius:999px; background:rgba(20,20,26,.4); animation:es-dock-compact 4s ease-in-out infinite; }
+    .es-mouse { position:absolute; left:calc(50% + max(14px, 4cqw)); top:max(1px, .29cqw); width:max(13px,3.71cqw); height:auto; pointer-events:none; z-index:2; animation:es-mouse-sweep 4s ease-in-out infinite; }
+    .es-dock-expanded { position:absolute; right:0; bottom:0; width:var(--dock-expanded-w); height:var(--dock-expanded-h); transform:scale(.88); display:flex; align-items:center; gap:max(3px,.86cqw); padding:0 max(10px,2.86cqw); box-sizing:border-box; border-radius:max(10px,2.86cqw); background:#14141a; box-shadow:0 2px 3px rgba(0,0,0,.35); opacity:0; z-index:1; animation:es-dock-expand 4s ease-in-out infinite; }
+    .es-dock-expanded i { width:max(3px,.86cqw); height:max(3px,.86cqw); border-radius:3px; background:#fff; display:block; flex:0 0 max(3px,.86cqw); }
     .es-dock-trigger:hover .es-default, .es-dock-trigger:focus-visible .es-default { opacity: 0; }
     .es-dock-trigger:hover .es-dock-expanded, .es-dock-trigger:focus-visible .es-dock-expanded { opacity:1; transform:scale(1); }
     .es-dock-trigger:hover .es-default, .es-dock-trigger:hover .es-mouse, .es-dock-trigger:hover .es-dock-expanded,
     .es-dock-trigger:focus-visible .es-default, .es-dock-trigger:focus-visible .es-mouse, .es-dock-trigger:focus-visible .es-dock-expanded { animation-play-state: paused; }
-    @keyframes es-mouse-sweep { 0%, 24%, 100% { transform: translateX(18px); } 40%, 70% { transform: translateX(-24px); } 84% { transform: translateX(18px); } }
-    @keyframes es-dock-compact { 0%, 28%, 100% { opacity: 1; transform: scale(1); } 40%, 72% { opacity: 0; transform: scale(.82); } 84% { opacity: 1; transform: scale(1); } }
+    /* The pointer approaches the compact entry from the right, then holds just
+       outside the expanded bar's edge — it never sits on top of the bar. */
+    @keyframes es-mouse-sweep { 0%, 24%, 100% { transform:translateX(max(8px,2.29cqw)); } 40%, 70% { transform:translateX(0); } 84% { transform:translateX(max(8px,2.29cqw)); } }
+    @keyframes es-dock-compact { 0%, 28%, 100% { opacity: 1; transform: translateX(-50%) scale(1); } 40%, 72% { opacity: 0; transform: translateX(-50%) scale(.82); } 84% { opacity: 1; transform: translateX(-50%) scale(1); } }
     @keyframes es-dock-expand { 0%, 28%, 100% { opacity:0; transform:scale(.88); } 40%, 72% { opacity:1; transform:scale(1); } 84% { opacity:0; transform:scale(.88); } }
     @keyframes es-hotkey-caret { 0%, 8% { opacity:0; } 12%, 18% { opacity:1; } 22%, 28% { opacity:0; } 32%, 38% { opacity:1; } 42%, 48% { opacity:0; } 52%, 100% { opacity:1; } }
     @keyframes es-hotkey-key { 0%, 54%, 100% { background:var(--muted); transform:scale(1); } 58% { background:#0A84FF; transform:scale(1.1); } 62%, 66% { background:#0A84FF; transform:scale(1); } 70% { background:var(--muted); transform:scale(.95); } }
@@ -608,35 +654,35 @@
     @keyframes es-pick-menu-press { 0%, 66% { transform:scale(1); background:#14141a; } 70% { transform:scale(.88); background:#0A84FF; } 74%, 100% { transform:scale(1); background:#14141a; } }
     @keyframes es-pick-bar { 0%, 74%, 100% { opacity: 0; transform: translateY(-3px) scale(.9); } 82%, 94% { opacity: 1; transform: translateY(0) scale(1); } 97% { opacity: 0; transform: translateY(-3px) scale(.9); } }
     /* 2 — hotkey places the bar at the caret; the key hint stays separate */
-    .es-hotkey .es-lines, .es-pick .es-lines { position:absolute; width:40%; gap:8px; }
+    .es-hotkey .es-lines, .es-pick .es-lines { position:absolute; width:40%; gap:max(8px, 2.29cqw); }
     .es-hotkey .es-lines { left:28.5%; top:22.8%; }
     .es-pick .es-lines { left:30%; top:23.1%; }
-    .es-hotkey .es-lines .es-line, .es-pick .es-lines .es-line { height:4px; }
+    .es-hotkey .es-lines .es-line, .es-pick .es-lines .es-line { height:max(4px, 1.14cqw); }
     .es-hotkey .es-lines .w1, .es-hotkey .es-lines .w2 { width:100%; }
     .es-hotkey .es-lines .w3 { width:42%; }
     .es-caret-bar { position:absolute; display:flex; flex-direction:column; align-items:center; gap:1px; width:8.3%; }
-    .es-hotkey .es-caret-bar { left:20.2%; top:42.2%; width:16.7%; }
-    .es-caret { width:1.5px; height:13px; background:var(--ink); border-radius:1px; }
-    .es-key { position:absolute; left:46%; top:88.75%; width:5%; height:7.5%; display:grid; place-items:center; font-family:"JetBrains Mono", monospace; font-size:9px; color:var(--line); background:var(--muted); border-radius:4px; }
-    .es-hotkey .es-caret, .es-pick .es-caret { height:14px; }
-    .es-hotkey .es-pill { width:100%; height:14px; padding:0 25%; gap:3px; border-radius:10px; }
-    .es-hotkey .es-pill i, .es-pick .es-pill i { width:3px; height:3px; flex:0 0 3px; }
+    .es-hotkey .es-caret-bar { left:calc(28.55% - (var(--voice-bar-w) / 2)); top:42.2%; width:var(--voice-bar-w); }
+    .es-caret { width:max(1.5px,.43cqw); height:max(13px,3.71cqw); background:var(--ink); border-radius:1px; }
+    .es-key { position:absolute; left:calc(48.5% - (var(--option-size) / 2)); top:88.75%; width:var(--option-size); height:var(--option-size); display:grid; place-items:center; font-family:"JetBrains Mono", monospace; font-size:max(9px,2.57cqw); color:var(--line); background:var(--muted); border-radius:max(4px,1.14cqw); }
+    .es-hotkey .es-caret, .es-pick .es-caret { height:var(--voice-bar-h); }
+    .es-hotkey .es-pill { width:var(--voice-bar-w); height:var(--voice-bar-h); padding:0 max(10px,2.86cqw); gap:max(3px,.86cqw); border-radius:max(10px,2.86cqw); }
+    .es-hotkey .es-pill i, .es-pick .es-pill i { width:max(3px,.86cqw); height:max(3px,.86cqw); flex:0 0 max(3px,.86cqw); }
     .es-hotkey .es-caret { animation: es-hotkey-caret 4s ease-in-out infinite; }
     .es-hotkey .es-pill { opacity: 0; transform: translateY(-3px); animation: es-hotkey-bar 4s ease-in-out infinite; }
     .es-hotkey .es-key { animation: es-hotkey-key 4s ease-in-out infinite; }
     /* 3 — a selection brings the voice bar directly into the text context */
     .es-pick .es-lines .w2, .es-pick .es-lines .w1 { width:100%; }
     .es-pick .es-lines .w3 { display: none; }
-    .es-select-base { position:absolute; left:30%; top:calc(23.1% + 24px); width:17.5%; height:4px; border-radius:2px; background:var(--line-strong); }
-    .es-sel { position:absolute; height:4px; border-radius:2px; background:#0A84FF; left:30%; top:calc(23.1% + 24px); width:17.5%; animation:es-pick-selection 5s ease-in-out infinite; }
+    .es-select-base { position:absolute; left:30%; top:calc(23.1% + max(24px, 6.86cqw)); width:17.5%; height:max(4px, 1.14cqw); border-radius:999px; background:var(--line-strong); }
+    .es-sel { position:absolute; height:max(4px, 1.14cqw); border-radius:999px; background:#0A84FF; left:30%; top:calc(23.1% + max(24px, 6.86cqw)); width:17.5%; animation:es-pick-selection 5s ease-in-out infinite; }
     .es-pick .es-line--partial { display: none; }
-    .es-pick .es-caret { position:absolute; top:36.25%; left:30%; animation:es-pick-caret 5s ease-in-out infinite; }
-    .es-pick-menu { position:absolute; left:30.8%; top:45%; width:37.5%; height:10.625%; display:flex; gap:3.3%; padding:.83%; box-sizing:border-box; border-radius:10px; background:#fff; box-shadow:0 2px 3px rgba(0,0,0,.35); opacity:0; animation:es-pick-menu 5s ease-in-out infinite; }
+    .es-pick .es-caret { position:absolute; top:calc(36.25% - 5px); left:30%; animation:es-pick-caret 5s ease-in-out infinite; }
+    .es-pick-menu { position:absolute; left:30.8%; top:calc(36.25% + max(10px,2.86cqw)); width:37.5%; height:10.625%; display:flex; gap:3.3%; padding:.83%; box-sizing:border-box; border-radius:10px; background:#fff; box-shadow:0 2px 3px rgba(0,0,0,.35); opacity:0; animation:es-pick-menu 5s ease-in-out infinite; }
     .es-pick-menu span { width:29%; height:100%; border:2px solid rgba(0,0,0,.1); border-radius:8px; background:#fff; box-sizing:border-box; }
     .es-pick-menu .es-pick-menu--voice { width:29%; border:0; background:#14141a; animation:es-pick-menu-press 5s ease-in-out infinite; }
-    .es-pick .es-pill { position:absolute; left:40.9%; top:calc(36.25% + 15px); width:16.7%; height:14px; padding:0 10px; gap:3px; box-sizing:border-box; border-radius:10px; transform:translateY(-3px) scale(.9); opacity:0; animation:es-pick-bar 5s ease-in-out infinite; }
+    .es-pick .es-pill { position:absolute; left:calc(49.25% - (var(--voice-bar-w) / 2)); top:calc(36.25% + max(10px,2.86cqw)); width:var(--voice-bar-w); height:var(--voice-bar-h); padding:0 max(10px,2.86cqw); gap:max(3px,.86cqw); box-sizing:border-box; border-radius:max(10px,2.86cqw); transform:translateY(max(-3px,-.86cqw)) scale(.9); opacity:0; animation:es-pick-bar 5s ease-in-out infinite; }
     .entry-cap { display:flex; flex:1; flex-direction:column; margin-top:12px; }
-    .entry-name { color: var(--ink); font-weight: 600; font-size: 14px; }
+    .entry-name { color:var(--ink); font-family:"Space Grotesk", sans-serif; font-weight:600; font-size:15px; letter-spacing:-.2px; }
     .entry-form { min-height:38px; color:var(--soft); font-size:12.5px; line-height:1.5; margin-top:4px; }
     .entry-serves { margin-top:auto; font-family:"JetBrains Mono", monospace; font-size:10px; letter-spacing:.4px; text-transform:uppercase; color:var(--faint); }
     .entry-serves b { color: var(--muted); font-weight: 500; }
@@ -703,8 +749,8 @@
           <a href="#problem"><span class="n">02</span><span>Problem</span></a>
           <a href="#constraints"><span class="n">03</span><span>Design constraints</span></a>
           <a href="#approach"><span class="n">04</span><span>Approach</span></a>
-          <a href="#model"><span class="n">05</span><span>Interaction model</span></a>
-          <a href="#action"><span class="n">06</span><span>In action</span></a>
+          <a href="#action"><span class="n">05</span><span>In action</span></a>
+          <a href="#model"><span class="n">06</span><span>Interaction model</span></a>
           <a href="#capabilities"><span class="n">07</span><span>Capabilities</span></a>
           <a href="#onboarding"><span class="n">08</span><span>Onboarding</span></a>
           <a href="#reflection"><span class="n">09</span><span>Reflection</span></a>
@@ -715,8 +761,8 @@
     <section class="hero">
       <div class="wrap">
         <div class="kicker"><span class="dot"></span>Desktop IME · one bar, the whole loop</div>
-        <h1>Read. Write. Speak.</h1>
-        <p class="lede">Desktop AI work is a loop — <em>bring context in</em>, <em>produce</em> your output, <em>refine</em> it. Speed matters because ideas often arrive unfinished: a fragment, correction, or instruction needs to be caught before another tool switch breaks the thought. Today that loop is scattered across apps, the clipboard, a translator, and a chat box; every hop drops context on the floor. This IME offers several ways to start in the moment — from an always-on docked bar to a bar that lands at your cursor — then keeps the work moving in one continuous place.</p>
+        <h1>Speak. Shape. Keep working.</h1>
+        <p class="lede"><em>Reading</em> brings in context. <em>Speaking</em> catches a thought before it slips away. <em>Writing</em> is where people test, shape, and refine it into something useful. But these moves are scattered across apps, the clipboard, a translator, and a chat box; every hop breaks momentum and drops context on the floor. Looop offers several ways to start in the moment — from an always-on docked bar to a bar that lands at your cursor — then keeps the work moving in one continuous place.</p>
         <div class="hero-recording">
           <p class="video-cap">Working prototype · modes &amp; cleanup</p>
           <div class="loom-embed-box"><iframe src="https://www.loom.com/embed/c245ef2097c94586b0984e083cabd4cf" allowfullscreen title="Voice IME working prototype demonstration"></iframe></div>
@@ -777,7 +823,7 @@
               <p>Drafting, summarizing, prompt writing — you need clear intent, not the mess.</p>
             </div>
           </div>
-          <div class="callout">
+          <div class="callout callout--summary">
             <strong>Core view</strong>
             <span>The same clip needs both readings depending on the task — a single output style is not enough.</span>
           </div>
@@ -825,17 +871,18 @@
       <div class="wrap">
         <div class="sec-head">
           <div class="sec-num">04 / Approach</div>
-          <h2>One bar that turns context into the next action</h2>
-          <p>Rather than another destination AI app, Voice IME stays close to the caret: one entry point, context-aware actions, and explicit control over transformation.</p>
+          <h2>Stay in the work. Let context shape the next step.</h2>
+          <p>Looop is not another destination AI app. It stays inside the work already in progress, then uses the caret, selection, and output state to offer the next useful action.</p>
         </div>
         <div class="card">
-          <p class="lead">The system is built around three principles:</p>
+          <p class="lead">The solution is built around three connected decisions:</p>
           <ul class="points">
-            <li><b>One entry point</b> — every voice task starts from the same lightweight bar, rather than a scattered set of tools.</li>
-            <li><b>Context-aware actions</b> — the selection, caret, clipboard, and active app determine what the bar can do next.</li>
-            <li><b>Control before automation</b> — users can choose the right reading of speech and verify what changes before accepting it.</li>
+            <li><b>Stay where work happens</b> — Looop remains close to the document, code, or chat already in progress, rather than pulling people into a separate AI workspace.</li>
+            <li><b>Start from context already there</b> — the caret, selection, clipboard, and active app determine where the interaction begins and what the next useful action is.</li>
+            <li><b>Keep transformation visible and reversible</b> — AI can organize and refine, but users can inspect the reading, edit the result, and recover the original words.</li>
           </ul>
 
+          <div class="approach-mode-details" id="mode-details">
           <div class="mini-h"><span class="mk">The control layer</span>Two modes, one clip — nothing lost</div>
           <div class="duo">
             <div class="def">
@@ -896,6 +943,7 @@
               </div>
             </div>
           </div>
+          </div>
         </div>
       </div>
     </section>
@@ -904,7 +952,7 @@
     <section class="block" id="model">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">05 / Interaction model</div>
+          <div class="sec-num">06 / Interaction model</div>
           <h2>One handle. The context picks the verb.</h2>
           <p>Where your cursor or selection sits is the universal handle. The whole loop — bring context in, produce, refine — lands on the same bar, and context decides which verb it offers. Five features stop being a menu and fall into place.</p>
         </div>
@@ -1025,15 +1073,24 @@
     <section class="block" id="action">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">06 / In action</div>
+          <div class="sec-num">05 / In action</div>
           <h2>See it in the work people already do</h2>
           <p>Each scenario follows the same arc: current context, a spoken request, an interpreted action, and a result the user can still check.</p>
         </div>
         <div class="card">
           <div class="scenes">
-            <div class="scene"><div class="scene-k">Long-form writing</div><div class="scene-t">From spoken thought to draft</div><div class="scene-d">A writer dictates a rough idea in <b>Verbatim</b>, then uses <b>Intent</b> to turn it into a sendable paragraph — with the original always available.</div></div>
-            <div class="scene"><div class="scene-k">Cross-language work</div><div class="scene-t">Transform a selected passage</div><div class="scene-d">A user selects Chinese text and asks for natural English in a professional tone. The bar uses the selection as context and returns an editable preview.</div></div>
-            <div class="scene"><div class="scene-k">Vibe coding</div><div class="scene-t">Make a request executable</div><div class="scene-d">A developer selects a loose requirement and says, “turn this into a clear task for my agent.” The result becomes a structured, inspectable prompt.</div></div>
+            <div class="scene">
+              <div class="scene-viz scene-viz--writing" aria-hidden="true"><div class="sv-surface sv-surface--dark"><span class="sv-write-col"><i></i><i></i><i></i><i></i></span><span class="sv-write-list"><span class="sv-write-row"><i></i><i></i></span><span class="sv-write-row"><i></i><i></i></span><span class="sv-write-row"><i></i><i></i></span></span></div></div>
+              <div class="scene-k">Long-form writing</div><div class="scene-t">From spoken thought to draft</div><div class="scene-d">A writer dictates a rough idea in <b>Verbatim</b>, then uses <b>Intent</b> to turn it into a sendable paragraph — with the original always available.</div>
+            </div>
+            <div class="scene">
+              <div class="scene-viz scene-viz--vibe" aria-hidden="true"><div class="sv-surface"><span class="sv-lines"><i></i><i></i></span><span class="sv-send"><img src="assets/voice-ime-scene-send-cursor.svg" alt=""></span></div><span class="sv-caret"></span><span class="sv-voice"><i></i><i></i><i></i></span></div>
+              <div class="scene-k">Vibe coding</div><div class="scene-t">Speak the request right where you are</div><div class="scene-d">With the caret in an agent chat, a developer presses <b>⌥</b> and speaks. Looop inserts a clean request at the cursor — removing filler and naturally resolving spoken corrections. The original remains in <b>History</b>.</div>
+            </div>
+            <div class="scene">
+              <div class="scene-viz scene-viz--language" aria-hidden="true"><div class="sv-surface"><span class="sv-letter">A</span><span class="sv-lines"><i></i><i></i><i></i></span></div><span class="sv-caret"></span><span class="sv-voice"><i></i><i></i><i></i></span></div>
+              <div class="scene-k">Cross-language work</div><div class="scene-t">Transform a selected passage</div><div class="scene-d">A user <b>selects Chinese text</b> and asks for <b>natural English in a professional tone</b>. The bar uses the selection as context and returns an <b>editable preview</b>.</div>
+            </div>
           </div>
         </div>
       </div>
@@ -1044,8 +1101,8 @@
       <div class="wrap">
         <div class="sec-head">
           <div class="sec-num">07 / Capabilities</div>
-          <h2>What Intent Mode actually does</h2>
-          <p>Click a capability to see its raw &rarr; output transformation. Same spoken input on top, resolved output below.</p>
+          <h2>Make transformation useful, inspectable, and recoverable</h2>
+          <p>From resolving a spoken repair to editing a finished result, each capability makes the path from raw speech to useful output visible.</p>
         </div>
         <div class="card">
           <div class="caps">
@@ -1224,6 +1281,20 @@
       if (imSprings.length) requestAnimationFrame(animateInteractionSprings);
     })();
 
+    // ---- Move the detailed mode proof into Capabilities, after its examples ----
+    (function () {
+      var modeDetails = document.getElementById('mode-details');
+      var capabilitiesCard = document.querySelector('#capabilities .card');
+      if (modeDetails && capabilitiesCard) capabilitiesCard.appendChild(modeDetails);
+    })();
+
+    // ---- Case-study narrative order: scenarios first, model second ----
+    (function () {
+      var action = document.getElementById('action');
+      var model = document.getElementById('model');
+      if (action && model) model.parentNode.insertBefore(action, model);
+    })();
+
     // ---- Capabilities tabs (click to switch; auto-advances unless reduced-motion) ----
     (function () {
       var tabs = Array.prototype.slice.call(document.querySelectorAll('#vtabs .vtab'));
@@ -1243,7 +1314,7 @@
 
     // ---- Left section-nav scroll-spy ----
     (function () {
-      var ids = ["context", "problem", "approach", "model", "capabilities", "action", "onboarding", "reflection"];
+      var ids = ["context", "problem", "constraints", "approach", "action", "model", "capabilities", "onboarding", "reflection"];
       var links = {};
       ids.forEach(function (id) { links[id] = document.querySelector('.toc-list a[href="#' + id + '"]'); });
       var els = ids.map(function (id) { return document.getElementById(id); }).filter(Boolean);
