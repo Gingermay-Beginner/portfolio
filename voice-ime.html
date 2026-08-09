@@ -353,10 +353,10 @@
 
     /* ---------- Three tiers (Verbatim annotation legend) ----------
        Explains the side-by-side figure above it. The self-correction accent is
-       the same indigo the figure uses (#5e6ad2) — the legend swatch must point at
+       the app's live blue token (#0A84FF) — the legend swatch must point at
        the real colour in the image, so this block keeps its own --v-acc rather
        than the page's green (green stays a decorative section kicker only). */
-    .tiers { --v-acc: #5e6ad2; --v-acc-soft: rgba(94, 106, 210, .09); margin-top: 30px; }
+    .tiers { --v-acc: #0A84FF; --v-acc-soft: rgba(10, 132, 255, .09); margin-top: 30px; }
     /* Open table: no outer box, no vertical dividers — columns are spaced by a
        grid gap and rows by a single hairline. Reads as editorial, not boxed. */
     .tier-table { margin-top: 16px; }
@@ -386,9 +386,9 @@
     .tk-drop { color: rgba(255, 255, 255, .42);                   /* drift: gray strikethrough */
       text-decoration: line-through; text-decoration-color: rgba(255, 255, 255, .34); }
     .tk-fix {                                                      /* self-correction: accent hi + strike */
-      color: #b7bef2; background: rgba(94, 106, 210, .24);
+      color: #0A84FF; background: rgba(10, 132, 255, .24);
       border-radius: 4px; padding: 0 3px;
-      text-decoration: line-through; text-decoration-color: rgba(183, 190, 242, .55);
+      text-decoration: line-through; text-decoration-color: rgba(10, 132, 255, .65);
     }
     .tc-name b { display: block; font-family: "Space Grotesk", sans-serif; }
     .tc-name code {
@@ -397,6 +397,7 @@
       color: var(--v-acc); background: var(--v-acc-soft);
       padding: 1px 6px; border-radius: 5px;
     }
+    .tc-name code.tier-fill { color:#159B68; background:rgba(21,155,104,.10); }
 
     /* ---------- Capabilities tabs ---------- */
     .caps { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 22px; align-items: stretch; }
@@ -430,10 +431,8 @@
       box-shadow: 0 12px 26px -16px rgba(0, 0, 0, .45); border-bottom-left-radius: 5px;
     }
     .vbubble--noicon { padding-left: 16px; }
-    .vwave { position: absolute; left: 15px; top: 14px; display: inline-flex; align-items: center; gap: 2px; }
-    .vwave i { display: block; width: 2px; border-radius: 2px; background: rgba(255, 255, 255, .55); }
-    .vwave i:nth-child(1) { height: 7px; } .vwave i:nth-child(2) { height: 13px; }
-    .vwave i:nth-child(3) { height: 9px; } .vwave i:nth-child(4) { height: 5px; }
+    .vloop { position:absolute; left:14px; top:16px; width:22px; height:auto; overflow:visible; }
+    .vloop path { fill:none; stroke:rgba(255,255,255,.68); stroke-width:2.45; stroke-linecap:round; stroke-linejoin:round; }
     .vstrike {
       text-decoration: line-through; text-decoration-color: rgba(255, 255, 255, .4);
       color: rgba(255, 255, 255, .5); background: rgba(255, 255, 255, .1);
@@ -469,6 +468,37 @@
       font-size: 15px; letter-spacing: -0.2px; margin: 9px 0 6px;
     }
     .scene-d { color: var(--muted); font-size: 13px; line-height: 1.5; }
+    /* ---------- Brand expression ---------- */
+    .brand-route { margin:0 0 18px; }
+    .brand-route img { display:block; width:100%; height:auto; border-radius:12px; }
+    .brand-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; }
+    .brand-module { min-height:164px; padding:20px; border:1px solid var(--line); border-radius:14px; background:var(--card-2); }
+    .brand-index { font:500 10px/1 "JetBrains Mono", monospace; letter-spacing:1px; text-transform:uppercase; color:var(--faint); }
+    .brand-module h3 { margin:14px 0 8px; font-family:"Space Grotesk", sans-serif; font-size:16px; letter-spacing:-.2px; }
+    .brand-module p { margin:0; color:var(--muted); font-size:13px; line-height:1.55; }
+    .brand-module--motion, .brand-module--visual, .brand-module--product { position:relative; padding-bottom:112px; }
+    .brand-loop-demo, .brand-hotkey-space, .brand-listening-space { position:absolute; left:20px; right:20px; bottom:28px; height:56px; display:flex; align-items:center; justify-content:center; }
+    .brand-loop-demo { width:auto; max-width:none; margin:0; }
+    .brand-loop-demo svg { width:38%; max-width:124px; }
+    .brand-loop-demo svg { display:block; width:100%; height:auto; overflow:visible; }
+    .brand-loop-demo path {
+      fill:none; stroke:var(--ink); stroke-width:2.45; stroke-linecap:round; stroke-linejoin:round;
+      stroke-dasharray:100; stroke-dashoffset:100;
+      animation:brand-loop-trace 6.8s cubic-bezier(.42,0,.58,1) infinite;
+    }
+    .brand-listening-bar { display:flex; align-items:center; justify-content:center; width:88px; height:36px; border-radius:12px; background:#1F2431; box-shadow:0 2px 5px rgba(31,36,49,.18); }
+    .brand-listening-bar .im2-spring { margin:0; }
+    .brand-keyboard { display:flex; gap:3px; padding:5px; border-radius:9px; background:#242424; box-shadow:0 2px 5px rgba(0,0,0,.20); }
+    .brand-kbd-key { display:grid; place-items:center; min-width:22px; height:22px; padding:0 4px; border:1px solid rgba(255,255,255,.10); border-radius:4px; background:#2E2E2E; color:#DEDEDE; font:600 10px/1 Inter, sans-serif; }
+    .brand-kbd-key--wide { min-width:48px; }
+    .brand-kbd-key--active { border-color:#0A84FF; background:#0A84FF; color:#fff; box-shadow:0 1px 2px rgba(10,132,255,.35); }
+    @keyframes brand-loop-trace {
+      0%, 8% { stroke-dashoffset:100; opacity:.28; }
+      48%, 56% { stroke-dashoffset:0; opacity:1; }
+      92% { stroke-dashoffset:-100; opacity:.28; }
+      100% { stroke-dashoffset:-100; opacity:.28; }
+    }
+    @media (prefers-reduced-motion: reduce) { .brand-loop-demo path { animation:none; stroke-dashoffset:0; opacity:1; } }
     /* The three case scenes are direct ports of the 480 × 320 Figma frames.
        They deliberately share the Figma canvas ratio and component dimensions. */
     .scene-viz { position:relative; container-type:inline-size; aspect-ratio:3 / 2; margin-bottom:15px; overflow:hidden; border:1px solid #e4e4e7; border-radius:10px; background:#e4e4e7; }
@@ -703,6 +733,7 @@
       .context-grid { grid-template-columns: 1fr; }
       .im2-grid { grid-template-columns: repeat(2, 1fr); }
       .im2-grid--selection { grid-template-columns: 1fr; }
+      .brand-grid { grid-template-columns:1fr; }
       .vtabs { flex-direction: column; }
       .scenes { grid-template-columns: 1fr; }
       .scenes > * + * { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; }
@@ -751,9 +782,10 @@
           <a href="#approach"><span class="n">04</span><span>Approach</span></a>
           <a href="#action"><span class="n">05</span><span>In action</span></a>
           <a href="#model"><span class="n">06</span><span>Interaction model</span></a>
-          <a href="#capabilities"><span class="n">07</span><span>Capabilities</span></a>
-          <a href="#onboarding"><span class="n">08</span><span>Onboarding</span></a>
-          <a href="#reflection"><span class="n">09</span><span>Reflection</span></a>
+          <a href="#brand"><span class="n">07</span><span>Brand expression</span></a>
+          <a href="#capabilities"><span class="n">08</span><span>Capabilities</span></a>
+          <a href="#onboarding"><span class="n">09</span><span>Onboarding</span></a>
+          <a href="#reflection"><span class="n">10</span><span>Reflection</span></a>
         </nav>
       </aside>
       <div class="content">
@@ -900,7 +932,7 @@
           </div>
 
           <figure class="figure-dark">
-            <div class="figure-pad"><img src="assets/voice-dark-sidebyside.png" alt="The same clip in two views side by side: Verbatim keeping every word on the left, Intent's structured, resolved output on the right" loading="lazy"></div>
+            <div class="figure-pad"><img src="assets/voice-dark-sidebyside-blue.png" alt="The same clip in two views side by side: Verbatim keeping every word on the left, Intent's structured, resolved output on the right" loading="lazy"></div>
             <figcaption>The same clip, both modes. Verbatim keeps every word (fillers, a lunch tangent, a mid-sentence &ldquo;no wait&rdquo;); Intent resolves the repairs, drops the noise, and structures what's left. The original transcript stays recoverable.</figcaption>
           </figure>
 
@@ -915,7 +947,7 @@
                 <div class="tc">Why</div>
               </div>
               <div class="tier-row">
-                <div class="tc tc-name"><b>1 · Filler</b><code>.fill</code></div>
+                <div class="tc tc-name"><b>1 · Filler</b><code class="tier-fill">.fill</code></div>
                 <div class="tc" data-label="What it is">
                   <div class="tk-demo"><span class="tk-fill">Um, so,</span> the recap, <span class="tk-fill">yeah,</span> user growth <span class="tk-fill">uh…</span></div>
                   <div class="tk-ex">um, so, yeah, like, uh, I dunno, let me think</div>
@@ -1069,6 +1101,52 @@
       </div>
     </section>
 
+    <!-- 07 BRAND EXPRESSION -->
+    <section class="block" id="brand">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">07 / Brand expression</div>
+          <h2>A voice you can recognize</h2>
+          <p>Branding gives an otherwise invisible interaction a recognizable rhythm — from the mark and motion language to the moments people meet inside the product.</p>
+        </div>
+        <div class="card">
+          <figure class="brand-route">
+            <img src="assets/LogoRoute.png" alt="Looop logo route: the mark develops from a continuous spoken line into a recognisable product expression">
+          </figure>
+          <div class="brand-grid">
+            <div class="brand-module brand-module--motion">
+              <div class="brand-index">01 / Mark &amp; motion</div>
+              <h3>Make speech feel continuous</h3>
+              <p>The loop begins as <b>one continuous stroke</b>. In loading states, it <b>draws forward and erases from behind</b>, so processing feels like a thought still moving — <b>not a generic wait</b>.</p>
+              <div class="brand-loop-demo" aria-label="Animated Looop loading path">
+                <svg viewBox="0 0 49 28" role="img" aria-label="A continuous line that draws and erases in a loop">
+                  <path pathLength="100" d="M 1.50032 25.6907 C 11.5602 22.8165 18.2668 3.1759 13.4764 1.73878 C 8.68599 0.301663 4.37461 5.57109 3.89561 13.2357 C 3.40282 21.1208 7.19429 24.7634 13.9659 24.1673 C 23.8692 23.2955 35.0331 5.87315 31.2008 2.69686 C 27.3685 -0.479425 21.141 6.05013 19.7038 13.2357 C 18.4254 19.6276 21.62 23.3818 25.9314 23.7746 C 31.4321 24.2757 36.9597 22.593 42.7082 14.6728 C 48.4818 6.71817 47.9041 1.39787 42.7082 2.69686 C 36.9597 4.13398 30.2427 23.6493 43.1768 23.7746" />
+                </svg>
+              </div>
+            </div>
+            <div class="brand-module brand-module--visual">
+              <div class="brand-index">02 / Visual language</div>
+              <h3>Make focus easy to read</h3>
+              <p><b>Blue is reserved for moments that need attention</b>: a spoken <b>self-correction</b>, or, in onboarding, <b>the hotkey people need to press</b>. The surrounding interface stays quiet, so the <b>cursor, selection, and result</b> lead attention.</p>
+              <div class="brand-hotkey-space" aria-label="Onboarding keyboard with the Option hotkey highlighted">
+                <div class="brand-keyboard" aria-hidden="true"><span class="brand-kbd-key">fn</span><span class="brand-kbd-key">⌃</span><span class="brand-kbd-key brand-kbd-key--active">⌥</span><span class="brand-kbd-key">⌘</span><span class="brand-kbd-key brand-kbd-key--wide"></span><span class="brand-kbd-key">⌘</span><span class="brand-kbd-key">⌥</span></div>
+              </div>
+            </div>
+            <div class="brand-module brand-module--product">
+              <div class="brand-index">03 / In product</div>
+              <h3>Carry identity into the workflow</h3>
+              <p>The <b>same curve and contrast</b> carry from the menu-bar mark to onboarding, live capture, and the result workspace — making <b>separate entry points feel like one product</b>.</p>
+              <div class="brand-listening-space">
+                <div class="brand-listening-bar" aria-label="Voice bar in listening state">
+                  <svg class="im2-spring" viewBox="0 0 72 14" aria-hidden="true"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M20 7 Q26 1 32 7 T44 7 T52 7"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- 06 IN ACTION — show the proof before listing the capability taxonomy -->
     <section class="block" id="action">
       <div class="wrap">
@@ -1096,11 +1174,11 @@
       </div>
     </section>
 
-    <!-- 07 CAPABILITIES -->
+    <!-- 08 CAPABILITIES -->
     <section class="block" id="capabilities">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">07 / Capabilities</div>
+          <div class="sec-num">08 / Capabilities</div>
           <h2>Make transformation useful, inspectable, and recoverable</h2>
           <p>From resolving a spoken repair to editing a finished result, each capability makes the path from raw speech to useful output visible.</p>
         </div>
@@ -1115,15 +1193,15 @@
             </div>
             <div class="vdemo" id="vdemo">
               <div class="vpanel is-active">
-                <div class="vbubble vbubble--raw"><span class="vwave"><i></i><i></i><i></i><i></i></span>Q3 revenue grew <span class="vstrike">month over month, sorry,</span> year over year, by 20%.</div>
+                <div class="vbubble vbubble--raw"><svg class="vloop" viewBox="0 0 49 28" aria-hidden="true"><path d="M 1.50032 25.6907 C 11.5602 22.8165 18.2668 3.1759 13.4764 1.73878 C 8.68599 0.301663 4.37461 5.57109 3.89561 13.2357 C 3.40282 21.1208 7.19429 24.7634 13.9659 24.1673 C 23.8692 23.2955 35.0331 5.87315 31.2008 2.69686 C 27.3685 -0.479425 21.141 6.05013 19.7038 13.2357 C 18.4254 19.6276 21.62 23.3818 25.9314 23.7746 C 31.4321 24.2757 36.9597 22.593 42.7082 14.6728 C 48.4818 6.71817 47.9041 1.39787 42.7082 2.69686 C 36.9597 4.13398 30.2427 23.6493 43.1768 23.7746" /></svg>Q3 revenue grew <span class="vstrike">month over month, sorry,</span> year over year, by 20%.</div>
                 <div class="vbubble vbubble--out">Q3 revenue grew year over year by 20%.</div>
               </div>
               <div class="vpanel">
-                <div class="vbubble vbubble--raw"><span class="vwave"><i></i><i></i><i></i><i></i></span>User growth is up around 12%, retention is weak, we should review onboarding… <span class="vstrike">oh and I forgot lunch today…</span> <span class="vstrike">anyway</span> ad conversion dropped and we need to check channel quality.</div>
+                <div class="vbubble vbubble--raw"><svg class="vloop" viewBox="0 0 49 28" aria-hidden="true"><path d="M 1.50032 25.6907 C 11.5602 22.8165 18.2668 3.1759 13.4764 1.73878 C 8.68599 0.301663 4.37461 5.57109 3.89561 13.2357 C 3.40282 21.1208 7.19429 24.7634 13.9659 24.1673 C 23.8692 23.2955 35.0331 5.87315 31.2008 2.69686 C 27.3685 -0.479425 21.141 6.05013 19.7038 13.2357 C 18.4254 19.6276 21.62 23.3818 25.9314 23.7746 C 31.4321 24.2757 36.9597 22.593 42.7082 14.6728 C 48.4818 6.71817 47.9041 1.39787 42.7082 2.69686 C 36.9597 4.13398 30.2427 23.6493 43.1768 23.7746" /></svg>User growth is up around 12%, retention is weak, we should review onboarding… <span class="vstrike">oh and I forgot lunch today…</span> <span class="vstrike">anyway</span> ad conversion dropped and we need to check channel quality.</div>
                 <div class="vbubble vbubble--out">User growth increased by about 12%, but retention remains weak.<br>We should review onboarding and investigate the drop in ad conversion quality.</div>
               </div>
               <div class="vpanel">
-                <div class="vbubble vbubble--raw"><span class="vwave"><i></i><i></i><i></i><i></i></span>For next sprint we need three things first fix signup bug second update onboarding copy third align with design on dashboard layout.</div>
+                <div class="vbubble vbubble--raw"><svg class="vloop" viewBox="0 0 49 28" aria-hidden="true"><path d="M 1.50032 25.6907 C 11.5602 22.8165 18.2668 3.1759 13.4764 1.73878 C 8.68599 0.301663 4.37461 5.57109 3.89561 13.2357 C 3.40282 21.1208 7.19429 24.7634 13.9659 24.1673 C 23.8692 23.2955 35.0331 5.87315 31.2008 2.69686 C 27.3685 -0.479425 21.141 6.05013 19.7038 13.2357 C 18.4254 19.6276 21.62 23.3818 25.9314 23.7746 C 31.4321 24.2757 36.9597 22.593 42.7082 14.6728 C 48.4818 6.71817 47.9041 1.39787 42.7082 2.69686 C 36.9597 4.13398 30.2427 23.6493 43.1768 23.7746" /></svg>For next sprint we need three things first fix signup bug second update onboarding copy third align with design on dashboard layout.</div>
                 <div class="vbubble vbubble--out">
                   <div class="vout-title">Next sprint priorities:</div>
                   <div class="vout-line">Fix the signup bug.</div>
@@ -1132,7 +1210,7 @@
                 </div>
               </div>
               <div class="vpanel">
-                <div class="vbubble vbubble--raw"><span class="vwave"><i></i><i></i><i></i><i></i></span>today meeting mainly three things release timing maybe next wed no wait thursday design resource still tight ask alex to confirm with manager dashboard scope not final continue next meeting</div>
+                <div class="vbubble vbubble--raw"><svg class="vloop" viewBox="0 0 49 28" aria-hidden="true"><path d="M 1.50032 25.6907 C 11.5602 22.8165 18.2668 3.1759 13.4764 1.73878 C 8.68599 0.301663 4.37461 5.57109 3.89561 13.2357 C 3.40282 21.1208 7.19429 24.7634 13.9659 24.1673 C 23.8692 23.2955 35.0331 5.87315 31.2008 2.69686 C 27.3685 -0.479425 21.141 6.05013 19.7038 13.2357 C 18.4254 19.6276 21.62 23.3818 25.9314 23.7746 C 31.4321 24.2757 36.9597 22.593 42.7082 14.6728 C 48.4818 6.71817 47.9041 1.39787 42.7082 2.69686 C 36.9597 4.13398 30.2427 23.6493 43.1768 23.7746" /></svg>today meeting mainly three things release timing maybe next wed no wait thursday design resource still tight ask alex to confirm with manager dashboard scope not final continue next meeting</div>
                 <div class="vbubble vbubble--out">
                   <div class="vout-title">Meeting summary:</div>
                   <div class="vout-line">Release timing moved from Wednesday to Thursday.</div>
@@ -1151,11 +1229,11 @@
       </div>
     </section>
 
-    <!-- 06 ONBOARDING -->
+    <!-- 09 ONBOARDING -->
     <section class="block" id="onboarding">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">08 / Onboarding</div>
+          <div class="sec-num">09 / Onboarding</div>
           <h2>Getting to first success</h2>
           <p>A new user reaches their first win by solving exactly three things — nothing more in the way.</p>
         </div>
@@ -1173,11 +1251,11 @@
       </div>
     </section>
 
-    <!-- 07 REFLECTION -->
+    <!-- 10 REFLECTION -->
     <section class="block" id="reflection">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">09 / Reflection</div>
+          <div class="sec-num">10 / Reflection</div>
           <h2>From character entry to intent transfer</h2>
         </div>
         <div class="reflect">
@@ -1253,7 +1331,8 @@
       // Same state motion as the standalone preview: centre-breathing idle,
       // live-volume listening, and a travelling resolve comet.
       var imSprings = Array.prototype.slice.call(document.querySelectorAll('.im2-spring')).map(function (spring, index) {
-        var label = (spring.closest('.im2-state').querySelector('.im2-name').textContent || '').toLowerCase();
+        var stateCard = spring.closest('.im2-state');
+        var label = stateCard ? (stateCard.querySelector('.im2-name').textContent || '').toLowerCase() : 'listening';
         var state = /ready|caret/.test(label) ? 'idle' : (/interpret|resolve/.test(label) ? 'processing' : 'listening');
         var fg = spring.querySelector('.fg');
         return { fg: fg, length: fg.getTotalLength(), state: state, index: index };
@@ -1314,7 +1393,7 @@
 
     // ---- Left section-nav scroll-spy ----
     (function () {
-      var ids = ["context", "problem", "constraints", "approach", "action", "model", "capabilities", "onboarding", "reflection"];
+      var ids = ["context", "problem", "constraints", "approach", "action", "model", "brand", "capabilities", "onboarding", "reflection"];
       var links = {};
       ids.forEach(function (id) { links[id] = document.querySelector('.toc-list a[href="#' + id + '"]'); });
       var els = ids.map(function (id) { return document.getElementById(id); }).filter(Boolean);
