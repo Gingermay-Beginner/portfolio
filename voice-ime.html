@@ -250,6 +250,52 @@
       padding: 16px 2px 0; color: var(--muted); font-size: 13px; line-height: 1.55;
     }
 
+    /* The comparison is deliberately code, not a baked screenshot: its text
+       treatments, selected state, and responsive reflow stay inspectable. */
+    .mode-code-grid {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 20px;
+    }
+    .mode-code-grid > section { display: flex; flex-direction: column; min-width: 0; }
+    .mode-code-label {
+      margin: 0 0 10px; color: #71809e; font: 600 10px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: .1em;
+    }
+    .mode-code-label b { color: #2a3241; }
+    .mode-code-surface {
+      min-height: 390px; box-sizing: border-box; padding: 22px 20px 16px;
+      flex: 1; display: flex; flex-direction: column; border-radius: 20px;
+      background: linear-gradient(135deg, #222938, #1d2330); color: #f7f8fc;
+      box-shadow: 0 12px 24px rgba(18, 23, 34, .16);
+    }
+    .mode-code-transcript, .mode-code-summary { margin: 0; font-size: 13px; line-height: 1.7; letter-spacing: -.01em; }
+    .mode-code-transcript { color: rgba(247,248,252,.93); }
+    .mode-code-fill { color: rgba(247,248,252,.48); }
+    .mode-code-drop { color: rgba(247,248,252,.43); text-decoration: line-through; text-decoration-color: rgba(247,248,252,.34); }
+    .mode-code-fix { color: #0A84FF; background: rgba(10,132,255,.22); border-radius: 4px; padding: 0 2px; text-decoration: line-through; text-decoration-color: #0A84FF; }
+    .mode-code-summary h4 { margin: 0 0 14px; font-size: 15px; line-height: 1.25; color: #fff; }
+    .mode-code-summary ul { margin: 0; padding-left: 18px; }
+    .mode-code-summary li { margin: 0 0 10px; padding-left: 2px; color: rgba(247,248,252,.76); }
+    .mode-code-summary li::marker { color: #fff; }
+    .mode-code-summary strong { color: #fff; }
+    .mode-code-next { margin: 14px 0 0; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.13); color: rgba(247,248,252,.76); }
+    .mode-code-next b { margin-right: 8px; color: #fff; font: 600 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .1em; }
+    .mode-code-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: auto; padding-top: 18px; }
+    .mode-code-tools, .mode-code-switch { display: flex; align-items: center; gap: 6px; }
+    .mode-code-button {
+      display: inline-flex; align-items: center; justify-content: center; min-height: 28px; padding: 0 10px; border: 0; border-radius: 9px;
+      background: #43516f; color: #f3f6ff; font: 500 11px/1 ui-sans-serif, system-ui, sans-serif;
+    }
+    .mode-code-button--icon { width: 28px; padding: 0; }
+    .mode-code-button--tool { gap: 5px; }
+    .mode-code-button svg { width: 13px; height: 13px; flex: 0 0 auto; stroke: currentColor; fill: none; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
+    .mode-code-switch { padding: 3px; border-radius: 10px; background: rgba(12,16,25,.65); gap: 2px; }
+    .mode-code-switch span { padding: 7px 12px; border-radius: 7px; color: rgba(247,248,252,.55); font-size: 11px; }
+    .mode-code-switch .is-active { background: #0A84FF; color: #fff; }
+    @media (max-width: 820px) {
+      .mode-code-grid { grid-template-columns: 1fr; }
+      .mode-code-surface { min-height: 350px; }
+    }
+
     /* ---------- Interaction anatomy — two voice entries + one selection surface ---------- */
     .bar-anatomy { margin-top: 24px; }
     .bar-stage { padding:0; background:transparent; border:0; }
@@ -394,7 +440,7 @@
     .tc-name code {
       display: inline-block; margin-top: 7px;
       font-family: "JetBrains Mono", monospace; font-size: 11.5px;
-      color: var(--v-acc); background: var(--v-acc-soft);
+      color:#159B68; background:rgba(21,155,104,.10);
       padding: 1px 6px; border-radius: 5px;
     }
     .tc-name code.tier-fill { color:#159B68; background:rgba(21,155,104,.10); }
@@ -441,13 +487,28 @@
     .vbubble--out {
       align-self: flex-end; padding: 13px 16px;
       background: var(--card); border: 1px solid var(--line); color: var(--ink); font-weight: 500;
-      box-shadow: 0 8px 22px -16px rgba(24, 24, 27, .25); border-top-right-radius: 5px;
+      box-shadow: 0 8px 22px -16px rgba(24, 24, 27, .25);
     }
     .vbubble--out .vzh { display: block; margin-top: 6px; color: var(--muted); font-weight: 400; }
     .vout-title { font-weight: 600; color: var(--ink); margin-bottom: 7px; }
     .vout-line { display: flex; align-items: flex-start; gap: 9px; font-weight: 400; line-height: 1.5; }
     .vout-line + .vout-line { margin-top: 5px; }
     .vout-line::before { content: ""; flex: none; width: 5px; height: 5px; margin-top: 8px; border-radius: 50%; background: var(--green); }
+    /* One clip, two simultaneous readings — shown as related cards, not as an
+       interactive toggle. The overlap makes their shared source explicit. */
+    .v-compare { position:relative; align-self:center; width:min(100%,660px); min-height:414px; }
+    .v-compare-toggle { display:inline-flex; position:absolute; z-index:2; top:0; left:50%; transform:translateX(-50%); gap:2px; padding:3px; border:1px solid var(--line); border-radius:9px; background:#fff; }
+    .v-compare-toggle span { padding:6px 11px; border-radius:6px; color:var(--muted); font:600 11px/1 "Space Grotesk", sans-serif; }
+    .v-compare-toggle .is-active { background:#1F2431; color:#fff; box-shadow:0 1px 3px rgba(24,24,27,.18); }
+    .v-compare-card { position:absolute; width:84%; box-sizing:border-box; padding:17px 20px; border:1px solid var(--line); border-radius:16px; background:#fff; box-shadow:0 10px 26px -20px rgba(24,24,27,.34); }
+    .v-compare-card--raw { top:44px; left:0; color:#3e4760; }
+    .v-compare-card--structured { right:0; bottom:0; z-index:1; color:var(--ink); }
+    .v-compare-label { margin:0 0 12px; color:var(--faint); font:600 10px/1 "JetBrains Mono", monospace; letter-spacing:.1em; text-transform:uppercase; }
+    .v-compare-raw { font-size:14px; line-height:1.62; letter-spacing:-.01em; }
+    .v-compare-card--structured .vout-title { margin-bottom:10px; font-size:16px; }
+    .v-compare-card--structured .vout-line { gap:12px; font-size:14px; }
+    .v-compare-card--structured .vout-line + .vout-line { margin-top:8px; }
+    @media (max-width: 620px) { .v-compare { min-height:0; padding-top:44px; } .v-compare-card { position:relative; width:100%; padding:19px; } .v-compare-card--raw { top:auto; } .v-compare-card--structured { margin-top:-18px; } }
     .vact {
       align-self: flex-start; display: inline-flex; align-items: center; gap: 8px;
       margin: 2px 0 2px 4px; font-family: "JetBrains Mono", monospace; font-size: 11.5px;
@@ -932,7 +993,36 @@
           </div>
 
           <figure class="figure-dark">
-            <div class="figure-pad"><img src="assets/voice-dark-sidebyside-blue.png" alt="The same clip in two views side by side: Verbatim keeping every word on the left, Intent's structured, resolved output on the right" loading="lazy"></div>
+            <div class="mode-code-grid" aria-label="The same voice clip shown as Verbatim and Intent">
+              <section>
+                <p class="mode-code-label"><b>VERBATIM</b> · RAW, NOTHING DELETED</p>
+                <div class="mode-code-surface">
+                  <p class="mode-code-transcript"><span class="mode-code-fill">Um... so,</span> this month... <span class="mode-code-fill">let me think,</span> the recap... so user growth, <span class="mode-code-fill">yeah,</span> it's... it's actually okay? Like new users, they went up, <span class="mode-code-fill">uh,</span> ten-something percent, somewhere around there. But retention, retention's kind of... <span class="mode-code-fill">yeah</span> it's not great, kinda lagging, and I feel like it's the — the onboarding thing? Maybe? I should... <span class="mode-code-fill">yeah</span> I gotta talk to product about that. Oh, and — wait, there was another thing, the ads, the conversion rate over there, I wanna look at that too, 'cause something's just... <span class="mode-code-fill">I dunno,</span> feels off. <span class="mode-code-drop">Oh, right, lunch — gotta order something, I forgot to bring food today.</span> Anyway, <span class="mode-code-fill">uh...</span> next week, first thing, <span class="mode-code-fix">I'll pull the retention data and</span> <span class="mode-code-fix">— no, wait, actually, no —</span> first I should just do the onboarding myself, <span class="mode-code-fill">like actually</span> go through the whole flow, and, <span class="mode-code-fill">yeah,</span> see where it's breaking.</p>
+                  <div class="mode-code-toolbar" aria-label="Verbatim controls">
+                    <div class="mode-code-tools"><span class="mode-code-button mode-code-button--icon">×</span><span class="mode-code-switch"><span class="is-active">Verbatim</span><span>Intent</span></span></div>
+                    <div class="mode-code-tools"><span class="mode-code-button mode-code-button--tool"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.57 2.76c.487-.119 1.168-.185 1.923.037.741.217 1.141.692 1.333 1.236.172.488.172 1.024.172 1.404v3.558a.5.5 0 0 1-1 0V8.64a6.87 6.87 0 0 1-.502.244c-.57.241-1.309.421-2.07.187-1.702-.523-1.915-2.807-.455-3.702.708-.434 1.675-.424 2.364-.35.242.026.467.063.66.1-.008-.279-.033-.533-.111-.755-.095-.269-.267-.491-.672-.61-.543-.159-1.039-.113-1.405-.024-.182.044-.328.098-.427.14l-.108.05a.5.5 0 1 1-.495-.869l.237-.114c.14-.06.339-.133.583-.193Zm2.428 3.382a9.6 9.6 0 0 0-.77-.126c-.667-.072-1.333-.038-1.734.207-.759.465-.616 1.635.225 1.893.442.136.92.045 1.388-.152.349-.147.647-.333.89-.488V6.142Zm5.104-.631a.5.5 0 0 1 .384.594c-.049.229-.094.452-.134.668.528-.059 1.047-.147 1.53-.26a.5.5 0 0 1 .229.973c-.606.142-1.262.247-1.924.309-.039.292-.07.571-.093.838.315-.081.616-.131.902-.152a.5.5 0 0 1 1 .01v.035c.21.041.408.103.592.182.724.313 1.198.894 1.379 1.576.362 1.365-.457 2.967-2.291 3.673a.5.5 0 1 1-.358-.933c1.458-.561 1.889-1.709 1.684-2.483-.103-.389-.368-.725-.808-.915a2.68 2.68 0 0 0-.285-.096c-.225 1.272-.847 2.265-1.563 2.915.04.14.081.263.121.37a.5.5 0 1 1-.937.35l-.044-.121a2.84 2.84 0 0 1-.651.239c-.474.106-1.019.064-1.397-.323-.56-.573-.596-1.496-.201-2.298.32-.647.923-1.249 1.83-1.673.022-.359.057-.739.107-1.142a15.26 15.26 0 0 1-1.36-.023.5.5 0 1 1 .068-.998c.414.028.849.033 1.291.016.053-.308.115-.626.186-.956a.5.5 0 0 1 .594-.384Zm-1.063 4.641c-.46.298-.748.642-.906.961-.27.547-.158.977.019 1.157.04.04.166.113.464.046.179-.04.387-.126.606-.261a9.5 9.5 0 0 1-.183-1.903Zm1.07 1.087c.35-.453.643-1.038.788-1.743-.225.027-.47.075-.737.156-.041.012-.08.025-.12.038-.01.593.018 1.108.069 1.549Z"></path></svg>Translate</span><span class="mode-code-button mode-code-button--tool"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.2" y="5.2" width="7.1" height="7.1" rx="1"></rect><path d="M10.8 5.2V3.8c0-.6-.5-1-1-1H3.7c-.6 0-1 .4-1 1v6.1c0 .6.4 1 1 1h1.5"></path></svg>Copy</span></div>
+                  </div>
+                </div>
+              </section>
+              <section>
+                <p class="mode-code-label"><b>INTENT</b> · RESOLVED &amp; STRUCTURED</p>
+                <div class="mode-code-surface">
+                  <div class="mode-code-summary">
+                    <h4>Monthly recap</h4>
+                    <ul>
+                      <li><strong>User growth</strong> is healthy — new users up ~10%+.</li>
+                      <li><strong>Retention</strong> is weak — likely an onboarding issue; sync with product.</li>
+                      <li><strong>Ad conversion</strong> quality looks off — worth a review.</li>
+                    </ul>
+                    <p class="mode-code-next"><b>NEXT WEEK</b>Walk through the onboarding flow myself first to find where it breaks, then pull the retention data.</p>
+                  </div>
+                  <div class="mode-code-toolbar" aria-label="Intent controls">
+                    <div class="mode-code-tools"><span class="mode-code-button mode-code-button--icon">×</span><span class="mode-code-switch"><span>Verbatim</span><span class="is-active">Intent</span></span></div>
+                    <div class="mode-code-tools"><span class="mode-code-button mode-code-button--tool"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.57 2.76c.487-.119 1.168-.185 1.923.037.741.217 1.141.692 1.333 1.236.172.488.172 1.024.172 1.404v3.558a.5.5 0 0 1-1 0V8.64a6.87 6.87 0 0 1-.502.244c-.57.241-1.309.421-2.07.187-1.702-.523-1.915-2.807-.455-3.702.708-.434 1.675-.424 2.364-.35.242.026.467.063.66.1-.008-.279-.033-.533-.111-.755-.095-.269-.267-.491-.672-.61-.543-.159-1.039-.113-1.405-.024-.182.044-.328.098-.427.14l-.108.05a.5.5 0 1 1-.495-.869l.237-.114c.14-.06.339-.133.583-.193Zm2.428 3.382a9.6 9.6 0 0 0-.77-.126c-.667-.072-1.333-.038-1.734.207-.759.465-.616 1.635.225 1.893.442.136.92.045 1.388-.152.349-.147.647-.333.89-.488V6.142Zm5.104-.631a.5.5 0 0 1 .384.594c-.049.229-.094.452-.134.668.528-.059 1.047-.147 1.53-.26a.5.5 0 0 1 .229.973c-.606.142-1.262.247-1.924.309-.039.292-.07.571-.093.838.315-.081.616-.131.902-.152a.5.5 0 0 1 1 .01v.035c.21.041.408.103.592.182.724.313 1.198.894 1.379 1.576.362 1.365-.457 2.967-2.291 3.673a.5.5 0 1 1-.358-.933c1.458-.561 1.889-1.709 1.684-2.483-.103-.389-.368-.725-.808-.915a2.68 2.68 0 0 0-.285-.096c-.225 1.272-.847 2.265-1.563 2.915.04.14.081.263.121.37a.5.5 0 1 1-.937.35l-.044-.121a2.84 2.84 0 0 1-.651.239c-.474.106-1.019.064-1.397-.323-.56-.573-.596-1.496-.201-2.298.32-.647.923-1.249 1.83-1.673.022-.359.057-.739.107-1.142a15.26 15.26 0 0 1-1.36-.023.5.5 0 1 1 .068-.998c.414.028.849.033 1.291.016.053-.308.115-.626.186-.956a.5.5 0 0 1 .594-.384Zm-1.063 4.641c-.46.298-.748.642-.906.961-.27.547-.158.977.019 1.157.04.04.166.113.464.046.179-.04.387-.126.606-.261a9.5 9.5 0 0 1-.183-1.903Zm1.07 1.087c.35-.453.643-1.038.788-1.743-.225.027-.47.075-.737.156-.041.012-.08.025-.12.038-.01.593.018 1.108.069 1.549Z"></path></svg>Translate</span><span class="mode-code-button mode-code-button--tool"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.2" y="5.2" width="7.1" height="7.1" rx="1"></rect><path d="M10.8 5.2V3.8c0-.6-.5-1-1-1H3.7c-.6 0-1 .4-1 1v6.1c0 .6.4 1 1 1h1.5"></path></svg>Copy</span></div>
+                  </div>
+                </div>
+              </section>
+            </div>
             <figcaption>The same clip, both modes. Verbatim keeps every word (fillers, a lunch tangent, a mid-sentence &ldquo;no wait&rdquo;); Intent resolves the repairs, drops the noise, and structures what's left. The original transcript stays recoverable.</figcaption>
           </figure>
 
@@ -1090,7 +1180,7 @@
                 <div class="im2-state"><div class="im2-name">Resolve</div><div class="im2-caret-stage"><span class="im2-caret"></span><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M36 7 Q42 1 48 7 T60 7"/></svg></div></div><p class="im2-note">resolve <b>at caret</b></p></div>
               </div></div>
               <div class="im2-flow"><div class="im2-head"><b>03 · Context-triggered intelligence</b><span>Text selection</span></div><div class="im2-grid im2-grid--selection">
-                <div class="im2-state"><div class="im2-name">Ready</div><div class="im2-selection">Please&nbsp;<mark>postpone the launch</mark><span class="im2-caret-inline"></span>.</div><div class="im2-actions"><span class="im2-action">✎ Formalize</span><span class="im2-action">↔ Translate</span><span class="im2-action im2-action--on">● Smart Voice</span></div><p class="im2-note">selection → suggestions</p></div>
+                <div class="im2-state"><div class="im2-name">Ready</div><div class="im2-selection">Please&nbsp;<mark>postpone the launch</mark><span class="im2-caret-inline"></span>.</div><div class="im2-actions"><span class="im2-action"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2a.5.5 0 0 1 .471.332l1.862 5.214-.782.782L6.076 7H3.924l-.953 2.668a.5.5 0 1 1-.942-.336l2.5-7A.5.5 0 0 1 5 2Zm.719 4L5 3.987 4.281 6H5.72Zm7.72-.438a1.914 1.914 0 0 0-2.707 0l-4.657 4.657a3.39 3.39 0 0 0-.684 1.277l-.381 1.906a.5.5 0 0 0 .588.588l1.906-.381a3.39 3.39 0 0 0 1.277-.684l4.657-4.656a1.914 1.914 0 0 0 0-2.707Zm-.707.707a.914.914 0 0 1 0 1.293l-4.657 4.657a2.392 2.392 0 0 1-.766.409l-1.172.234.234-1.171a2.39 2.39 0 0 1 .41-.766l4.657-4.657a.914.914 0 0 1 1.293 0Z"></path></svg>Formalize</span><span class="im2-action"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.57 2.76c.487-.119 1.168-.185 1.923.037.741.217 1.141.692 1.333 1.236.172.488.172 1.024.172 1.404v3.558a.5.5 0 0 1-1 0V8.64a6.87 6.87 0 0 1-.502.244c-.57.241-1.309.421-2.07.187-1.702-.523-1.915-2.807-.455-3.702.708-.434 1.675-.424 2.364-.35.242.026.467.063.66.1-.008-.279-.033-.533-.111-.755-.095-.269-.267-.491-.672-.61-.543-.159-1.039-.113-1.405-.024-.182.044-.328.098-.427.14l-.108.05a.5.5 0 1 1-.495-.869l.237-.114c.14-.06.339-.133.583-.193Zm2.428 3.382a9.6 9.6 0 0 0-.77-.126c-.667-.072-1.333-.038-1.734.207-.759.465-.616 1.635.225 1.893.442.136.92.045 1.388-.152.349-.147.647-.333.89-.488V6.142Zm5.104-.631a.5.5 0 0 1 .384.594c-.049.229-.094.452-.134.668.528-.059 1.047-.147 1.53-.26a.5.5 0 0 1 .229.973c-.606.142-1.262.247-1.924.309-.039.292-.07.571-.093.838.315-.081.616-.131.902-.152a.5.5 0 0 1 1 .01v.035c.21.041.408.103.592.182.724.313 1.198.894 1.379 1.576.362 1.365-.457 2.967-2.291 3.673a.5.5 0 1 1-.358-.933c1.458-.561 1.889-1.709 1.684-2.483-.103-.389-.368-.725-.808-.915a2.68 2.68 0 0 0-.285-.096c-.225 1.272-.847 2.265-1.563 2.915.04.14.081.263.121.37a.5.5 0 1 1-.937.35l-.044-.121a2.84 2.84 0 0 1-.651.239c-.474.106-1.019.064-1.397-.323-.56-.573-.596-1.496-.201-2.298.32-.647.923-1.249 1.83-1.673.022-.359.057-.739.107-1.142a15.26 15.26 0 0 1-1.36-.023.5.5 0 1 1 .068-.998c.414.028.849.033 1.291.016.053-.308.115-.626.186-.956a.5.5 0 0 1 .594-.384Zm-1.063 4.641c-.46.298-.748.642-.906.961-.27.547-.158.977.019 1.157.04.04.166.113.464.046.179-.04.387-.126.606-.261a9.5 9.5 0 0 1-.183-1.903Zm1.07 1.087c.35-.453.643-1.038.788-1.743-.225.027-.47.075-.737.156-.041.012-.08.025-.12.038-.01.593.018 1.108.069 1.549Z"></path></svg>Translate</span><span class="im2-action im2-action--on"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8.5C2.776 8.5 3 8.724 3 9c0 1.933 1.567 3.5 3.5 3.5 1.933 0 3.5-1.567 3.5-3.5 0-.069.013-.134.038-.193.038.16.106.312.206.449.16.22.38.38.65.48l.041.014c-.33 1.967-1.934 3.501-3.936 3.723V14.5a.5.5 0 0 1-1 0v-1.027C3.75 13.224 2 11.316 2 9a.5.5 0 0 1 .5-.5ZM6.074 3.038A1.49 1.49 0 0 0 5 4.5V9a1.5 1.5 0 0 0 3 0V5.5c0-.111-.013-.22-.036-.323l.068.022c.15.05.29.13.47.29.11.11.2.24.29.47L9 6.587V9a2.5 2.5 0 0 1-5 0V5.5c0-1.235.896-2.259 2.074-2.462ZM13.484 6a.5.5 0 0 1 .475.343l.249.766c.077.232.208.444.381.617.173.173.385.304.617.381l.766.248a.5.5 0 0 1 0 .951l-.765.248a1.513 1.513 0 0 0-1.001 1.001l-.249.766a.5.5 0 0 1-.951 0l-.249-.766a1.513 1.513 0 0 0-1.001-1.001l-.765-.248a.5.5 0 0 1 0-.951l.765-.248a1.513 1.513 0 0 0 1.001-1.001l.248-.766A.5.5 0 0 1 13.484 6Zm-3.006-6a.5.5 0 0 1 .474.343l.348 1.071c.108.326.291.621.534.864.243.242.539.425.864.533l1.072.349a.5.5 0 0 1 0 .951l-1.072.349a2.127 2.127 0 0 0-1.398 1.396l-.348 1.071a.5.5 0 0 1-.951 0L9.653 5.646a2.126 2.126 0 0 0-1.399-1.397L7.182 3.9a.5.5 0 0 1 0-.951l1.072-.349a2.126 2.126 0 0 0 1.398-1.396L10.001.343A.5.5 0 0 1 10.478 0Z"></path></svg>Smart Voice</span></div><p class="im2-note">selection → suggestions</p></div>
                 <div class="im2-state"><div class="im2-name">Listening</div><div class="im2-quote">“Make this more diplomatic.”</div><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7"/></svg></div><p class="im2-note">say what should change</p></div>
                 <div class="im2-state"><div class="im2-name">Resolve</div><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M36 7 Q42 1 48 7 T60 7"/></svg></div><p class="im2-note">apply → <b>transform</b></p></div>
               </div></div>
@@ -1107,7 +1197,7 @@
         <div class="sec-head">
           <div class="sec-num">07 / Brand expression</div>
           <h2>A voice you can recognize</h2>
-          <p>Branding gives an otherwise invisible interaction a recognizable rhythm — from the mark and motion language to the moments people meet inside the product.</p>
+          <p><b>Looop</b> gives speaking, shaping, and working on text one recognizable form: its continuous mark turns the abstract loop between voice, writing, and reading into a product people can see and learn.</p>
         </div>
         <div class="card">
           <figure class="brand-route">
@@ -1210,12 +1300,10 @@
                 </div>
               </div>
               <div class="vpanel">
-                <div class="vbubble vbubble--raw"><svg class="vloop" viewBox="0 0 49 28" aria-hidden="true"><path d="M 1.50032 25.6907 C 11.5602 22.8165 18.2668 3.1759 13.4764 1.73878 C 8.68599 0.301663 4.37461 5.57109 3.89561 13.2357 C 3.40282 21.1208 7.19429 24.7634 13.9659 24.1673 C 23.8692 23.2955 35.0331 5.87315 31.2008 2.69686 C 27.3685 -0.479425 21.141 6.05013 19.7038 13.2357 C 18.4254 19.6276 21.62 23.3818 25.9314 23.7746 C 31.4321 24.2757 36.9597 22.593 42.7082 14.6728 C 48.4818 6.71817 47.9041 1.39787 42.7082 2.69686 C 36.9597 4.13398 30.2427 23.6493 43.1768 23.7746" /></svg>today meeting mainly three things release timing maybe next wed no wait thursday design resource still tight ask alex to confirm with manager dashboard scope not final continue next meeting</div>
-                <div class="vbubble vbubble--out">
-                  <div class="vout-title">Meeting summary:</div>
-                  <div class="vout-line">Release timing moved from Wednesday to Thursday.</div>
-                  <div class="vout-line">Design resources remain constrained; Alex will confirm staffing with manager.</div>
-                  <div class="vout-line">Dashboard scope is still open and will continue next meeting.</div>
+                <div class="v-compare" aria-label="Raw and Structured views of the same meeting clip">
+                  <div class="v-compare-toggle" aria-label="Two readings of one clip"><span>Raw</span><span class="is-active">Structured</span></div>
+                  <div class="v-compare-card v-compare-card--raw"><p class="v-compare-label">Raw</p><div class="v-compare-raw">today meeting mainly three things release timing maybe next wed no wait thursday design resource still tight ask alex to confirm with manager dashboard scope not final continue next meeting</div></div>
+                  <div class="v-compare-card v-compare-card--structured"><p class="v-compare-label">Structured</p><div class="vout-title">Meeting summary:</div><div class="vout-line">Release timing moved from Wednesday to Thursday.</div><div class="vout-line">Design resources remain constrained; Alex will confirm staffing with manager.</div><div class="vout-line">Dashboard scope is still open and will continue next meeting.</div></div>
                 </div>
               </div>
               <div class="vpanel">
@@ -1389,6 +1477,21 @@
       function arm() { if (reduce) return; clearInterval(timer); timer = setInterval(function () { show((i + 1) % tabs.length); }, 4800); }
       tabs.forEach(function (t, k) { t.addEventListener('click', function () { show(k); arm(); }); });
       show(0); arm();
+    })();
+
+    // ---- Raw / Structured: two readings of the same clip ----
+    (function () {
+      document.querySelectorAll('.v-toggle-card').forEach(function (card) {
+        var buttons = Array.prototype.slice.call(card.querySelectorAll('[data-vtoggle]'));
+        var views = Array.prototype.slice.call(card.querySelectorAll('[data-vtoggle-view]'));
+        buttons.forEach(function (button) {
+          button.addEventListener('click', function () {
+            var state = button.getAttribute('data-vtoggle');
+            buttons.forEach(function (item) { item.classList.toggle('is-active', item === button); });
+            views.forEach(function (view) { view.classList.toggle('is-active', view.getAttribute('data-vtoggle-view') === state); });
+          });
+        });
+      });
     })();
 
     // ---- Left section-nav scroll-spy ----
