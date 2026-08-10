@@ -299,6 +299,18 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
   max-width: 430px;          /* compact panel — not the full chat column */
 }
 .tl-card.is-new { animation: grp-in 300ms ease-out; }
+.token-pause-card {
+  display: block;
+  appearance: none;
+  text-align: left;
+  color: var(--mc-text);
+  font: inherit;
+  cursor: pointer;
+}
+.token-pause-card__title { display: block; font-size: 15px; font-weight: 600; }
+.token-pause-card__copy { display: block; margin-top: 7px; color: var(--mc-text-2); font-size: 13px; line-height: 1.5; }
+.token-pause-card__link { display: block; margin-top: 16px; color: var(--mc-text-2); font-size: 12px; font-weight: 600; }
+.token-pause-card:hover { border-color: var(--mc-text-2); }
 
 .tl-head {
   display: flex; align-items: center; gap: 8px;
@@ -899,6 +911,10 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
    ========================================================================== */
 
 const AVATAR = "assets/microclaw.png";
+/* A static state used by the case-study brand proof. It deliberately reuses
+   this console's real shell, chat thread, card and composer rather than
+   recreating a lookalike elsewhere. */
+const TOKEN_PAUSE = new URLSearchParams(location.search).get("token-pause") === "1";
 
 /* A notify step goes ahead on its own once its window closes. That default —
    proceed unless stopped — is the only thing separating it from a confirm
@@ -960,6 +976,8 @@ const state = {
   spent: 0, interventions: 0, inline: null, summary: null, paused: false,
   draft: null,          // null = unfocused · string = focused, holding this text
 };
+
+if (TOKEN_PAUSE) state.msgs.push({ role: "assistant", text: "" });
 
 const REDIRECT = "Hold on — group by date on step 2, not by type.";
 const TYPE_LEAD = 640, TYPE_STEP = 17;   // wait for the pointer, then ~17ms/char
@@ -1140,6 +1158,19 @@ let shownMsgs = 0, shownCard = false;
 
 function render() {
   thread.innerHTML = "";
+  if (TOKEN_PAUSE) {
+    document.getElementById("demoBar").style.display = "none";
+    document.getElementById("tlCursor").style.display = "none";
+    const g = el("div", "chat-group");
+    const av = el("div", "chat-agent-avatar");
+    const img = document.createElement("img"); img.src = AVATAR;
+    av.appendChild(img); g.appendChild(av);
+    const msgs = el("div", "chat-group-messages");
+    msgs.appendChild(renderTokenPauseCard());
+    g.appendChild(msgs); thread.appendChild(g);
+    syncSession(); syncComposer();
+    return;
+  }
   const newMsg  = state.msgs.length > shownMsgs;
   const newCard = state.cardVisible && !shownCard;
 
@@ -1169,6 +1200,17 @@ function render() {
   syncComposer();
   syncSession();
   syncCursor();
+}
+
+function renderTokenPauseCard() {
+  const card = el("button", "tl-card token-pause-card");
+  card.type = "button";
+  const title = el("strong", "token-pause-card__title", "MicroClaw paused");
+  const copy = el("span", "token-pause-card__copy", "Today's token budget is used up. Your progress is saved.");
+  const link = el("span", "token-pause-card__link", "View agent status →");
+  card.append(title, copy, link);
+  card.addEventListener("click", () => parent.postMessage({ type: "microclaw-token-status" }, "*"));
+  return card;
 }
 
 /* A session doesn't exist until something has been said in it. Before the
