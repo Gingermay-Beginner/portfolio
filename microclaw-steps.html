@@ -39,6 +39,7 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
+    body:has(.steps--solo) { background: #fff; }
 
     ::selection { background: var(--accent-soft); color: var(--ink); }
 
@@ -2451,7 +2452,7 @@
        away from the input. Scaling the container avoids rewriting the hardcoded
        55px / -38px offsets baked into every fan-lift keyframe. */
     .fan-container.scenario-mock-inner {
-      transform: scale(0.84);
+      transform: scale(1.24);
       transform-origin: top center;
     }
 
@@ -4086,10 +4087,12 @@
 
       function postHeight() {
         fitAppStages();
-        var h = Math.max(
-          document.body.scrollHeight,
-          document.documentElement.scrollHeight
-        );
+        /* Measure the intrinsic React content, not body.scrollHeight. The
+           latter is never shorter than the iframe viewport, so after a wide
+           layout made the parent taller it could not shrink again. */
+        var root = document.getElementById("root");
+        var h = root ? Math.ceil(root.getBoundingClientRect().height) : 0;
+        if (!(h > 0)) return;
         window.parent.postMessage(
           { type: "microclaw-embed-height", height: h },
           "*"
@@ -4099,7 +4102,8 @@
       window.addEventListener("load", postHeight);
       window.addEventListener("resize", postHeight);
       if (window.ResizeObserver) {
-        new ResizeObserver(postHeight).observe(document.body);
+        var observedRoot = document.getElementById("root");
+        if (observedRoot) new ResizeObserver(postHeight).observe(observedRoot);
       }
       // Backstop for late React mounts and animation-driven reflow.
       setInterval(postHeight, 1000);

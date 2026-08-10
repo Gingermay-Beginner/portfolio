@@ -293,9 +293,15 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .token-status-panel__head img { width: 36px; height: 36px; object-fit: contain; }
 .token-status-panel__head strong { display: block; font-size: 13px; }
 .token-status-panel__head span { display: block; margin-top: 2px; color: var(--mc-text-2); font-size: 10px; }
-.token-status-panel__close { margin-left: auto; color: var(--mc-text-2); font-size: 18px; line-height: 1; }
-.token-status-panel__scroll { flex: 1 1 auto; min-width: 0; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 14px 16px 18px; }
-.token-status-panel__scene { height: 156px; margin-top: 14px; position: relative; overflow: hidden; border: 1px solid var(--mc-border); border-radius: 16px; display: flex; align-items: flex-end; justify-content: center; background: radial-gradient(circle at 50% 22%, rgba(235,178,97,.28), transparent 43%), #eee9e3; }
+.token-status-panel__close { margin-left: auto; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; background: #f3f3f3; color: var(--mc-text); line-height: 1; }
+.token-status-panel__close:hover { background: #e9e9e9; }
+.token-status-panel__close svg { width: 18px; height: 18px; display: block; }
+.token-status-panel__scroll { flex: 1 1 auto; min-width: 0; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 8px 16px 18px; }
+.token-status-panel__scroll { scrollbar-width: none; }
+.token-status-panel__scroll:hover { scrollbar-width: thin; }
+.token-status-panel__scroll::-webkit-scrollbar { width: 0; }
+.token-status-panel__scroll:hover::-webkit-scrollbar { width: 5px; }
+.token-status-panel__scene { height: 156px; margin-top: 0; position: relative; overflow: hidden; border: 1px solid var(--mc-border); border-radius: 16px; display: flex; align-items: flex-end; justify-content: center; background: radial-gradient(circle at 50% 22%, rgba(235,178,97,.28), transparent 43%), #eee9e3; }
 .token-status-panel__scene img { height: 142px; width: auto; object-fit: contain; }
 .token-status-panel__badge { position: absolute; left: 9px; top: 9px; padding: 5px 7px; border-radius: 999px; border: 1px solid rgba(198,80,70,.22); background: #fbeae7; color: #bd5148; font: 600 9px/1 var(--mono); }
 .token-status-panel__notice { display: flex; gap: 8px; margin-top: 11px; padding: 10px; border: 1px solid #f3d7d1; border-radius: 12px; background: #fdf0ed; }
@@ -396,9 +402,23 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .token-pause-card__title { display: block; font-size: 17px; font-weight: 650; letter-spacing: -0.025em; }
 .token-pause-card__copy { display: block; margin-top: 9px; color: var(--mc-text-2); font-size: 12px; line-height: 1.45; }
 .token-pause-card__actions { display: flex; justify-content: flex-end; align-items: center; gap: 14px; margin: 0; white-space: nowrap; }
-.token-pause-card__link { padding: 7px 12px; border: 1px solid var(--mc-border-row); border-radius: 999px; color: var(--mc-text-2); background: rgba(255,255,255,.45); font-size: 12px; font-weight: 600; }
+.token-pause-card__link { position: relative; padding: 7px 12px; border: 1px solid var(--mc-border-row); border-radius: 999px; color: var(--mc-text-2); background: rgba(255,255,255,.45); font-size: 12px; font-weight: 600; }
 .token-pause-card__link:hover,
 .token-pause-card__link.hovering { color: var(--mc-text); background: rgba(255,255,255,.8); }
+.token-pause-card__link.pressed::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--mc-text);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: token-link-press 460ms ease-out forwards;
+}
+@keyframes token-link-press {
+  from { opacity: .75; transform: translate(-50%, -50%) scale(.7); }
+  to { opacity: 0; transform: translate(-50%, -50%) scale(2.5); }
+}
 
 .tl-head {
   display: flex; align-items: center; gap: 8px;
@@ -967,7 +987,7 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
   </div>
 
   <aside class="token-status-panel" aria-label="MicroClaw agent status">
-    <div class="token-status-panel__head"><img src="assets/microclaw.png" alt="" /><div><strong>MicroClaw</strong><span>Your AI sidekick</span></div><button class="token-status-panel__close" type="button" aria-label="Close agent profile">›</button></div>
+    <div class="token-status-panel__head"><img src="assets/microclaw.png" alt="" /><div><strong>MicroClaw</strong><span>Your AI sidekick</span></div><button class="token-status-panel__close" type="button" aria-label="Close agent profile"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M18 6C18 4.34315 16.6569 3 15 3H5C3.34315 3 2 4.34315 2 6V13C2 14.6569 3.34315 16 5 16H15C16.6569 16 18 14.6569 18 13V6ZM11.5 4V15H5C3.89543 15 3 14.1046 3 13V6C3 4.89543 3.89543 4 5 4H11.5ZM12.5 4H15C16.1046 4 17 4.89543 17 6V13C17 14.1046 16.1046 15 15 15H12.5V4Z" fill="currentColor"/></svg></button></div>
     <div class="token-status-panel__scroll">
       <div class="token-status-panel__scene"><img src="assets/microclaw-crash.gif" alt="MicroClaw paused" /></div>
       <div class="token-status-panel__notice"><span>💸</span><div><b>Budget exhausted, Agent paused</b><span>Resets at Feb 1</span></div></div>
@@ -1413,12 +1433,25 @@ function runTokenStatusDemo() {
   later(700, () => cursorEl.classList.add("show"));
   later(920, () => cursorTo(link, -3, -1, true));
   later(1440, () => link.classList.add("hovering"));
+  /* The parent case-study frame can finish a responsive height/scale update
+     during the approach. Re-read the live button rect immediately before the
+     press so the pointer never clicks coordinates measured from an older
+     layout. */
+  later(1600, () => cursorTo(link, -3, -1, false));
   later(1680, () => {
     cursorEl.classList.add("click");
+    link.classList.add("pressed");
+  });
+  /* Finish the press while the button is still stationary. Once the pointer
+     has faded, trigger the layout transition so it never appears stranded at
+     the button's old coordinates while the left rails collapse. */
+  later(1840, () => {
+    cursorEl.classList.remove("click", "show");
+  });
+  later(2160, () => {
+    link.classList.remove("pressed");
     link.click();
   });
-  later(1880, () => cursorEl.classList.remove("click"));
-  later(2160, () => cursorEl.classList.remove("show"));
   /* Leave the status readable, then reset for the next demonstration. */
   later(5600, closeTokenStatus);
   later(6500, runTokenStatusDemo);
@@ -1507,6 +1540,11 @@ function syncComposer() {
   if (!row || !btn) return;
 
   row.innerHTML = "";
+  if (TOKEN_PAUSE) {
+    row.appendChild(el("span", "compose-placeholder", "Token budget used — resets Feb 1"));
+    btn.classList.remove("is-send");
+    return;
+  }
   if (state.draft === null) {
     row.appendChild(el("span", "compose-placeholder", "Reply to MicroClaw…"));
   } else {
@@ -1877,7 +1915,7 @@ if (CLIP) {
       setTimeout(() => clipLoop(0), 700);
     }, CLIP_HOLD[i]);
   })(0);
-} else if (EMBED) {
+} else if (EMBED && !TOKEN_PAUSE) {
   demoBar.classList.add("hidden");
   /* Drive the timeline on a loop, auto-passing the three interaction beats
      (notify window / rewind / delete-confirm) a presenter would click. */

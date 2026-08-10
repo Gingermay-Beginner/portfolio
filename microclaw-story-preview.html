@@ -437,6 +437,8 @@
     .principle .pframe--flush { border-radius: 0; }
     .principle .pframe--flush .pimg { background: transparent; }
     .principle .pimg { display: block; width: 100%; height: auto; object-fit: contain; background: var(--card-2); }
+    .principle:nth-child(-n+4) .pframe,
+    .principle:nth-child(-n+4) .pimg { background: #fff; }
     /* Live-mock band: embed the running step instead of a static shot.
        Height is synced from the embed via postMessage (below); 340px is
        just the pre-load placeholder so the band never collapses. */
