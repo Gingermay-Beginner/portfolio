@@ -1867,6 +1867,46 @@
        the pointer then travels to "Sure, send it", presses it, and the card
        flips in place to the WeChat QR bubble (the app's own qrShown beat). */
     .chat-view-mock--reveal .chat-thread-mock--demo { position: relative; }
+    .chat-view-mock--reveal .chat-thread-mock--demo::before {
+      content: "";
+      position: absolute;
+      top: 20px;
+      right: 5px;
+      bottom: 20px;
+      width: 4px;
+      border-radius: 999px;
+      background: rgba(39, 35, 32, 0.06);
+      opacity: 0;
+      animation: reveal-scrollbar-track 13s ease-in-out infinite;
+      z-index: 20;
+      pointer-events: none;
+    }
+    .chat-view-mock--reveal .chat-thread-mock--demo::after {
+      content: "";
+      position: absolute;
+      top: 24px;
+      right: 5px;
+      width: 4px;
+      height: 72px;
+      border-radius: 999px;
+      background: rgba(39, 35, 32, 0.28);
+      opacity: 0;
+      animation: reveal-scrollbar-thumb 13s ease-in-out infinite;
+      z-index: 21;
+      pointer-events: none;
+    }
+    @keyframes reveal-scrollbar-track {
+      0%, 10%, 50%, 100% { opacity: 0; }
+      14%, 46% { opacity: 1; }
+    }
+    @keyframes reveal-scrollbar-thumb {
+      0%, 10% { opacity: 0; transform: translateY(0); }
+      14% { opacity: 1; transform: translateY(0); }
+      24% { opacity: 1; transform: translateY(48px); }
+      34% { opacity: 1; transform: translateY(112px); }
+      46% { opacity: 1; transform: translateY(176px); }
+      50%, 100% { opacity: 0; transform: translateY(176px); }
+    }
     .chat-view-mock--reveal .chat-scroll { animation: reveal-scroll 13s ease-in-out infinite; }
     @keyframes reveal-scroll {
       0%, 12%   { transform: translateY(0); }        /* Gate 03 end-frame: collapsed header + answer top */
@@ -1905,19 +1945,37 @@
       animation: reveal-cursor 13s ease-in-out infinite;
     }
     .reveal-cursor img { width: 100%; height: 100%; display: block; }
-    /* translate() is measured from the right:96 anchor; the confirm button sits
-       at translate(-38px, 378px) in the real (width-capped) iframe frame. */
+    .reveal-cursor::after {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: -8px;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid var(--mc-text);
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+      animation: reveal-cursor-ring 13s ease-out infinite;
+    }
+    @keyframes reveal-cursor-ring {
+      0%, 57.9% { opacity: 0; transform: scale(.75); }
+      58%       { opacity: .75; transform: scale(.75); }
+      62%, 100% { opacity: 0; transform: scale(1.65); }
+    }
+    /* translate() is measured from the right:96 anchor. Recalibrated for the
+       shared 1120px canvas so the pointer tip lands on the confirm pill. */
     @keyframes reveal-cursor {
       0%, 8%    { opacity: 0; transform: translate(0px,150px) scale(1); }
       12%       { opacity: 1; transform: translate(0px,150px) scale(1); }
       22%       { transform: translate(0px,176px) scale(1); }   /* scroll nudge */
       30%       { transform: translate(0px,154px) scale(1); }
       40%       { transform: translate(0px,178px) scale(1); }   /* last scroll nudge (thread hits -600 by 46%) */
-      50%       { transform: translate(-38px,300px) scale(1); } /* glide toward the button */
-      55%       { transform: translate(-38px,378px) scale(1); } /* land on "Sure, send it" */
-      58%       { transform: translate(-38px,382px) scale(0.84);} /* click press */
-      61%       { opacity: 1; transform: translate(-38px,378px) scale(1); }  /* release — QR pops here */
-      68%, 100% { opacity: 0; transform: translate(-38px,372px) scale(1); }  /* lift away, leaving the QR clean */
+      50%       { transform: translate(-208px,300px) scale(1); } /* glide toward the button */
+      55%       { transform: translate(-208px,300px) scale(1); } /* hold on "Sure, send it" */
+      58%       { transform: translate(-208px,300px) scale(0.84);} /* click in place */
+      61%       { opacity: 1; transform: translate(-208px,300px) scale(1); }  /* release — QR pops here */
+      68%, 100% { opacity: 0; transform: translate(-208px,294px) scale(1); }  /* lift away, leaving the QR clean */
     }
     /* Confirm button dips under the pointer at the click instant. */
     .chat-view-mock--reveal .phone-auth-btn--confirm {
@@ -2452,7 +2510,7 @@
        away from the input. Scaling the container avoids rewriting the hardcoded
        55px / -38px offsets baked into every fan-lift keyframe. */
     .fan-container.scenario-mock-inner {
-      transform: scale(1.24);
+      transform: translateY(44px) scale(1.24);
       transform-origin: top center;
     }
 
@@ -2460,26 +2518,22 @@
     .scenario-mock-inner .fan-slot--news   { animation: fan-lift-news   8s ease-in-out infinite; }
     .scenario-mock-inner .fan-slot--email  { animation: fan-lift-email  8s ease-in-out infinite; }
     .scenario-mock-inner .fan-slot--travel { animation: fan-lift-travel 8s ease-in-out infinite; }
-
     /* Cards lift as soon as cursor enters their bounding area (geometric reverse from cursor-tour timing),
        stay lifted while cursor is over them, press briefly at click moment, then release when cursor leaves. */
     @keyframes fan-lift-news {
-      0%, 1%, 49%, 100% { transform: translateX(55px) rotate(12deg) translateY(0); z-index: 3; box-shadow: 0 4px 20px rgba(0,0,0,0.11), 0 1px 4px rgba(0,0,0,0.06); }
-      5%, 22%           { transform: translateX(55px) rotate(12deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
-      24%               { transform: translateX(55px) rotate(12deg) translateY(-30px) scale(0.97); z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
-      25%, 44%          { transform: translateX(55px) rotate(12deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
+      0%, 14%, 47%, 100% { transform: translateX(55px) rotate(12deg) translateY(0); z-index: 3; box-shadow: 0 4px 20px rgba(0,0,0,0.11), 0 1px 4px rgba(0,0,0,0.06); }
+      18%, 24%          { transform: translateX(55px) rotate(12deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
+      30%, 46.9%        { transform: translateX(55px) rotate(12deg) translateY(0); z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.11), 0 1px 4px rgba(0,0,0,0.06); }
     }
     @keyframes fan-lift-email {
-      0%, 44%, 67%, 100% { transform: rotate(0deg) translateY(0); z-index: 2; box-shadow: 0 4px 20px rgba(0,0,0,0.11), 0 1px 4px rgba(0,0,0,0.06); }
-      47%                { transform: rotate(0deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
-      49%                { transform: rotate(0deg) translateY(-30px) scale(0.97); z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
-      50%, 63%           { transform: rotate(0deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
+      0%, 44%, 70%, 100% { transform: rotate(0deg) translateY(0); z-index: 2; box-shadow: 0 4px 20px rgba(0,0,0,0.11), 0 1px 4px rgba(0,0,0,0.06); }
+      47%, 49%           { transform: rotate(0deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
+      55%, 69.9%         { transform: rotate(0deg) translateY(0); z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.11), 0 1px 4px rgba(0,0,0,0.06); }
     }
     @keyframes fan-lift-travel {
-      0%, 67%, 96%, 100% { transform: translateX(-55px) rotate(-12deg) translateY(0); z-index: 1; box-shadow: 0 4px 20px rgba(0,0,0,0.11), 0 1px 4px rgba(0,0,0,0.06); }
-      70%                { transform: translateX(-55px) rotate(-12deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
-      74%                { transform: translateX(-55px) rotate(-12deg) translateY(-30px) scale(0.97); z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
-      75%, 94%           { transform: translateX(-55px) rotate(-12deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
+      0%, 67%, 100%       { transform: translateX(-55px) rotate(-12deg) translateY(0); z-index: 1; box-shadow: 0 4px 20px rgba(0,0,0,0.11), 0 1px 4px rgba(0,0,0,0.06); }
+      70%, 74%           { transform: translateX(-55px) rotate(-12deg) translateY(-38px); z-index: 100; box-shadow: 0 18px 44px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08); }
+      80%, 96%           { transform: translateX(-55px) rotate(-12deg) translateY(0); z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.11), 0 1px 4px rgba(0,0,0,0.06); }
     }
 
     /* Cursor for the interactive demo */
@@ -2493,24 +2547,104 @@
     }
     .app-cursor img { width: 100%; height: 100%; display: block; }
     @keyframes cursor-tour {
-      /* Coords within 956 × 760 app-shell. main col=664, fan-container center x≈624, cards ±55, all shifted -8 from previous 972 layout */
-      0%, 100%   { transform: translate(632px, 600px); }   /* idle over input */
-      18%, 35%   { transform: translate(637px, 240px); }   /* News upper area (safe — top card) */
-      45%, 60%   { transform: translate(547px, 270px); }   /* Email exposed left strip */
-      70%, 85%   { transform: translate(457px, 275px); }   /* Travel exposed leftmost strip */
+      /* Calibrated to the 1120 × 891 Gate 02 canvas and the enlarged 1.24×
+         fan. Each stop lands on the actually exposed part of its card. */
+      0%, 100%   { transform: translate(783px, 796px); }   /* idle over input */
+      18%, 35%   { transform: translate(800px, 210px); }   /* News upper area */
+      45%, 60%   { transform: translate(590px, 250px); }   /* Email exposed left strip */
+      70%, 85%   { transform: translate(450px, 255px); }   /* Travel exposed leftmost strip */
     }
     /* Gate 02 finishes the travel scenario: select it, then send the now-filled
        prompt. The temporary square confirms the agent is running and can stop. */
     .app-shell--scenario .app-cursor { animation: cursor-scenario-send 8s ease-in-out infinite; }
+    .app-shell--scenario .app-cursor::after {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: -8px;
+      width: 16px;
+      height: 16px;
+      border: 1.5px solid var(--mc-text);
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+      animation: scenario-cursor-ring 8s ease-out infinite;
+    }
+    @keyframes scenario-cursor-ring {
+      0%, 23.9% { opacity: 0; transform: scale(.75); }
+      24%       { opacity: .75; transform: scale(.75); }
+      30%, 48.9% { opacity: 0; transform: scale(1.65); }
+      49%       { opacity: .75; transform: scale(.75); }
+      55%, 73.9% { opacity: 0; transform: scale(1.65); }
+      74%       { opacity: .75; transform: scale(.75); }
+      80%, 100% { opacity: 0; transform: scale(1.65); }
+    }
+    .app-shell--scenario.loop-paused * { animation-play-state: paused !important; }
+    .app-shell--scenario .scenario-heading,
+    .app-shell--scenario .scenario-subheading,
+    .app-shell--scenario .scenario-mock-inner {
+      animation: scenario-content-cycle 8s ease-in-out infinite;
+    }
+    .app-shell--scenario .app-main-body { position: relative; }
+    @keyframes scenario-content-cycle {
+      0%, 86% { opacity: 1; transform-origin: center; }
+      90%, 100% { opacity: 0; }
+    }
+    .scenario-sent-message {
+      position: absolute;
+      top: 34px;
+      right: 34px;
+      width: min(600px, calc(100% - 68px));
+      display: flex;
+      justify-content: flex-end;
+      opacity: 0;
+      transform: translateY(12px);
+      animation: scenario-message-cycle 8s ease-in-out infinite;
+      pointer-events: none;
+    }
+    .scenario-sent-message .chat-bubble.user {
+      max-width: 560px;
+    }
+    @keyframes scenario-message-cycle {
+      0%, 88% { opacity: 0; transform: translateY(12px); }
+      92%, 98% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(0); }
+    }
+    .app-project-row.scenario-project {
+      opacity: 0;
+      max-height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      overflow: hidden;
+      animation: scenario-tab-cycle 8s ease-in-out infinite;
+    }
+    @keyframes scenario-tab-cycle {
+      0%, 88% {
+        opacity: 0;
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        background: transparent;
+      }
+      92%, 98% {
+        opacity: 1;
+        max-height: 42px;
+        padding-top: 8px;
+        padding-bottom: 8px;
+        background: var(--mc-selected);
+      }
+      100% { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; }
+    }
     @keyframes cursor-scenario-send {
-      0%, 100%  { transform: translate(632px, 600px); opacity: 1; }
-      18%, 35%  { transform: translate(637px, 240px); opacity: 1; }
-      45%, 60%  { transform: translate(547px, 270px); opacity: 1; }
-      70%, 82%  { transform: translate(457px, 275px); opacity: 1; }
-      86%       { transform: translate(850px, 635px); opacity: 1; }
-      88%       { transform: translate(850px, 639px) scale(0.84); opacity: 1; }
-      91%       { transform: translate(850px, 635px); opacity: 1; }
-      96%       { transform: translate(850px, 635px); opacity: 0; }
+      0%        { transform: translate(1070px, 294px); opacity: 0; }
+      8%        { transform: translate(1070px, 294px); opacity: 1; }
+      18%, 35%  { transform: translate(800px, 254px); opacity: 1; }
+      45%, 60%  { transform: translate(590px, 284px); opacity: 1; }
+      70%, 82%  { transform: translate(450px, 294px); opacity: 1; }
+      86%       { transform: translate(1055px, 827px); opacity: 1; }
+      88%       { transform: translate(1055px, 831px) scale(0.84); opacity: 1; }
+      91%       { transform: translate(1055px, 827px); opacity: 1; }
+      96%, 100% { transform: translate(1055px, 827px); opacity: 0; }
     }
 
     .fan-body {
@@ -2619,8 +2753,8 @@
       background: var(--mc-paper);
       border: 0.5px solid var(--mc-border);
       border-radius: 20px;
-      /* App padding 16/16/12 — more top room so the text isn't hugging the edge. */
-      padding: 16px 16px 12px;
+      /* Keep the send control equally inset from the right and bottom edges. */
+      padding: 16px;
       /* Two-layer glow (app): a wide soft halo lifts the box off the page + a
          tight low one grounds it, so the white-on-white composer reads as light
          spilling out rather than a flat hairline box. */
@@ -2711,6 +2845,7 @@
     }
     .compose-model svg { width: 12px; height: 12px; }
     .compose-send {
+      position: relative;
       width: 40px;
       height: 40px;
       border-radius: 50%;
@@ -2726,7 +2861,13 @@
       color: #fff;
     }
     .compose-send svg { width: 16px; height: 16px; }
-    .compose-send .compose-stop-icon { position: absolute; opacity: 0; }
+    .compose-send .compose-stop-icon { position: absolute; width: 20px; height: 20px; opacity: 0; }
+    .compose-send.thinking-stop {
+      background: var(--mc-text);
+      color: #fff;
+    }
+    .compose-send.thinking-stop .compose-send-icon { opacity: 0; }
+    .compose-send.thinking-stop .compose-stop-icon { opacity: 1; }
     /* Animate the send button's active state in sync with the prompt cycle */
     .compose-send.cycling { animation: compose-send-cycle 8s ease-in-out infinite; }
     @keyframes compose-send-cycle {
@@ -2735,8 +2876,31 @@
     }
     .compose-send.cycling .compose-send-icon { animation: compose-arrow-cycle 8s ease-in-out infinite; }
     .compose-send.cycling .compose-stop-icon { animation: compose-stop-cycle 8s ease-in-out infinite; }
-    @keyframes compose-arrow-cycle { 0%, 85% { opacity: 1; } 88%, 94% { opacity: 0; } 96%, 100% { opacity: 1; } }
-    @keyframes compose-stop-cycle { 0%, 85% { opacity: 0; } 88%, 94% { opacity: 1; } 96%, 100% { opacity: 0; } }
+    .compose-send.cycling::after {
+      content: "";
+      position: absolute;
+      inset: -3px;
+      border-radius: 50%;
+      border: 1.5px solid var(--mc-text);
+      pointer-events: none;
+      animation: compose-press-ring 8s ease-out infinite;
+    }
+    @keyframes compose-arrow-cycle {
+      0%, 88.9% { opacity: 1; }
+      89%, 94%  { opacity: 0; }
+      96%, 100% { opacity: 1; }
+    }
+    @keyframes compose-stop-cycle {
+      0%, 88.9% { opacity: 0; }
+      89%, 94%  { opacity: 1; }
+      96%, 100% { opacity: 0; }
+    }
+    /* Same 0.75 → 1.65 expanding press ring used by Gate 05. */
+    @keyframes compose-press-ring {
+      0%, 87.9% { opacity: 0; transform: scale(.75); }
+      88%       { opacity: .75; transform: scale(.75); }
+      94%, 100% { opacity: 0; transform: scale(1.65); }
+    }
 
     /* ============== TRUST LADDER CHART ============== */
     .trust-ladder-chart {
@@ -3044,11 +3208,10 @@
     .vstage:has(.app-shell--no-sidebar) .agent-card__footer { padding: 8px 14px 14px; }
     .vstage:has(.app-shell--no-sidebar) .agent-card__btn { font-size: 11px; padding: 5px 12px; }
     .vstage:has(.app-shell--no-sidebar) .agent-card__btn svg { width: 10px; height: 10px; }
-    /* Step 05 — the console is a full app. Match the shell's own 956×760
-       ratio so fitShell's contain-scale fills edge-to-edge with no
-       letterbox, and stay transparent so no backing colour shows. */
+    /* Step 05 shares the same logical desktop canvas as Gates 02–04 so its
+       chrome, typography and controls keep one consistent apparent scale. */
     .vstage--console {
-      aspect-ratio: 956 / 760;
+      aspect-ratio: 1120 / 891;
       padding: 0;
       background: transparent;
       display: block;
@@ -3090,7 +3253,10 @@
     @media (max-width: 640px) {
       .steps { gap: 48px; }
       .vstage { aspect-ratio: 3 / 4; }
-      .vstage:has(.install-dual) { aspect-ratio: 1 / 1; }
+      .vstage:has(.install-dual) {
+        aspect-ratio: auto;
+        min-height: 392px;
+      }
     }
   </style>
 </head>
@@ -3604,8 +3770,9 @@
                       <polyline points="6 9 12 15 18 9"/>
                     </svg>
                   </div>
-                  <div className="compose-send">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                  <div className={"compose-send" + (variant === "think" ? " thinking-stop" : "")}>
+                    <svg className="compose-send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                    <svg className="compose-stop-icon" viewBox="0 0 24 24" fill="currentColor"><rect x="5.5" y="5.5" width="13" height="13" rx="2"/></svg>
                   </div>
                 </div>
               </div>
@@ -3758,7 +3925,7 @@
        agent. When it is set the selection belongs to that project row, and the
        agent row above it is left unselected; with no project open the agent row
        carries the selection as before. */
-    function AppSidebar({ singleAgent = false, activeProject = null, activeTask = null }) {
+    function AppSidebar({ singleAgent = false, activeProject = null, activeTask = null, scenarioTask = false }) {
       const agents = singleAgent ? APP_AGENTS.slice(0, 1) : APP_AGENTS;
       return (
         <div className="app-sidebar">
@@ -3777,7 +3944,7 @@
             <div className="app-sidebar-list">
               {agents.map((a, i) => (
                 <React.Fragment key={a.id}>
-                  <div className={"app-agent-row" + (singleAgent && i === 0 && !activeProject ? " selected" : "")}>
+                  <div className={"app-agent-row" + (singleAgent && i === 0 && !activeProject && !scenarioTask ? " selected" : "")}>
                     <div className="app-agent-avatar"><img src={a.avatar} alt="" /></div>
                     <div className="app-agent-info">
                       <span className="app-agent-name">{a.name}</span>
@@ -3792,6 +3959,14 @@
                           <span className="app-project-name">{p.name}</span>
                         </div>
                       ))}
+                    </div>
+                  )}
+                  {singleAgent && i === 0 && scenarioTask && (
+                    <div className="app-project-list">
+                      <div className="app-project-row scenario-project selected">
+                        <span className="app-project-icon">{PROJECT_ICONS.folder}</span>
+                        <span className="app-project-name">Plan a local weekend</span>
+                      </div>
                     </div>
                   )}
                   {!singleAgent && a.tasks && a.tasks.length > 0 && (
@@ -3900,10 +4075,13 @@
           stage: (
             <div className="app-shell app-shell--scenario">
               <AppPrimaryNav active="chat" />
-              <AppSidebar singleAgent />
+              <AppSidebar singleAgent scenarioTask />
               <div className="app-main">
                 <AppTitlebar title="MicroClaw" />
                 <div className="app-main-body">
+                  <div className="scenario-sent-message" aria-hidden="true">
+                    <div className="chat-bubble user">Hometown friend visiting this weekend — plan us a couple of walking routes that match the weather and feel local.</div>
+                  </div>
                   <div className="chat-thread-mock">
                     <div className="scenario-heading">Hi, I'm MicroClaw.<br/>Less chat. More done — a work partner with hands.</div>
                     <div className="scenario-subheading">Try one of these to start.</div>
@@ -3962,7 +4140,7 @@
                           </div>
                           <div className="compose-send cycling">
                             <svg className="compose-send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
-                            <svg className="compose-stop-icon" viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="7" width="10" height="10" rx="1.5"/></svg>
+                            <svg className="compose-stop-icon" viewBox="0 0 24 24" fill="currentColor"><rect x="5.5" y="5.5" width="13" height="13" rx="2"/></svg>
                           </div>
                         </div>
                       </div>
@@ -4069,6 +4247,22 @@
        case-study iframe can auto-size and every step shows with no
        inner scroll. (This page only ever loads inside that frame.) */
     (function () {
+      function bindScenarioLoopPause() {
+        document.querySelectorAll(".app-shell--scenario").forEach(function (shell) {
+          if (shell.dataset.loopPauseBound) return;
+          var cursor = shell.querySelector(".app-cursor");
+          if (!cursor) return;
+          shell.dataset.loopPauseBound = "1";
+          cursor.addEventListener("animationiteration", function (event) {
+            if (event.animationName !== "cursor-scenario-send") return;
+            shell.classList.add("loop-paused");
+            window.setTimeout(function () {
+              shell.classList.remove("loop-paused");
+            }, 1200);
+          });
+        });
+      }
+
       function fitAppStages() {
         document.querySelectorAll(".vstage--app-ratio").forEach(function (stage) {
           /* A larger logical canvas lets the full app fill the frame while
@@ -4101,12 +4295,14 @@
 
       window.addEventListener("load", postHeight);
       window.addEventListener("resize", postHeight);
+      window.addEventListener("load", bindScenarioLoopPause);
       if (window.ResizeObserver) {
         var observedRoot = document.getElementById("root");
         if (observedRoot) new ResizeObserver(postHeight).observe(observedRoot);
       }
       // Backstop for late React mounts and animation-driven reflow.
       setInterval(postHeight, 1000);
+      window.setTimeout(bindScenarioLoopPause, 0);
       postHeight();
     })();
   </script>

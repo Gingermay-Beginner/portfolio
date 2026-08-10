@@ -10,7 +10,10 @@
   <!-- ?embed → bare mode: render only the .cover-stage (no switcher / caption),
        full-bleed, so the home page can iframe it as work card 03's visual.
        Set on <html> before body paints to avoid a chrome flash. -->
-  <script>if (location.search.indexOf('embed') > -1) document.documentElement.classList.add('embed');</script>
+  <script>
+    if (location.search.indexOf('embed') > -1) document.documentElement.classList.add('embed');
+    if (location.search.indexOf('brand-states') > -1) document.documentElement.classList.add('brand-states');
+  </script>
   <style>
     :root {
       --bg: #f4f4f5;
@@ -198,6 +201,7 @@
       border-radius: 0;
       box-shadow: none;
     }
+    html.embed.brand-states .cover-stage { background: #f5f1ec !important; }
   </style>
 </head>
 <body>

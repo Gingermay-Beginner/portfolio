@@ -6,7 +6,7 @@
   <meta name="description" content="MicroClaw case study — designing agentic AI for novice users in China. Turning FOMO-driven installs into trusted, repeat use through first wins, visible boundaries, and ambient habit loops.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #f4f4f5;
@@ -393,7 +393,7 @@
     /* The embedded steps page already frames each screen; the wrapper
        stays chrome-less so it doesn't read as a shell around a shell. */
     .proto-frame { position: relative; width: 100%; height: 1200px; background: transparent; transition: height .25s ease; }
-    .proto-frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .proto-frame iframe { width: 100%; height: 100%; border: 0; display: block; pointer-events: none; }
     .proto-note { margin: 16px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); }
     .proto-note a { color: var(--ink); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--line); transition: opacity .2s ease; }
     .proto-note a:hover { opacity: .62; }
@@ -424,6 +424,7 @@
        own frame — the embedded step already fills it edge-to-edge, so the
        wrapper stays a single quiet border, never a shell around a shell. */
     .principle .pframe {
+      position: relative;
       border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
       background: var(--card-2);
     }
@@ -442,7 +443,7 @@
     /* Live-mock band: embed the running step instead of a static shot.
        Height is synced from the embed via postMessage (below); 340px is
        just the pre-load placeholder so the band never collapses. */
-    .principle iframe.pimg { border: 0; height: 340px; }
+    .principle iframe.pimg { border: 0; height: 340px; pointer-events: none; }
 
     /* ---------- Brand expression ---------- */
     .brand-proof {
@@ -523,14 +524,23 @@
     .brand-step__copy p { margin: 9px 0 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
     .brand-tile { margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card); }
     .brand-tile__visual { height: clamp(380px, 42vw, 560px); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f5f1ec; }
-    .brand-tile__visual--screen { height: auto; aspect-ratio: 956 / 760; background: transparent; }
+    .brand-tile__visual--screen { height: auto; aspect-ratio: 1120 / 891; background: transparent; }
     .brand-tile figcaption { padding: 16px 18px 19px; }
     .brand-tile figcaption strong { display: block; font: 600 16px/1.25 "Space Grotesk", sans-serif; }
     .brand-tile figcaption p { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
-    .brand-tile--mark img { width: min(52%, 330px); height: auto; object-fit: contain; }
+    .brand-tile--mark { flex-direction: column; gap: 18px; }
+    .brand-tile--mark img { width: min(42%, 240px); height: auto; object-fit: contain; }
+    .brand-mark-hello {
+      font-family: "Caveat", ui-rounded, cursive;
+      font-size: clamp(24px, 3vw, 34px);
+      font-weight: 600;
+      line-height: 1.05;
+      color: var(--soft);
+      transform: rotate(-1.2deg);
+    }
     .brand-tile--mark,
     .brand-step:nth-child(2) .brand-tile__visual--frame { border-radius: var(--radius-lg); overflow: hidden; }
-    .brand-tile__visual--frame iframe { display: block; width: 100%; height: 100%; border: 0; }
+    .brand-tile__visual--frame iframe { display: block; width: 100%; height: 100%; border: 0; pointer-events: none; }
     .brand-tile--states .brand-tile__visual { background: linear-gradient(135deg, #fff5df, #f6e1bc); }
     .brand-tile--states span { position: absolute; left: 18px; top: 17px; font: 10px/1 "JetBrains Mono", monospace; color: #8a6242; letter-spacing: 1px; text-transform: uppercase; }
     .brand-tile--states img { position: absolute; object-fit: contain; filter: drop-shadow(0 10px 14px rgba(85,54,28,.12)); }
@@ -592,8 +602,22 @@
     .brand-full-app { width: 100%; height: 100%; display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(245px, .72fr); background: transparent; border-radius: 0; overflow: hidden; }
     .brand-full-app__work { min-width: 0; overflow: hidden; }
     .brand-full-app__work img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: left top; }
-    .brand-full-app__work iframe { display: block; width: 100%; height: 100%; border: 0; }
-    .brand-console-embed { width: 100%; height: 100%; display: block; border: 0; background: transparent; }
+    .brand-full-app__work iframe { display: block; width: 100%; height: 100%; border: 0; pointer-events: none; }
+    .brand-console-embed { width: 100%; height: 100%; display: block; border: 0; background: transparent; pointer-events: none; }
+    /* Portfolio prototypes are playback, not sandboxes. A transparent shield
+       keeps the interviewer's pointer from producing hover, focus, click or
+       scroll states inside an embedded app while its scripted motion remains
+       fully visible underneath. */
+    .proto-frame::after,
+    .principle .pframe::after,
+    .brand-tile__visual--frame::after,
+    .brand-tile__visual--screen::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      background: transparent;
+    }
     .brand-full-app--console { grid-template-columns: minmax(0, 1fr); }
     .brand-pause-work { min-width: 0; padding: 18px; display: flex; flex-direction: column; justify-content: center; background: #f5f1ec; }
     .brand-pause-work__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; color: #827970; font-size: 10px; }
@@ -1038,8 +1062,8 @@
           <p>The identity system moves from a distinct mascot, to expressive cover states, into the product itself. A token pause is only one test: the same character should make every agent state easier to recognize and understand.</p>
         </div>
         <div class="brand-system-card">
-          <div class="brand-step"><div class="brand-step__copy"><div class="pk">Mark</div><strong>A distinct sidekick</strong><p>The mascot gives an abstract agent a recognizable presence before it asks for trust.</p></div><div class="brand-tile__visual brand-tile--mark"><img src="assets/microclaw.png" alt="MicroClaw mascot" /></div></div>
-          <div class="brand-step"><div class="brand-step__copy"><div class="pk">Cover states</div><strong>A stateful character</strong><p>The same cover language shows the character doing different kinds of work.</p></div><div class="brand-tile__visual brand-tile__visual--frame"><iframe src="microclaw-cover.html?embed" title="MicroClaw cover showing the mascot in multiple states" loading="lazy" scrolling="no"></iframe></div></div>
+          <div class="brand-step"><div class="brand-step__copy"><div class="pk">Mark</div><strong>A distinct sidekick</strong><p>The mascot gives an abstract agent a recognizable presence before it asks for trust.</p></div><div class="brand-tile__visual brand-tile--mark"><span class="brand-mark-hello">Hi, I’m MicroClaw — your work sidekick.</span><img src="assets/microclaw.png" alt="MicroClaw mascot" /></div></div>
+          <div class="brand-step"><div class="brand-step__copy"><div class="pk">Cover states</div><strong>A stateful character</strong><p>The same cover language shows the character doing different kinds of work.</p></div><div class="brand-tile__visual brand-tile__visual--frame"><iframe src="microclaw-cover.html?embed&amp;brand-states" title="MicroClaw cover showing the mascot in multiple states" loading="lazy" scrolling="no"></iframe></div></div>
           <div class="brand-step"><div class="brand-step__copy"><div class="pk">In product</div><strong>Identity in action</strong><p>When work pauses, MicroClaw appears in the task itself with a clear explanation and a direct path to its status.</p></div><div class="brand-tile__visual brand-tile__visual--screen"><div class="brand-full-app"><div class="brand-work-ui"><nav class="brand-work-ui__nav" aria-label="App navigation"><b>B</b><span>◉</span><span>▤</span><span>✧</span><i>⚙</i></nav><aside class="brand-work-ui__sidebar"><div class="brand-work-ui__search">⌕&nbsp; Search</div><div class="brand-work-ui__new">＋ New Agent</div><p>My agents</p><div class="brand-work-ui__agent"><img src="assets/microclaw.png" alt="" />MicroClaw</div></aside><header class="brand-work-ui__top"><img src="assets/microclaw.png" alt="" />MicroClaw <span class="brand-work-ui__window">−　□　×</span></header><main class="brand-work-ui__body"><div class="brand-work-ui__conversation"><button class="brand-pause-card" type="button" aria-label="View MicroClaw status"><img src="assets/microclaw.png" alt="" /><span><strong>MicroClaw paused</strong><em>Today’s token budget is used up. Your progress is saved.</em></span><b>View status →</b></button></div><div class="brand-work-ui__composer"><span>Message MicroClaw…</span><b>↑</b></div></main></div><aside class="agent-panel-actual" aria-label="MicroClaw Agent Profile panel"><div class="agent-panel-actual__head"><img src="assets/microclaw.png" alt="" /><div><strong>MicroClaw</strong><span>Your AI sidekick</span></div></div><div class="agent-panel-actual__scene"><span class="agent-panel-actual__badge">Token exhausted</span><img src="assets/microclaw-crash.gif" alt="MicroClaw paused" /></div><div class="agent-panel-actual__banner"><span>💸</span><div><b>Budget exhausted, Agent paused</b><span>Resets at 00:00</span></div></div><div class="agent-panel-actual__label"><span>Token usage</span><span>Last 30 days</span></div><div class="agent-panel-actual__tokens"><div><span>Total</span><strong>1.28M</strong></div><div><span>Remaining</span><strong>0</strong></div><div><span>Input</span><strong>942K</strong></div><div><span>Output</span><strong>342K</strong></div></div><div class="agent-panel-actual__budget"><i></i></div></aside></div></div></div>
         </div>
       </div>

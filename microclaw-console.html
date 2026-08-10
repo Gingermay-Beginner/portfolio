@@ -119,6 +119,10 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
   font-family: var(--sans);
   text-align: left;
 }
+.app-shell.clip-size {
+  width: 1120px;
+  height: 891px;
+}
 
 /* primary nav rail — 52px, icons only */
 .app-pnav {
@@ -255,6 +259,10 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
   grid-template-columns: 52px 240px minmax(0, 1fr) 0;
   transition: grid-template-columns 420ms cubic-bezier(.22, 1, .36, 1);
 }
+.app-shell.token-pause-mode.brand-embed {
+  width: 1120px;
+  height: 891px;
+}
 .app-shell.token-pause-mode .app-pnav,
 .app-shell.token-pause-mode .app-sidebar {
   min-width: 0;
@@ -296,33 +304,35 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .token-status-panel__close { margin-left: auto; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; background: #f3f3f3; color: var(--mc-text); line-height: 1; }
 .token-status-panel__close:hover { background: #e9e9e9; }
 .token-status-panel__close svg { width: 18px; height: 18px; display: block; }
-.token-status-panel__scroll { flex: 1 1 auto; min-width: 0; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 8px 16px 18px; }
+.token-status-panel__scroll { flex: 1 1 auto; min-width: 0; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 4px 18px 18px; }
 .token-status-panel__scroll { scrollbar-width: none; }
 .token-status-panel__scroll:hover { scrollbar-width: thin; }
 .token-status-panel__scroll::-webkit-scrollbar { width: 0; }
 .token-status-panel__scroll:hover::-webkit-scrollbar { width: 5px; }
-.token-status-panel__scene { height: 156px; margin-top: 0; position: relative; overflow: hidden; border: 1px solid var(--mc-border); border-radius: 16px; display: flex; align-items: flex-end; justify-content: center; background: radial-gradient(circle at 50% 22%, rgba(235,178,97,.28), transparent 43%), #eee9e3; }
-.token-status-panel__scene img { height: 142px; width: auto; object-fit: contain; }
+.token-status-panel__scene { height: 132px; margin-top: 0; position: relative; overflow: hidden; border: 0; border-radius: 14px; display: flex; align-items: flex-end; justify-content: center; background: radial-gradient(circle at 50% 22%, rgba(235,178,97,.18), transparent 46%), #f5f1ec; }
+.token-status-panel__scene img { height: 121px; width: auto; object-fit: contain; }
 .token-status-panel__badge { position: absolute; left: 9px; top: 9px; padding: 5px 7px; border-radius: 999px; border: 1px solid rgba(198,80,70,.22); background: #fbeae7; color: #bd5148; font: 600 9px/1 var(--mono); }
-.token-status-panel__notice { display: flex; gap: 8px; margin-top: 11px; padding: 10px; border: 1px solid #f3d7d1; border-radius: 12px; background: #fdf0ed; }
+.token-status-panel__notice { display: flex; gap: 8px; margin-top: 4px; padding: 10px 1px 11px; border: 0; border-bottom: 1px solid var(--mc-border-lt); border-radius: 0; background: transparent; }
 .token-status-panel__notice b { display: block; font-size: 10px; }
 .token-status-panel__notice span { display: block; margin-top: 3px; color: #8d756d; font-size: 9px; }
-.token-status-panel__label { display: flex; justify-content: space-between; margin: 14px 0 7px; color: var(--mc-text-2); font-size: 10px; font-weight: 600; }
-.token-status-panel__usage { display: grid; grid-template-columns: repeat(2,1fr); gap: 5px; }
-.token-status-panel__usage div { padding: 8px; border: 1px solid var(--mc-border); border-radius: 8px; background: #f3efea; }
+.token-status-panel__label { display: flex; justify-content: space-between; margin: 13px 0 4px; color: var(--mc-text-2); font-size: 10px; font-weight: 600; }
+.token-status-panel__usage { display: grid; grid-template-columns: repeat(2,1fr); column-gap: 14px; }
+.token-status-panel__usage div { padding: 7px 0 8px; border: 0; border-bottom: 1px solid var(--mc-border-lt); border-radius: 0; background: transparent; }
 .token-status-panel__usage span { display: block; color: var(--mc-text-2); font-size: 8px; }
 .token-status-panel__usage strong { display: block; margin-top: 3px; font-size: 10px; }
-.token-status-panel__meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
-.token-status-panel__meta span, .token-status-panel__skills span { padding: 4px 6px; border-radius: 999px; background: #f3efea; color: var(--mc-text-2); font-size: 8px; }
-.token-status-panel__budget { margin-top: 13px; height: 6px; overflow: hidden; border: 1px solid var(--mc-border); border-radius: 9px; background: #e8e1da; }
+.token-status-panel__meta { display: flex; flex-wrap: wrap; gap: 4px 11px; margin-top: 9px; color: var(--mc-text-muted); }
+.token-status-panel__meta span { padding: 0; background: transparent; color: inherit; font-size: 8px; }
+.token-status-panel__meta span + span::before { content: "·"; margin-right: 11px; color: var(--mc-border-row); }
+.token-status-panel__skills span { padding: 4px 6px; border-radius: 999px; background: #f6f3f0; color: var(--mc-text-2); font-size: 8px; }
+.token-status-panel__budget { margin-top: 10px; height: 4px; overflow: hidden; border: 0; border-radius: 9px; background: #ebe6e1; }
 .token-status-panel__budget i { display: block; width: 100%; height: 100%; background: #d46657; }
-.token-status-panel__section { margin-top: 15px; }
+.token-status-panel__section { margin-top: 14px; }
 .token-status-panel__section-head { display: flex; justify-content: space-between; align-items: center; color: var(--mc-text-2); font-size: 10px; font-weight: 600; }
 .token-status-panel__section-head button { font-size: 15px; color: var(--mc-text-2); line-height: 1; }
 .token-status-panel__skills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
 .token-status-panel__more { margin-top: 7px; color: var(--mc-text-2); font-size: 9px; }
-.token-status-panel__models { display: grid; gap: 6px; margin-top: 8px; }
-.token-status-panel__model { padding: 8px; border: 1px solid var(--mc-border); border-radius: 8px; background: rgba(255,255,255,.62); }
+.token-status-panel__models { display: grid; gap: 0; margin-top: 5px; }
+.token-status-panel__model { padding: 8px 0; border: 0; border-top: 1px solid var(--mc-border-lt); border-radius: 0; background: transparent; }
 .token-status-panel__model b { display: block; font-size: 9px; }
 .token-status-panel__model span { display: block; margin-top: 3px; color: var(--mc-text-2); font-size: 8px; }
 .token-status-panel__footnote { margin: 15px 0 0; color: var(--mc-text-muted); font-size: 8px; line-height: 1.45; }
@@ -812,7 +822,7 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .compose-wrapper {
   display: flex; flex-direction: column;
   border: 0.5px solid var(--mc-border); border-radius: 20px;
-  padding: 16px 16px 12px; background: var(--mc-paper);
+  padding: 16px; background: var(--mc-paper);
   /* Two layers: a wide soft halo that lifts the box off the page, and a tight
      low one that grounds it. One mid-sized shadow reads as a drop shadow —
      this is meant to be light spilling out. The composer is white on a white
@@ -854,6 +864,8 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .compose-send svg { width: 16px; height: 16px; }
 /* A draft outranks the run: with something typed, the button goes ink */
 .compose-send.is-send { background: var(--mc-text); color: var(--mc-paper); }
+.compose-send.is-processing { background: var(--mc-border); color: var(--mc-text-muted); }
+.compose-send.is-processing svg { animation: spin 800ms linear infinite; }
 /* same press ring the pause button uses, so both scripted clicks read alike */
 .compose-send.pressed::after {
   content: ""; position: absolute; inset: -3px;
@@ -1103,7 +1115,7 @@ const state = {
 
 if (TOKEN_PAUSE) state.msgs.push({ role: "assistant", text: "" });
 
-const REDIRECT = "Hold on — group by date on step 2, not by type.";
+const REDIRECT = "Group by date on step 2, not by type.";
 const TYPE_LEAD = 640, TYPE_STEP = 17;   // wait for the pointer, then ~17ms/char
 
 const BEATS = [
@@ -1152,6 +1164,11 @@ const BEATS = [
       state.paused = true;
   }},
 
+  { name: "MicroClaw confirms the pause", run() {
+      state.msgs.push({ role: "assistant",
+        text: "Paused. Your progress is saved — tell me what you'd like to change." });
+  }},
+
   /* Typed before it is sent, because that is the order it happens in — and
      because the composer staying a composer through all of this is the point:
      you never lose the ability to say something. */
@@ -1163,6 +1180,11 @@ const BEATS = [
       state.interventions++;
       state.msgs.push({ role: "user", text: REDIRECT });
       state.draft = "";        // sent — box is empty but the caret stays in it
+  }},
+
+  { name: "MicroClaw acknowledges the redirect", run() {
+      state.msgs.push({ role: "assistant",
+        text: "Got it — I'll redo step 2 by date, then continue from there." });
   }},
 
   /* Its own beat, because the plan reacting is not the same event as you
@@ -1246,8 +1268,10 @@ const beatAt     = name => BEATS.findIndex(b => b.name === name);
 const NOTIFY_BEAT = beatAt("Step 4 gives you a window");
 const READY_BEAT  = beatAt("Step 5 finishes");
 const HALT_BEAT   = beatAt("User halts the run");
+const ACK_BEAT    = beatAt("MicroClaw confirms the pause");
 const TYPE_BEAT   = beatAt("User types the redirect");
 const SEND_BEAT   = beatAt("User sends the redirect");
+const REDIRECT_ACK_BEAT = beatAt("MicroClaw acknowledges the redirect");
 const REWIND_BEAT = beatAt("Plan rewinds to step 2");
 const RERUN_BEAT  = beatAt("Step 2 re-runs");
 const ASK_BEAT    = beatAt("MicroClaw stops itself");
@@ -1499,6 +1523,12 @@ function syncCursor() {
     btn.classList.add("pressed");
     cursorEl.classList.add("click");
     cursorAt(200, () => cursorEl.classList.remove("click"));
+  } else if (state.beat === ACK_BEAT) {
+    /* The click has finished, but the hand has not left the control. Keeping
+       the pointer parked here bridges the pause and MicroClaw's reply instead
+       of making it blink out for one conversational beat. */
+    if (btn) cursorTo(btn, ...CURSOR_CLICK, false);
+    cursorEl.classList.add("show");
   } else if (state.beat === TYPE_BEAT) {
     /* Aim at the caret itself rather than at the box: it's already in the DOM
        (syncComposer ran first) and sits exactly where the typing begins, so
@@ -1506,15 +1536,11 @@ function syncCursor() {
     const caret = document.querySelector(".compose-caret");
     if (caret) cursorTo(caret, 0, -1, true);
     cursorEl.classList.add("show");
-    cursorAt(560, () => cursorEl.classList.remove("show"));
-    /* Typing done — the pointer comes back *on* the send button, not on its
-       way to it. Gliding across from the caret made it look like a second
-       pointer entering from the left; the hand never left the mouse, it left
-       the keyboard. Position is set while it is still invisible, so only the
-       fade is seen. */
+    /* Keep one continuous pointer through pause, acknowledgement and typing;
+       it moves to send when the draft is complete instead of disappearing
+       and being introduced again. */
     cursorAt(TYPE_DONE + 120, () => {
       if (send) cursorTo(send, ...CURSOR_SEND, false);
-      cursorEl.classList.add("show");
     });
   } else if (state.beat === SEND_BEAT && send) {
     cursorTo(send, ...CURSOR_SEND, false);
@@ -1528,16 +1554,22 @@ function syncCursor() {
   }
 }
 
-/* The composer never becomes a stop button. Sending a message mid-run is how
-   you redirect this agent — swapping ↑ for ■ would remove that exactly when
-   it matters, leaving you able to type but not to send. Halting lives on the
-   card's ‖, which is resumable and doesn't touch the conversation. */
+/* Once the redirect has been sent, the composer becomes a quiet processing
+   indicator. Stopping the whole task remains the timeline card's job. */
 let typeTimers = [];
 function syncComposer() {
   typeTimers.forEach(clearTimeout); typeTimers = [];
   const row = document.getElementById("composeRow");
   const btn = document.getElementById("composeSend");
   if (!row || !btn) return;
+
+  const processingRedirect = state.beat >= SEND_BEAT && state.beat <= RERUN_BEAT;
+  btn.innerHTML = processingRedirect
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66"/></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>`;
+  btn.title = processingRedirect ? "Processing" : "Send";
+  btn.setAttribute("aria-label", btn.title);
+  btn.classList.toggle("is-processing", processingRedirect);
 
   row.innerHTML = "";
   if (TOKEN_PAUSE) {
@@ -1564,7 +1596,7 @@ function syncComposer() {
     }
   }
 
-  btn.classList.toggle("is-send", !!state.draft);
+  btn.classList.toggle("is-send", !!state.draft && !processingRedirect);
 }
 
 function renderCard(fresh) {
@@ -1870,7 +1902,8 @@ const CLIP  = new URLSearchParams(location.search).get("clip") === "pause";
 function fitShell() {
   const shell = document.querySelector(".app-shell");
   if (!shell) return;
-  const W = 956, H = 760;
+  const largeEmbed = CLIP || BRAND_EMBED;
+  const W = largeEmbed ? 1120 : 956, H = largeEmbed ? 891 : 760;
   const s = Math.min(1, window.innerWidth / W, window.innerHeight / H);
   const x = Math.max(0, (window.innerWidth - W * s) / 2);
   const y = Math.max(0, (window.innerHeight - H * s) / 2);
@@ -1886,6 +1919,7 @@ if (TOKEN_PAUSE) {
   }
   document.querySelector(".token-status-panel__close").addEventListener("click", closeTokenStatus);
 }
+if (CLIP) document.querySelector(".app-shell").classList.add("clip-size");
 fitShell();
 window.addEventListener("resize", fitShell);
 
@@ -1902,10 +1936,14 @@ if (CLIP) {
      up to "step 5 finished" in one frame — that part is only the setting.
      Holds are long because a card is read at a glance, not watched; the
      typing beat also has to outlast the pointer's trip plus ~46 characters. */
-  const CLIP_BEATS = [READY_BEAT, HALT_BEAT, TYPE_BEAT, SEND_BEAT, REWIND_BEAT, RERUN_BEAT];
+  const CLIP_BEATS = [READY_BEAT, HALT_BEAT, ACK_BEAT, TYPE_BEAT, SEND_BEAT, REDIRECT_ACK_BEAT, REWIND_BEAT, RERUN_BEAT];
   /* type covers 1439ms of typing plus the trip to send; rewind covers the
      720ms sweep, the ring, and the title swap behind it (~1700ms). */
-  const CLIP_HOLD  = [2000, 2200, 2900, 1500, 2600, 2400];   // 1st covers the deal-in
+  /* Keep one hold for every named beat. The two acknowledgement beats were
+     added after this array was first written; leaving rewind/rerun without a
+     duration made both frames advance at once, so their card-edit motion was
+     effectively invisible. */
+  const CLIP_HOLD  = [2000, 2200, 2900, 1500, 2600, 2400, 2600, 2200];
   (function clipLoop(i) {
     if (i === 0) { openingSweep = true; goto(CLIP_BEATS[0]); openingSweep = false; }
     else next();
