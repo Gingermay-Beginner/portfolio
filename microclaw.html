@@ -139,6 +139,46 @@
       margin: 22px 0 0;
     }
     .hero .lede em { font-style: normal; color: var(--ink); font-weight: 600; }
+    .hero-product-sequence { margin-top: 34px; }
+    .hero-product-label {
+      margin: 0 0 10px 2px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      line-height: 1.4;
+      letter-spacing: .9px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .hero-product {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1120 / 891;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 14px 32px rgba(24, 24, 27, .07);
+    }
+    .hero-product iframe {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      pointer-events: none;
+      opacity: 0;
+      animation: hero-product-sequence 24s linear infinite;
+    }
+    .hero-product iframe:nth-child(2) { animation-delay: 8s; }
+    .hero-product iframe:nth-child(3) { animation-delay: 16s; }
+    @keyframes hero-product-sequence {
+      /* Keep the outgoing state painted briefly after the next iframe has
+         entered. This overlap prevents a one-frame white flash at handoff. */
+      0%, 34% { opacity: 1; }
+      39%, 98% { opacity: 0; }
+      100% { opacity: 1; }
+    }
     .meta-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -842,12 +882,20 @@
       <div class="wrap">
         <div class="kicker"><span class="dot"></span>Case study · Agentic AI · 0 &rarr; 1</div>
         <h1>MicroClaw</h1>
-        <p class="lede">From <em>FOMO-driven installs</em> to <em>trusted, repeat use</em> — designing agentic AI for first-time users in China through <em>first wins</em>, <em>visible boundaries</em>, and <em>ambient habit loops</em>.</p>
+        <p class="lede"><em>An AI sidekick that makes autonomous work visible and controllable.</em> This case study follows the product from <em>FOMO-driven installs</em> to <em>trusted, repeat use</em> through first wins, visible boundaries, and ambient habit loops.</p>
         <div class="meta-grid">
           <div class="meta-cell"><div class="k">Role</div><div class="v">Lead product designer</div></div>
           <div class="meta-cell"><div class="k">Scope</div><div class="v">Strategy &rarr; prototype</div></div>
           <div class="meta-cell"><div class="k">Timeline</div><div class="v">1 week · AI-assisted sprint</div></div>
           <div class="meta-cell"><div class="k">Status</div><div class="v">Interactive prototype</div></div>
+        </div>
+        <div class="hero-product-sequence" aria-label="A continuous MicroClaw task flow">
+          <div class="hero-product-label">Find a relevant task &rarr; understand the work &rarr; get a first win</div>
+          <div class="hero-product">
+            <iframe src="microclaw-steps.html?only=2" title="MicroClaw helps the user find a relevant task" scrolling="no"></iframe>
+            <iframe src="microclaw-steps.html?only=3&amp;start-delay=8000" title="MicroClaw makes its work understandable" scrolling="no"></iframe>
+            <iframe src="microclaw-steps.html?only=4" title="MicroClaw completes a useful first task" scrolling="no"></iframe>
+          </div>
         </div>
       </div>
     </section>

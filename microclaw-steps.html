@@ -7,7 +7,23 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    /* A host sequence can preload this document while holding its internal
+       motion on frame zero. Releasing it at the handoff keeps the GIF,
+       Thinking trace and answer in their intended order. */
+    (function () {
+      var delay = Number(new URLSearchParams(window.location.search).get("start-delay"));
+      if (!(delay > 0)) return;
+      document.documentElement.classList.add("sequence-paused");
+      window.setTimeout(function () {
+        document.documentElement.classList.remove("sequence-paused");
+      }, delay);
+    })();
+  </script>
   <style>
+    html.sequence-paused *,
+    html.sequence-paused *::before,
+    html.sequence-paused *::after { animation-play-state: paused !important; }
     :root {
       --bg: #fafafa;
       --paper: #ffffff;
@@ -3253,10 +3269,26 @@
     @media (max-width: 640px) {
       .steps { gap: 48px; }
       .vstage { aspect-ratio: 3 / 4; }
+      /* Gates 02–04 render a fixed 1120 × 891 app canvas. Keeping the
+         frame on that exact ratio prevents fitAppStages() from letterboxing
+         the scaled interface and exposing a white strip above the border. */
+      .vstage.vstage--app-ratio { aspect-ratio: 1120 / 891; }
       .vstage:has(.install-dual) {
         aspect-ratio: auto;
         min-height: 392px;
       }
+    }
+    /* The install pair intentionally stays side by side. Below 500px each
+       half becomes narrow enough for the welcome copy to wrap, so its real
+       content height grows while the old 392px stage did not. Let the stage
+       grow at the same breakpoints; the parent iframe receives this measured
+       height through postMessage and no longer clips the card footer. */
+    @media (max-width: 500px) {
+      .vstage:has(.install-dual) { min-height: 480px; }
+      .vstage:has(.install-dual) .install-window { height: 100%; }
+    }
+    @media (max-width: 380px) {
+      .vstage:has(.install-dual) { min-height: 540px; }
     }
   </style>
 </head>
@@ -4267,9 +4299,13 @@
         document.querySelectorAll(".vstage--app-ratio").forEach(function (stage) {
           /* A larger logical canvas lets the full app fill the frame while
              keeping the rail, sidebar and titlebar visually compact. */
-          var scale = Math.min(1, stage.clientWidth / 1120, stage.clientHeight / 891);
-          var x = Math.max(0, (stage.clientWidth - 1120 * scale) / 2);
-          var y = Math.max(0, (stage.clientHeight - 891 * scale) / 2);
+          /* Cover the frame instead of containing inside it. The frame's
+             one-pixel border makes its inner ratio fractionally different
+             from 1120 / 891; contain left a visible white hairline at the
+             bottom on some widths. The resulting crop is sub-pixel only. */
+          var scale = Math.min(1, Math.max(stage.clientWidth / 1120, stage.clientHeight / 891));
+          var x = (stage.clientWidth - 1120 * scale) / 2;
+          var y = (stage.clientHeight - 891 * scale) / 2;
           var next = String(scale);
           if (stage.style.getPropertyValue("--app-stage-scale") !== next) {
             stage.style.setProperty("--app-stage-scale", next);

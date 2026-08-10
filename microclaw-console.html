@@ -1532,15 +1532,13 @@ function syncCursor() {
   } else if (state.beat === TYPE_BEAT) {
     /* Aim at the caret itself rather than at the box: it's already in the DOM
        (syncComposer ran first) and sits exactly where the typing begins, so
-       the handoff needs no measuring. */
+       the handoff needs no measuring. Once the caret starts typing, the
+       pointer exits: the two input indicators are intentionally exclusive. */
     const caret = document.querySelector(".compose-caret");
     if (caret) cursorTo(caret, 0, -1, true);
     cursorEl.classList.add("show");
-    /* Keep one continuous pointer through pause, acknowledgement and typing;
-       it moves to send when the draft is complete instead of disappearing
-       and being introduced again. */
-    cursorAt(TYPE_DONE + 120, () => {
-      if (send) cursorTo(send, ...CURSOR_SEND, false);
+    cursorAt(TYPE_LEAD, () => {
+      cursorEl.classList.remove("show", "moving");
     });
   } else if (state.beat === SEND_BEAT && send) {
     cursorTo(send, ...CURSOR_SEND, false);
