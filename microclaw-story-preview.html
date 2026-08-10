@@ -589,6 +589,7 @@
     .brand-full-app__work img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: left top; }
     .brand-full-app__work iframe { display: block; width: 100%; height: 100%; border: 0; }
     .brand-console-embed { width: 100%; height: 100%; display: block; border: 0; background: #f7f4f1; }
+    .brand-full-app--console { grid-template-columns: minmax(0, 1fr); }
     .brand-pause-work { min-width: 0; padding: 18px; display: flex; flex-direction: column; justify-content: center; background: #f5f1ec; }
     .brand-pause-work__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; color: #827970; font-size: 10px; }
     .brand-pause-work__top span:first-child { color: #4f4740; font-weight: 700; }
@@ -1298,7 +1299,10 @@
         frame.src = "microclaw-console.html?token-pause=1";
         frame.title = "MicroClaw task paused after token budget is exhausted";
         frame.scrolling = "no";
+        shell.parentElement.classList.add("brand-full-app--console");
         shell.replaceWith(frame);
+        var externalPanel = frame.nextElementSibling;
+        if (externalPanel && externalPanel.classList.contains("agent-panel-actual")) externalPanel.remove();
       });
     })();
 

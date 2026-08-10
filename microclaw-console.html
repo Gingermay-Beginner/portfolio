@@ -246,6 +246,29 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 
 .app-main-body { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 
+/* Token pause is a full application state: the profile belongs inside the
+   same window as the task, rather than as a separate case-study panel. */
+.token-status-panel { display: none; }
+.app-shell.has-token-status { width: 1246px; grid-template-columns: 52px 240px minmax(0, 1fr) 290px; }
+.app-shell.has-token-status .token-status-panel { grid-column: 4; display: flex; flex-direction: column; padding: 16px; background: linear-gradient(180deg, #fff, #f7f4f1); border-left: 1px solid var(--mc-border); }
+.token-status-panel__head { display: flex; align-items: center; gap: 9px; padding-bottom: 13px; border-bottom: 1px solid var(--mc-border-lt); }
+.token-status-panel__head img { width: 36px; height: 36px; object-fit: contain; }
+.token-status-panel__head strong { display: block; font-size: 13px; }
+.token-status-panel__head span { display: block; margin-top: 2px; color: var(--mc-text-2); font-size: 10px; }
+.token-status-panel__scene { height: 156px; margin-top: 14px; position: relative; overflow: hidden; border: 1px solid var(--mc-border); border-radius: 16px; display: flex; align-items: flex-end; justify-content: center; background: radial-gradient(circle at 50% 22%, rgba(235,178,97,.28), transparent 43%), #eee9e3; }
+.token-status-panel__scene img { height: 142px; width: auto; object-fit: contain; }
+.token-status-panel__badge { position: absolute; left: 9px; top: 9px; padding: 5px 7px; border-radius: 999px; border: 1px solid rgba(198,80,70,.22); background: #fbeae7; color: #bd5148; font: 600 9px/1 var(--mono); }
+.token-status-panel__notice { display: flex; gap: 8px; margin-top: 11px; padding: 10px; border: 1px solid #f3d7d1; border-radius: 12px; background: #fdf0ed; }
+.token-status-panel__notice b { display: block; font-size: 10px; }
+.token-status-panel__notice span { display: block; margin-top: 3px; color: #8d756d; font-size: 9px; }
+.token-status-panel__label { display: flex; justify-content: space-between; margin: 14px 0 7px; color: var(--mc-text-2); font-size: 10px; font-weight: 600; }
+.token-status-panel__usage { display: grid; grid-template-columns: repeat(2,1fr); gap: 5px; }
+.token-status-panel__usage div { padding: 8px; border: 1px solid var(--mc-border); border-radius: 8px; background: #f3efea; }
+.token-status-panel__usage span { display: block; color: var(--mc-text-2); font-size: 8px; }
+.token-status-panel__usage strong { display: block; margin-top: 3px; font-size: 10px; }
+.token-status-panel__budget { margin-top: 13px; height: 6px; overflow: hidden; border: 1px solid var(--mc-border); border-radius: 9px; background: #e8e1da; }
+.token-status-panel__budget i { display: block; width: 100%; height: 100%; background: #d46657; }
+
 /* ── chat ────────────────────────────────────────────────────────────── */
 .chat-view { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--mc-paper); }
 .chat-thread { flex: 1; overflow-y: auto; padding: 28px 32px; scroll-behavior: smooth; }
@@ -877,6 +900,15 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
       </div>
     </div>
   </div>
+
+  <aside class="token-status-panel" aria-label="MicroClaw agent status">
+    <div class="token-status-panel__head"><img src="assets/microclaw.png" alt="" /><div><strong>MicroClaw</strong><span>Your AI sidekick</span></div></div>
+    <div class="token-status-panel__scene"><span class="token-status-panel__badge">Token exhausted</span><img src="assets/microclaw-crash.gif" alt="MicroClaw paused" /></div>
+    <div class="token-status-panel__notice"><span>💸</span><div><b>Budget exhausted, Agent paused</b><span>Resets at 00:00</span></div></div>
+    <div class="token-status-panel__label"><span>Token usage</span><span>Last 30 days</span></div>
+    <div class="token-status-panel__usage"><div><span>Total</span><strong>1.28M</strong></div><div><span>Remaining</span><strong>0</strong></div><div><span>Input</span><strong>942K</strong></div><div><span>Output</span><strong>342K</strong></div></div>
+    <div class="token-status-panel__budget"><i></i></div>
+  </aside>
 
   <!-- scripted pointer — lives on the shell, not in the thread, so render()
        rebuilding the chat never interrupts its travel -->
@@ -1663,12 +1695,13 @@ const CLIP  = new URLSearchParams(location.search).get("clip") === "pause";
 function fitShell() {
   const shell = document.querySelector(".app-shell");
   if (!shell) return;
-  const W = 956, H = 760;
+  const W = TOKEN_PAUSE ? 1246 : 956, H = 760;
   const s = Math.min(1, window.innerWidth / W, window.innerHeight / H);
   const x = Math.max(0, (window.innerWidth - W * s) / 2);
   const y = Math.max(0, (window.innerHeight - H * s) / 2);
   shell.style.transform = "translate(" + x + "px, " + y + "px) scale(" + s + ")";
 }
+if (TOKEN_PAUSE) document.querySelector(".app-shell").classList.add("has-token-status");
 fitShell();
 window.addEventListener("resize", fitShell);
 
