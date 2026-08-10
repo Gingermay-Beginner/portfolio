@@ -521,10 +521,13 @@
     .brand-step__copy p { margin: 9px 0 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
     .brand-tile { margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card); }
     .brand-tile__visual { height: clamp(380px, 42vw, 560px); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f5f1ec; }
+    .brand-tile__visual--screen { height: auto; aspect-ratio: 956 / 760; background: transparent; }
     .brand-tile figcaption { padding: 16px 18px 19px; }
     .brand-tile figcaption strong { display: block; font: 600 16px/1.25 "Space Grotesk", sans-serif; }
     .brand-tile figcaption p { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
     .brand-tile--mark img { width: min(52%, 330px); height: auto; object-fit: contain; }
+    .brand-tile--mark,
+    .brand-step:nth-child(2) .brand-tile__visual--frame { border-radius: var(--radius-lg); overflow: hidden; }
     .brand-tile__visual--frame iframe { display: block; width: 100%; height: 100%; border: 0; }
     .brand-tile--states .brand-tile__visual { background: linear-gradient(135deg, #fff5df, #f6e1bc); }
     .brand-tile--states span { position: absolute; left: 18px; top: 17px; font: 10px/1 "JetBrains Mono", monospace; color: #8a6242; letter-spacing: 1px; text-transform: uppercase; }
@@ -584,11 +587,11 @@
     .brand-product--tile .brand-panel__usage div { padding: 9px 7px; border-radius: 9px; }
     .brand-product--tile .brand-panel__usage span { font-size: 9px; }
     .brand-product--tile .brand-panel__usage strong { margin-top: 4px; font-size: 12px; }
-    .brand-full-app { width: 100%; height: 100%; display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(245px, .72fr); background: #f7f4f1; border-radius: 0 14px 14px 0; overflow: hidden; }
+    .brand-full-app { width: 100%; height: 100%; display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(245px, .72fr); background: transparent; border-radius: 0; overflow: hidden; }
     .brand-full-app__work { min-width: 0; overflow: hidden; }
     .brand-full-app__work img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: left top; }
     .brand-full-app__work iframe { display: block; width: 100%; height: 100%; border: 0; }
-    .brand-console-embed { width: 100%; height: 100%; display: block; border: 0; background: #f7f4f1; }
+    .brand-console-embed { width: 100%; height: 100%; display: block; border: 0; background: transparent; }
     .brand-full-app--console { grid-template-columns: minmax(0, 1fr); }
     .brand-pause-work { min-width: 0; padding: 18px; display: flex; flex-direction: column; justify-content: center; background: #f5f1ec; }
     .brand-pause-work__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; color: #827970; font-size: 10px; }
@@ -1296,7 +1299,7 @@
       document.querySelectorAll(".brand-work-ui").forEach(function (shell) {
         var frame = document.createElement("iframe");
         frame.className = "brand-console-embed";
-        frame.src = "microclaw-console.html?token-pause=1";
+        frame.src = "microclaw-console.html?token-pause=1&embed=brand";
         frame.title = "MicroClaw task paused after token budget is exhausted";
         frame.scrolling = "no";
         shell.parentElement.classList.add("brand-full-app--console");

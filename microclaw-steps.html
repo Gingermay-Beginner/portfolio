@@ -3052,6 +3052,17 @@
       background: transparent;
       display: block;
     }
+    .vstage--app-ratio { aspect-ratio: 1120 / 891; position: relative; }
+    .vstage--app-ratio > .app-shell {
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 1120px;
+      height: 891px;
+      max-width: none;
+      max-height: none;
+      transform: translate(var(--app-stage-x, 0px), var(--app-stage-y, 0px)) scale(var(--app-stage-scale, 1));
+      transform-origin: top left;
+    }
     .console-embed {
       width: 100%;
       height: 100%;
@@ -4024,7 +4035,7 @@
         const s = steps[soloIdx];
         return (
           <div className="steps steps--solo">
-            <div className={"vstage" + (s.console ? " vstage--console" : "")}>
+            <div className={"vstage" + (s.console ? " vstage--console" : "") + (["02", "03", "04"].includes(s.num) ? " vstage--app-ratio" : "")}>
               {s.stage}
             </div>
           </div>
@@ -4039,7 +4050,7 @@
                 <span className="step-num">{s.num}</span>
                 <h3 className="step-title">{s.title}</h3>
               </div>
-              <div className={"vstage" + (s.console ? " vstage--console" : "")}>
+              <div className={"vstage" + (s.console ? " vstage--console" : "") + (["02", "03", "04"].includes(s.num) ? " vstage--app-ratio" : "")}>
                 {s.stage}
               </div>
               <p className="step-cap">{s.cap}</p>
@@ -4057,7 +4068,24 @@
        case-study iframe can auto-size and every step shows with no
        inner scroll. (This page only ever loads inside that frame.) */
     (function () {
+      function fitAppStages() {
+        document.querySelectorAll(".vstage--app-ratio").forEach(function (stage) {
+          /* A larger logical canvas lets the full app fill the frame while
+             keeping the rail, sidebar and titlebar visually compact. */
+          var scale = Math.min(1, stage.clientWidth / 1120, stage.clientHeight / 891);
+          var x = Math.max(0, (stage.clientWidth - 1120 * scale) / 2);
+          var y = Math.max(0, (stage.clientHeight - 891 * scale) / 2);
+          var next = String(scale);
+          if (stage.style.getPropertyValue("--app-stage-scale") !== next) {
+            stage.style.setProperty("--app-stage-scale", next);
+          }
+          stage.style.setProperty("--app-stage-x", x + "px");
+          stage.style.setProperty("--app-stage-y", y + "px");
+        });
+      }
+
       function postHeight() {
+        fitAppStages();
         var h = Math.max(
           document.body.scrollHeight,
           document.documentElement.scrollHeight
@@ -4069,6 +4097,7 @@
       }
 
       window.addEventListener("load", postHeight);
+      window.addEventListener("resize", postHeight);
       if (window.ResizeObserver) {
         new ResizeObserver(postHeight).observe(document.body);
       }

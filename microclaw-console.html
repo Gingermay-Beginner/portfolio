@@ -38,8 +38,8 @@
                                     token's 20% — see deviation 2 */
   --mc-danger:       #ac1922;    /* danger-tint-foreground  / -stroke */
   --mc-info-tint:    #efeae7;    /* informative-tint-background */
-  --mc-selected:     #efeae7;    /* --bg-selected, stone-200 — replaces the old
-                                    ctrl-list-background-selected-rest #00000008 */
+  --mc-selected:     rgba(39, 35, 32, 0.055); /* Same quiet ink wash used by
+                                    Gate 04 · First win for selected rows. */
   --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
 }
 
@@ -93,6 +93,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+body.brand-embed { background: transparent; }
 button { font: inherit; border: none; background: none; color: inherit; cursor: pointer; }
 
 ::-webkit-scrollbar { width: 5px; }
@@ -249,12 +250,51 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 /* Token pause is a full application state: the profile belongs inside the
    same window as the task, rather than as a separate case-study panel. */
 .token-status-panel { display: none; }
-.app-shell.has-token-status { width: 1246px; grid-template-columns: 52px 240px minmax(0, 1fr) 290px; }
-.app-shell.has-token-status .token-status-panel { grid-column: 4; display: flex; flex-direction: column; padding: 16px; background: linear-gradient(180deg, #fff, #f7f4f1); border-left: 1px solid var(--mc-border); }
-.token-status-panel__head { display: flex; align-items: center; gap: 9px; padding-bottom: 13px; border-bottom: 1px solid var(--mc-border-lt); }
+.app-shell.token-pause-mode {
+  width: 956px;
+  grid-template-columns: 52px 240px minmax(0, 1fr) 0;
+  transition: grid-template-columns 420ms cubic-bezier(.22, 1, .36, 1);
+}
+.app-shell.token-pause-mode .app-pnav,
+.app-shell.token-pause-mode .app-sidebar {
+  min-width: 0;
+  overflow: hidden;
+  transition: opacity 180ms ease, transform 420ms cubic-bezier(.22, 1, .36, 1);
+}
+.app-shell.token-pause-mode .app-main { grid-column: 3; }
+.app-shell.token-pause-mode .token-status-panel {
+  grid-column: 4;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 290px;
+  width: 290px;
+  box-sizing: border-box;
+  min-height: 0;
+  margin-top: 44px;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(100%);
+  background: linear-gradient(180deg, #fff, #f7f4f1);
+  border-top: 1px solid var(--mc-border-lt);
+  border-left: 1px solid var(--mc-border);
+  overflow: hidden;
+  transition: opacity 220ms ease, transform 420ms cubic-bezier(.22, 1, .36, 1);
+}
+.app-shell.has-token-status { grid-template-columns: 0 0 minmax(0, 1fr) 290px; }
+.app-shell.has-token-status::before { content: ""; position: absolute; z-index: 1; top: 0; left: 0; right: 0; height: 44px; background: #fff; border-bottom: 1px solid var(--mc-border-lt); }
+.app-shell.has-token-status .app-pnav,
+.app-shell.has-token-status .app-sidebar { opacity: 0; transform: translateX(-18px); pointer-events: none; }
+.app-shell.has-token-status .app-titlebar { background: transparent; border-bottom: 0; }
+.app-shell.has-token-status .app-titlebar-left { position: relative; z-index: 2; }
+.app-shell.has-token-status .token-window-controls { position: absolute; right: 0; top: 0; z-index: 3; }
+.app-shell.has-token-status .token-status-panel { opacity: 1; pointer-events: auto; transform: translateX(0); }
+.token-status-panel__head { display: flex; flex: 0 0 auto; align-items: center; gap: 9px; padding: 16px; border-bottom: 0; }
 .token-status-panel__head img { width: 36px; height: 36px; object-fit: contain; }
 .token-status-panel__head strong { display: block; font-size: 13px; }
 .token-status-panel__head span { display: block; margin-top: 2px; color: var(--mc-text-2); font-size: 10px; }
+.token-status-panel__close { margin-left: auto; color: var(--mc-text-2); font-size: 18px; line-height: 1; }
+.token-status-panel__scroll { flex: 1 1 auto; min-width: 0; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 14px 16px 18px; }
 .token-status-panel__scene { height: 156px; margin-top: 14px; position: relative; overflow: hidden; border: 1px solid var(--mc-border); border-radius: 16px; display: flex; align-items: flex-end; justify-content: center; background: radial-gradient(circle at 50% 22%, rgba(235,178,97,.28), transparent 43%), #eee9e3; }
 .token-status-panel__scene img { height: 142px; width: auto; object-fit: contain; }
 .token-status-panel__badge { position: absolute; left: 9px; top: 9px; padding: 5px 7px; border-radius: 999px; border: 1px solid rgba(198,80,70,.22); background: #fbeae7; color: #bd5148; font: 600 9px/1 var(--mono); }
@@ -266,8 +306,20 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .token-status-panel__usage div { padding: 8px; border: 1px solid var(--mc-border); border-radius: 8px; background: #f3efea; }
 .token-status-panel__usage span { display: block; color: var(--mc-text-2); font-size: 8px; }
 .token-status-panel__usage strong { display: block; margin-top: 3px; font-size: 10px; }
+.token-status-panel__meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.token-status-panel__meta span, .token-status-panel__skills span { padding: 4px 6px; border-radius: 999px; background: #f3efea; color: var(--mc-text-2); font-size: 8px; }
 .token-status-panel__budget { margin-top: 13px; height: 6px; overflow: hidden; border: 1px solid var(--mc-border); border-radius: 9px; background: #e8e1da; }
 .token-status-panel__budget i { display: block; width: 100%; height: 100%; background: #d46657; }
+.token-status-panel__section { margin-top: 15px; }
+.token-status-panel__section-head { display: flex; justify-content: space-between; align-items: center; color: var(--mc-text-2); font-size: 10px; font-weight: 600; }
+.token-status-panel__section-head button { font-size: 15px; color: var(--mc-text-2); line-height: 1; }
+.token-status-panel__skills { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.token-status-panel__more { margin-top: 7px; color: var(--mc-text-2); font-size: 9px; }
+.token-status-panel__models { display: grid; gap: 6px; margin-top: 8px; }
+.token-status-panel__model { padding: 8px; border: 1px solid var(--mc-border); border-radius: 8px; background: rgba(255,255,255,.62); }
+.token-status-panel__model b { display: block; font-size: 9px; }
+.token-status-panel__model span { display: block; margin-top: 3px; color: var(--mc-text-2); font-size: 8px; }
+.token-status-panel__footnote { margin: 15px 0 0; color: var(--mc-text-muted); font-size: 8px; line-height: 1.45; }
 
 /* ── chat ────────────────────────────────────────────────────────────── */
 .chat-view { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--mc-paper); }
@@ -323,17 +375,30 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 }
 .tl-card.is-new { animation: grp-in 300ms ease-out; }
 .token-pause-card {
-  display: block;
-  appearance: none;
+  display: grid;
+  margin-top: 2px;
+  grid-template-columns: 86px minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  max-width: min(720px, 100%);
+  min-height: 132px;
+  padding: 8px 28px 8px 14px;
+  border-radius: 22px;
+  background: #f8f4f1;
+  border-color: var(--mc-border);
   text-align: left;
   color: var(--mc-text);
   font: inherit;
-  cursor: pointer;
 }
-.token-pause-card__title { display: block; font-size: 15px; font-weight: 600; }
-.token-pause-card__copy { display: block; margin-top: 7px; color: var(--mc-text-2); font-size: 13px; line-height: 1.5; }
-.token-pause-card__link { display: block; margin-top: 16px; color: var(--mc-text-2); font-size: 12px; font-weight: 600; }
-.token-pause-card:hover { border-color: var(--mc-text-2); }
+.token-pause-card__media { display: grid; place-items: center; align-self: stretch; transform: translateY(-5px); }
+.token-pause-card__media img { display: block; width: min(100%, 70px); height: auto; object-fit: contain; }
+.token-pause-card__body { min-width: 0; }
+.token-pause-card__title { display: block; font-size: 17px; font-weight: 650; letter-spacing: -0.025em; }
+.token-pause-card__copy { display: block; margin-top: 9px; color: var(--mc-text-2); font-size: 12px; line-height: 1.45; }
+.token-pause-card__actions { display: flex; justify-content: flex-end; align-items: center; gap: 14px; margin: 0; white-space: nowrap; }
+.token-pause-card__link { padding: 7px 12px; border: 1px solid var(--mc-border-row); border-radius: 999px; color: var(--mc-text-2); background: rgba(255,255,255,.45); font-size: 12px; font-weight: 600; }
+.token-pause-card__link:hover,
+.token-pause-card__link.hovering { color: var(--mc-text); background: rgba(255,255,255,.8); }
 
 .tl-head {
   display: flex; align-items: center; gap: 8px;
@@ -902,12 +967,18 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
   </div>
 
   <aside class="token-status-panel" aria-label="MicroClaw agent status">
-    <div class="token-status-panel__head"><img src="assets/microclaw.png" alt="" /><div><strong>MicroClaw</strong><span>Your AI sidekick</span></div></div>
-    <div class="token-status-panel__scene"><span class="token-status-panel__badge">Token exhausted</span><img src="assets/microclaw-crash.gif" alt="MicroClaw paused" /></div>
-    <div class="token-status-panel__notice"><span>💸</span><div><b>Budget exhausted, Agent paused</b><span>Resets at 00:00</span></div></div>
-    <div class="token-status-panel__label"><span>Token usage</span><span>Last 30 days</span></div>
-    <div class="token-status-panel__usage"><div><span>Total</span><strong>1.28M</strong></div><div><span>Remaining</span><strong>0</strong></div><div><span>Input</span><strong>942K</strong></div><div><span>Output</span><strong>342K</strong></div></div>
-    <div class="token-status-panel__budget"><i></i></div>
+    <div class="token-status-panel__head"><img src="assets/microclaw.png" alt="" /><div><strong>MicroClaw</strong><span>Your AI sidekick</span></div><button class="token-status-panel__close" type="button" aria-label="Close agent profile">›</button></div>
+    <div class="token-status-panel__scroll">
+      <div class="token-status-panel__scene"><img src="assets/microclaw-crash.gif" alt="MicroClaw paused" /></div>
+      <div class="token-status-panel__notice"><span>💸</span><div><b>Budget exhausted, Agent paused</b><span>Resets at Feb 1</span></div></div>
+      <div class="token-status-panel__label"><span>Token usage</span><span>Last 30 days</span></div>
+      <div class="token-status-panel__usage"><div><span>Total</span><strong>1.28M</strong></div><div><span>Input</span><strong>942K</strong></div><div><span>Output</span><strong>342K</strong></div><div><span>Cache read</span><strong>186K</strong></div><div><span>Today remaining</span><strong>Depleted</strong></div></div>
+      <div class="token-status-panel__meta"><span>1,247 requests</span><span>38 sessions</span><span>312 tool calls</span></div>
+      <div class="token-status-panel__section"><div class="token-status-panel__section-head"><span>Budget</span><span>$10.00 / $10.00</span></div><div class="token-status-panel__budget"><i></i></div></div>
+      <div class="token-status-panel__section"><div class="token-status-panel__section-head"><span>Skills</span><button type="button" aria-label="Add skill">+</button></div><div class="token-status-panel__skills"><span>persona-switch</span><span>canvas-design</span><span>cloud-upload</span><span>docx</span><span>github</span><span>frontend-design</span><span>file-organize</span><span>email-skill</span><span>kdocs</span></div><div class="token-status-panel__more">View more</div></div>
+      <div class="token-status-panel__section"><div class="token-status-panel__section-head"><span>Model</span><span>2 models</span></div><div class="token-status-panel__models"><div class="token-status-panel__model"><b>claude-3.5-sonnet</b><span>823 req · 621K in · 218K out · $7.41</span></div><div class="token-status-panel__model"><b>gpt-4o-mini</b><span>424 req · 321K in · 124K out · $2.59</span></div></div></div>
+      <p class="token-status-panel__footnote">Usage is calculated from the last 30 days and refreshes automatically.</p>
+    </div>
   </aside>
 
   <!-- scripted pointer — lives on the shell, not in the thread, so render()
@@ -947,6 +1018,7 @@ const AVATAR = "assets/microclaw.png";
    this console's real shell, chat thread, card and composer rather than
    recreating a lookalike elsewhere. */
 const TOKEN_PAUSE = new URLSearchParams(location.search).get("token-pause") === "1";
+const BRAND_EMBED = new URLSearchParams(location.search).get("embed") === "brand";
 
 /* A notify step goes ahead on its own once its window closes. That default —
    proceed unless stopped — is the only thing separating it from a confirm
@@ -1192,7 +1264,7 @@ function render() {
   thread.innerHTML = "";
   if (TOKEN_PAUSE) {
     document.getElementById("demoBar").style.display = "none";
-    document.getElementById("tlCursor").style.display = "none";
+    document.getElementById("tlCursor").style.display = BRAND_EMBED ? "" : "none";
     const g = el("div", "chat-group");
     const av = el("div", "chat-agent-avatar");
     const img = document.createElement("img"); img.src = AVATAR;
@@ -1235,14 +1307,48 @@ function render() {
 }
 
 function renderTokenPauseCard() {
-  const card = el("button", "tl-card token-pause-card");
-  card.type = "button";
+  const card = el("div", "tl-card token-pause-card");
+  const media = el("div", "token-pause-card__media");
+  const gif = document.createElement("img");
+  gif.src = "assets/microclaw-crash.gif";
+  gif.alt = "MicroClaw paused";
+  media.appendChild(gif);
+  const body = el("div", "token-pause-card__body");
   const title = el("strong", "token-pause-card__title", "MicroClaw paused");
   const copy = el("span", "token-pause-card__copy", "Today's token budget is used up. Your progress is saved.");
-  const link = el("span", "token-pause-card__link", "View agent status →");
-  card.append(title, copy, link);
-  card.addEventListener("click", () => parent.postMessage({ type: "microclaw-token-status" }, "*"));
+  const actions = el("div", "token-pause-card__actions");
+  const link = el("button", "token-pause-card__link", "Agent status →");
+  link.id = "tokenStatusLink";
+  link.type = "button";
+  link.addEventListener("click", () => {
+    openTokenStatus();
+    parent.postMessage({ type: "microclaw-token-status" }, "*");
+  });
+  actions.append(link);
+  body.append(title, copy);
+  card.append(media, body, actions);
   return card;
+}
+
+function openTokenStatus() {
+  const shell = document.querySelector(".app-shell");
+  const controls = document.querySelector(".app-titlebar-controls");
+  if (!shell || shell.classList.contains("has-token-status")) return;
+  controls.classList.add("token-window-controls");
+  shell.appendChild(controls);
+  requestAnimationFrame(() => shell.classList.add("has-token-status"));
+}
+
+function closeTokenStatus() {
+  const shell = document.querySelector(".app-shell");
+  const titlebar = document.querySelector(".app-titlebar");
+  const controls = document.querySelector(".app-titlebar-controls");
+  if (!shell || !shell.classList.contains("has-token-status")) return;
+  shell.classList.remove("has-token-status");
+  window.setTimeout(() => {
+    controls.classList.remove("token-window-controls");
+    titlebar.appendChild(controls);
+  }, 420);
 }
 
 /* A session doesn't exist until something has been said in it. Before the
@@ -1285,6 +1391,37 @@ function cursorTo(node, dx, dy, glide) {
   const p = shellXY(node, dx, dy);
   cursorEl.classList.toggle("moving", !!glide);
   cursorEl.style.transform = `translate(${p.x}px, ${p.y}px)`;
+}
+
+/* Brand proof: reuse Gate 05's pointer to demonstrate the complete state
+   transition. The pointer approaches and clicks the status action; the app's
+   real layout then collapses both left rails and reveals the agent panel. */
+let tokenStatusDemoTimers = [];
+function runTokenStatusDemo() {
+  tokenStatusDemoTimers.forEach(clearTimeout);
+  tokenStatusDemoTimers = [];
+  const later = (ms, fn) => tokenStatusDemoTimers.push(setTimeout(fn, ms));
+  const shell = document.querySelector(".app-shell");
+  const link = document.getElementById("tokenStatusLink");
+  if (!BRAND_EMBED || !shell || !link) return;
+
+  shell.classList.remove("has-token-status");
+  link.classList.remove("hovering");
+  cursorEl.classList.remove("show", "moving", "click");
+  cursorTo(link, 52, 32, false);
+
+  later(700, () => cursorEl.classList.add("show"));
+  later(920, () => cursorTo(link, -3, -1, true));
+  later(1440, () => link.classList.add("hovering"));
+  later(1680, () => {
+    cursorEl.classList.add("click");
+    link.click();
+  });
+  later(1880, () => cursorEl.classList.remove("click"));
+  later(2160, () => cursorEl.classList.remove("show"));
+  /* Leave the status readable, then reset for the next demonstration. */
+  later(5600, closeTokenStatus);
+  later(6500, runTokenStatusDemo);
 }
 
 /* The pointer sits still while the button changes under it — any motion
@@ -1695,13 +1832,22 @@ const CLIP  = new URLSearchParams(location.search).get("clip") === "pause";
 function fitShell() {
   const shell = document.querySelector(".app-shell");
   if (!shell) return;
-  const W = TOKEN_PAUSE ? 1246 : 956, H = 760;
+  const W = 956, H = 760;
   const s = Math.min(1, window.innerWidth / W, window.innerHeight / H);
   const x = Math.max(0, (window.innerWidth - W * s) / 2);
   const y = Math.max(0, (window.innerHeight - H * s) / 2);
   shell.style.transform = "translate(" + x + "px, " + y + "px) scale(" + s + ")";
 }
-if (TOKEN_PAUSE) document.querySelector(".app-shell").classList.add("has-token-status");
+if (TOKEN_PAUSE) {
+  const shell = document.querySelector(".app-shell");
+  shell.classList.add("token-pause-mode");
+  if (BRAND_EMBED) {
+    shell.classList.add("brand-embed");
+    document.body.classList.add("brand-embed");
+    window.setTimeout(runTokenStatusDemo, 450);
+  }
+  document.querySelector(".token-status-panel__close").addEventListener("click", closeTokenStatus);
+}
 fitShell();
 window.addEventListener("resize", fitShell);
 
