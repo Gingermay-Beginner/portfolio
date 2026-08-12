@@ -1922,6 +1922,36 @@
       height: 100%;
       border: 0;
     }
+    .tool-expand-button {
+      position: absolute;
+      z-index: 7;
+      top: 12px;
+      right: 12px;
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 1px solid rgba(24, 24, 27, .12);
+      border-radius: 11px;
+      background: rgba(255, 255, 255, .9);
+      color: var(--ink);
+      box-shadow: 0 5px 18px rgba(24, 24, 27, .1);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
+      cursor: pointer;
+      transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+    }
+    .tool-expand-button:hover {
+      transform: translateY(-1px);
+      background: #fff;
+      box-shadow: 0 8px 22px rgba(24, 24, 27, .14);
+    }
+    .tool-expand-button:focus-visible {
+      outline: 2px solid var(--a3);
+      outline-offset: 3px;
+    }
+    .tool-expand-button svg { width: 18px; height: 18px; }
     .tool-embed--param { aspect-ratio: 10 / 9; }
     /* Render the parametric demo at a wider viewport, then scale down, so the
        voice bar reads smaller inside the card while still filling the box. */
@@ -1935,6 +1965,79 @@
        renders about as tall as it is wide — 784 x 1.7 / 1324 = 1.007. At 5/4
        the bottom ~116px of the panel was simply outside the frame. */
     .tool-embed--devbar { aspect-ratio: 1 / 1.01; }
+    .tool-demo-modal {
+      position: fixed;
+      z-index: 1000;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: clamp(16px, 3vw, 42px);
+      background: rgba(16, 17, 20, .56);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .2s ease, visibility .2s ease;
+    }
+    .tool-demo-modal.is-open { opacity: 1; visibility: visible; }
+    .tool-demo-dialog {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: min(1440px, 94vw);
+      height: min(900px, 90vh);
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, .44);
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 28px 90px rgba(0, 0, 0, .28);
+      transform: translateY(12px) scale(.985);
+      transition: transform .22s ease;
+    }
+    .tool-demo-modal.is-open .tool-demo-dialog { transform: none; }
+    .tool-demo-bar {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 56px;
+      padding: 0 14px 0 22px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+    .tool-demo-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--soft);
+    }
+    .tool-demo-close {
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 0;
+      border-radius: 10px;
+      background: var(--bg-2);
+      color: var(--ink);
+      cursor: pointer;
+    }
+    .tool-demo-close:hover { background: var(--line); }
+    .tool-demo-close svg { width: 18px; height: 18px; }
+    .tool-demo-frame {
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 0;
+      border: 0;
+      background: var(--bg-2);
+    }
+    body.has-tool-modal { overflow: hidden; }
+    @media (max-width: 720px) {
+      .tool-demo-modal { padding: 10px; }
+      .tool-demo-dialog { width: 100%; height: 92vh; border-radius: 16px; }
+    }
     /* Taller than the video's own 16:9 so the card sits closer in height to the
        two live demos above it (10/9 and 5/4). Loom letterboxes inside whatever
        box it's given, so height past 16:9 is bought in bars: 3/2 costs about
@@ -2125,6 +2228,8 @@
                     <span class="tag">AI &rarr; Human</span>
                     <span class="tag">Agentic AI</span>
                     <span class="tag">Progressive trust</span>
+                    <span class="tag">Prototype</span>
+                    <span class="tag">Emotional Design</span>
                   </div>
                   <h3>MicroClaw &mdash; From FOMO to trust</h3>
                   <p>Designing agentic AI for novice users in China &mdash; turning FOMO-driven installs into trusted, repeat use through first wins, visible boundaries, and ambient habit loops.</p>
@@ -2172,6 +2277,9 @@
               </div>
               <div class="tool-embed tool-embed--param">
                 <iframe src="assets/parametric-demo.html" title="Parametric Tool demo" loading="lazy"></iframe>
+                <button class="tool-expand-button" type="button" data-demo-src="assets/parametric-demo.html" data-demo-title="Parametric Tool" aria-label="Open Parametric Tool in a large window">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5"/></svg>
+                </button>
               </div>
             </article>
 
@@ -2183,6 +2291,9 @@
               </div>
               <div class="tool-embed tool-embed--devbar">
                 <iframe src="assets/devbar-demo.html" title="DevBar interactive demo" loading="lazy"></iframe>
+                <button class="tool-expand-button" type="button" data-demo-src="assets/devbar-demo.html?expanded=1" data-demo-title="DevBar" aria-label="Open DevBar in a large window">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M3 16v5h5"/></svg>
+                </button>
               </div>
             </article>
 
@@ -2199,6 +2310,18 @@
           </div>
         </div>
       </section>
+
+      <div class="tool-demo-modal" id="tool-demo-modal" aria-hidden="true">
+        <div class="tool-demo-dialog" role="dialog" aria-modal="true" aria-labelledby="tool-demo-title">
+          <div class="tool-demo-bar">
+            <span class="tool-demo-title" id="tool-demo-title">Interactive demo</span>
+            <button class="tool-demo-close" type="button" aria-label="Close large demo window">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            </button>
+          </div>
+          <iframe class="tool-demo-frame" title="Expanded interactive demo"></iframe>
+        </div>
+      </div>
 
       <section id="thinking" aria-labelledby="thinking-title">
         <div class="section-head">
@@ -3059,6 +3182,49 @@
     new IntersectionObserver(function (entries) {
       hint.classList.toggle('is-spent', entries[0].isIntersecting);
     }, { threshold: 0.3 }).observe(cards[cards.length - 1]);
+  })();
+
+  /* Parametric Tool and DevBar keep their compact, live previews in the page,
+     with an optional large workspace for a more comfortable hands-on trial. */
+  (function () {
+    var modal = document.getElementById('tool-demo-modal');
+    if (!modal) return;
+    var dialog = modal.querySelector('.tool-demo-dialog');
+    var frame = modal.querySelector('.tool-demo-frame');
+    var title = modal.querySelector('.tool-demo-title');
+    var closeButton = modal.querySelector('.tool-demo-close');
+    var lastTrigger = null;
+
+    function openDemo(trigger) {
+      lastTrigger = trigger;
+      title.textContent = trigger.getAttribute('data-demo-title') || 'Interactive demo';
+      frame.title = title.textContent + ' expanded interactive demo';
+      frame.src = trigger.getAttribute('data-demo-src');
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('has-tool-modal');
+      requestAnimationFrame(function () { closeButton.focus(); });
+    }
+
+    function closeDemo() {
+      if (!modal.classList.contains('is-open')) return;
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('has-tool-modal');
+      window.setTimeout(function () { frame.removeAttribute('src'); }, 220);
+      if (lastTrigger) lastTrigger.focus();
+    }
+
+    document.querySelectorAll('.tool-expand-button').forEach(function (button) {
+      button.addEventListener('click', function () { openDemo(button); });
+    });
+    closeButton.addEventListener('click', closeDemo);
+    modal.addEventListener('click', function (event) {
+      if (!dialog.contains(event.target)) closeDemo();
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') closeDemo();
+    });
   })();
 
   /* The nav follows the page. Each pill owns a section; the live one is the
