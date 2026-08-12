@@ -569,7 +569,7 @@
     .brand-tile figcaption strong { display: block; font: 600 16px/1.25 "Space Grotesk", sans-serif; }
     .brand-tile figcaption p { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
     .brand-tile--mark { flex-direction: column; gap: 18px; }
-    .brand-tile--mark img { width: min(42%, 200px); height: auto; object-fit: contain; }
+    .brand-tile--mark img { width: min(36%, 160px); height: auto; object-fit: contain; transform: rotate(-30deg); transform-origin: center; }
     .brand-mark-hello {
       font-family: "Caveat", ui-rounded, cursive;
       font-size: clamp(24px, 3vw, 34px);
@@ -681,6 +681,11 @@
     .brand-work-ui__agent img { width: 27px; height: 27px; object-fit: contain; }
     .brand-work-ui__top { height: 44px; margin-left: 52px; display: flex; align-items: center; gap: 9px; padding: 0 12px; border-bottom: 1px solid #e2ddd6; background: rgba(255,255,255,.82); font-size: 13px; font-weight: 600; }
     .brand-work-ui__top img { width: 26px; height: 26px; object-fit: contain; }
+    .brand-work-ui__agent img[src$="microclaw.png"],
+    .brand-work-ui__top img[src$="microclaw.png"],
+    .brand-pause-card img[src$="microclaw.png"],
+    .brand-panel__head img[src$="microclaw.png"],
+    .agent-panel-actual__head img[src$="microclaw.png"] { transform: rotate(-30deg); transform-origin: center; }
     .brand-work-ui__window { margin-left: auto; color: #8f877f; font-size: 11px; font-weight: 400; letter-spacing: .08em; }
     .brand-work-ui__body { flex: 1; min-height: 0; margin-left: 292px; display: flex; flex-direction: column; gap: 14px; padding: 22px 28px 28px; }
     .brand-work-ui__message { align-self: flex-end; max-width: 86%; padding: 13px 15px; border-radius: 15px 15px 5px 15px; background: #282421; color: rgba(255,255,255,.92); font-size: 12px; line-height: 1.45; }
@@ -892,9 +897,9 @@
         <div class="hero-product-sequence" aria-label="A continuous MicroClaw task flow">
           <div class="hero-product-label">Find a relevant task &rarr; understand the work &rarr; get a first win</div>
           <div class="hero-product">
-            <iframe src="microclaw-steps.html?only=2" title="MicroClaw helps the user find a relevant task" scrolling="no"></iframe>
-            <iframe src="microclaw-steps.html?only=3&amp;start-delay=8000" title="MicroClaw makes its work understandable" scrolling="no"></iframe>
-            <iframe src="microclaw-steps.html?only=4" title="MicroClaw completes a useful first task" scrolling="no"></iframe>
+            <iframe src="microclaw-steps.html?only=2&amp;v=avatar-30-2" title="MicroClaw helps the user find a relevant task" scrolling="no"></iframe>
+            <iframe src="microclaw-steps.html?only=3&amp;start-delay=8000&amp;v=avatar-30-2" title="MicroClaw makes its work understandable" scrolling="no"></iframe>
+            <iframe src="microclaw-steps.html?only=4&amp;v=avatar-30-2" title="MicroClaw completes a useful first task" scrolling="no"></iframe>
           </div>
         </div>
       </div>
@@ -1053,7 +1058,7 @@
                 <p>FOMO creates the pressure to install; it does not create trust. A first-timer arrives because everyone <em>must</em> have it, not because they understand the product. So the first step is <em>one tap, decisions deferred</em>: get in first, then introduce permissions and setup in context.</p>
               </div>
               <div class="pframe pframe--bare">
-                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=1" title="The install screen, running live" loading="lazy" scrolling="no"></iframe>
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=1&amp;v=avatar-30-2" title="The install screen, running live" loading="lazy" scrolling="no"></iframe>
               </div>
             </div>
             <div class="principle">
@@ -1063,7 +1068,7 @@
                 <p>FOMO gets it onto the phone; it never says what it's <em>for</em>. Facing a blank prompt, a new user has no idea where to start. So instead of an empty box, they're <em>routed into a concrete, everyday scenario</em> — the app answers &ldquo;what's in this for me&rdquo; before it asks them to.</p>
               </div>
               <div class="pframe">
-                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=2" title="The orientation scenario, running live" loading="lazy" scrolling="no"></iframe>
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=2&amp;v=avatar-30-2" title="The orientation scenario, running live" loading="lazy" scrolling="no"></iframe>
               </div>
             </div>
             <div class="principle">
@@ -1073,7 +1078,7 @@
                 <p>An agent acts on its own, and its work is invisible. Before a newcomer can trust the output, they need to <em>grasp what the agent is doing</em>. Familiar metaphors and visible states make hidden work readable instead of opaque.</p>
               </div>
               <div class="pframe">
-                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=3" title="The reasoning trace, running live" loading="lazy" scrolling="no"></iframe>
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=3&amp;v=avatar-30-2" title="The reasoning trace, running live" loading="lazy" scrolling="no"></iframe>
               </div>
             </div>
             <div class="principle">
@@ -1083,7 +1088,7 @@
                 <p>A newcomer doesn't yet know what's safe to authorize, so the order is inverted: the app <em>does the easy, valuable work first</em> — a scenario built for a guaranteed first win, with <em>familiar, app-like metaphors</em> keeping it legible — and only <em>then</em> asks for a permission, with the benefit spelled out. Trust is earned by a result, not requested on faith.</p>
               </div>
               <div class="pframe">
-                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=4" title="The first win — the answer and the ask, running live" loading="lazy" scrolling="no"></iframe>
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=4&amp;v=avatar-30-2" title="The first win — the answer and the ask, running live" loading="lazy" scrolling="no"></iframe>
               </div>
             </div>
             <div class="principle">
@@ -1093,7 +1098,7 @@
                 <p>One irreversible mistake ends the relationship; a single win fades if nothing pulls the user back. The time console gives people a way to <em>pause work, change approach, confirm high-risk actions, and recover</em>. Combined with lightweight, ambient entry points, those controls turn one first win into a trusted habit.</p>
               </div>
               <div class="pframe pframe--bare pframe--flush">
-                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=5" title="The trust console, running live" loading="lazy" scrolling="no"></iframe>
+                <iframe class="pimg pimg--live" src="microclaw-steps.html?only=5&amp;v=avatar-30-2" title="The trust console, running live" loading="lazy" scrolling="no"></iframe>
               </div>
             </div>
           </div>
@@ -1376,7 +1381,7 @@
         /* Version the inner prototype URL as well as the outer case-study.
            Otherwise Chromium can retain the old console document even after
            the parent page reloads, including its removed Grid-control logic. */
-        frame.src = "microclaw-console.html?token-pause=1&embed=brand&v=panel-controls-2";
+        frame.src = "microclaw-console.html?token-pause=1&embed=brand&v=avatar-30";
         frame.title = "MicroClaw task paused after token budget is exhausted";
         frame.scrolling = "no";
         shell.parentElement.classList.add("brand-full-app--console");

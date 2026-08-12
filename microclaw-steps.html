@@ -1507,6 +1507,8 @@
       92%, 100% { opacity: 0; }
     }
     .chat-agent-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .chat-agent-avatar img[src$="microclaw.png"],
+    .app-agent-avatar img[src$="microclaw.png"] { transform: rotate(-30deg); transform-origin: center; }
     .chat-bubble.user {
       display: inline-block;             /* size to content so right side isn't blank */
       background: var(--mc-text);
@@ -4228,7 +4230,7 @@
           stage: (
             <iframe
               className="console-embed"
-              src="microclaw-console.html?clip=pause"
+              src="microclaw-console.html?clip=pause&amp;v=avatar-30"
               title="MicroClaw time console"
               scrolling="no"
             ></iframe>
