@@ -295,10 +295,11 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .app-shell.has-token-status .app-sidebar { opacity: 0; transform: translateX(-18px); pointer-events: none; }
 .app-shell.has-token-status .app-titlebar { background: transparent; border-bottom: 0; }
 .app-shell.has-token-status .app-titlebar-left { position: relative; z-index: 2; }
-/* The controls are temporarily moved out of .app-titlebar while the status
-   panel animates. Pin that temporary container for the whole move, including
-   the 420ms closing interval after has-token-status has been removed. */
-.app-shell .token-window-controls { position: absolute; right: 0; top: 0; z-index: 3; }
+/* Keep the real controls inside the titlebar at all times. The transformed
+   app shell establishes the containing block for fixed positioning, so while
+   the panel is open they can sit at the window's far-right edge without ever
+   becoming a loose Grid child. */
+.app-shell.has-token-status .app-titlebar-controls { position: fixed; right: 0; top: 0; z-index: 3; }
 .app-shell.has-token-status .token-status-panel { opacity: 1; pointer-events: auto; transform: translateX(0); }
 .token-status-panel__head { display: flex; flex: 0 0 auto; align-items: center; gap: 9px; padding: 16px; border-bottom: 0; }
 .token-status-panel__head img { width: 36px; height: 36px; object-fit: contain; }
@@ -1379,23 +1380,14 @@ function renderTokenPauseCard() {
 
 function openTokenStatus() {
   const shell = document.querySelector(".app-shell");
-  const controls = document.querySelector(".app-titlebar-controls");
   if (!shell || shell.classList.contains("has-token-status")) return;
-  controls.classList.add("token-window-controls");
-  shell.appendChild(controls);
   requestAnimationFrame(() => shell.classList.add("has-token-status"));
 }
 
 function closeTokenStatus() {
   const shell = document.querySelector(".app-shell");
-  const titlebar = document.querySelector(".app-titlebar");
-  const controls = document.querySelector(".app-titlebar-controls");
   if (!shell || !shell.classList.contains("has-token-status")) return;
   shell.classList.remove("has-token-status");
-  window.setTimeout(() => {
-    controls.classList.remove("token-window-controls");
-    titlebar.appendChild(controls);
-  }, 420);
 }
 
 /* A session doesn't exist until something has been said in it. Before the

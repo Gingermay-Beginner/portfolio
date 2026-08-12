@@ -1373,7 +1373,10 @@
       document.querySelectorAll(".brand-work-ui").forEach(function (shell) {
         var frame = document.createElement("iframe");
         frame.className = "brand-console-embed";
-        frame.src = "microclaw-console.html?token-pause=1&embed=brand";
+        /* Version the inner prototype URL as well as the outer case-study.
+           Otherwise Chromium can retain the old console document even after
+           the parent page reloads, including its removed Grid-control logic. */
+        frame.src = "microclaw-console.html?token-pause=1&embed=brand&v=panel-controls-2";
         frame.title = "MicroClaw task paused after token budget is exhausted";
         frame.scrolling = "no";
         shell.parentElement.classList.add("brand-full-app--console");
