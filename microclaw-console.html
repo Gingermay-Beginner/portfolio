@@ -283,7 +283,7 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
   opacity: 0;
   pointer-events: none;
   transform: translateX(100%);
-  background: linear-gradient(180deg, #fff, #f7f4f1);
+  background: #fff;
   border-top: 1px solid var(--mc-border-lt);
   border-left: 1px solid var(--mc-border);
   overflow: hidden;
@@ -295,7 +295,10 @@ button { font: inherit; border: none; background: none; color: inherit; cursor: 
 .app-shell.has-token-status .app-sidebar { opacity: 0; transform: translateX(-18px); pointer-events: none; }
 .app-shell.has-token-status .app-titlebar { background: transparent; border-bottom: 0; }
 .app-shell.has-token-status .app-titlebar-left { position: relative; z-index: 2; }
-.app-shell.has-token-status .token-window-controls { position: absolute; right: 0; top: 0; z-index: 3; }
+/* The controls are temporarily moved out of .app-titlebar while the status
+   panel animates. Pin that temporary container for the whole move, including
+   the 420ms closing interval after has-token-status has been removed. */
+.app-shell .token-window-controls { position: absolute; right: 0; top: 0; z-index: 3; }
 .app-shell.has-token-status .token-status-panel { opacity: 1; pointer-events: auto; transform: translateX(0); }
 .token-status-panel__head { display: flex; flex: 0 0 auto; align-items: center; gap: 9px; padding: 16px; border-bottom: 0; }
 .token-status-panel__head img { width: 36px; height: 36px; object-fit: contain; }
@@ -1532,12 +1535,13 @@ function syncCursor() {
   } else if (state.beat === TYPE_BEAT) {
     /* Aim at the caret itself rather than at the box: it's already in the DOM
        (syncComposer ran first) and sits exactly where the typing begins, so
-       the handoff needs no measuring. Once the caret starts typing, the
-       pointer exits: the two input indicators are intentionally exclusive. */
+       the handoff needs no measuring. The pointer disappears as soon as its
+       glide reaches the input area; from there the caret is the only active
+       indicator. A pointer is shown again only when it is on the send button. */
     const caret = document.querySelector(".compose-caret");
     if (caret) cursorTo(caret, 0, -1, true);
     cursorEl.classList.add("show");
-    cursorAt(TYPE_LEAD, () => {
+    cursorAt(520, () => {
       cursorEl.classList.remove("show", "moving");
     });
   } else if (state.beat === SEND_BEAT && send) {
