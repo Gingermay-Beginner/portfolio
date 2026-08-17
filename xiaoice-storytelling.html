@@ -1,0 +1,1062 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Microsoft Xiaoice Animated Storybook · Bingnan Jiang</title>
+  <meta name="description" content="微软小冰可动绘本案例：将难以落地的故事自动成片概念，重构为由 Story-to-Script、Auto Storyboard 与可复用视觉资产驱动的内容生产系统。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --ink:#18181b;
+      --soft:#3f3f46;
+      --muted:#71717a;
+      --faint:#a1a1aa;
+      --line:#e4e4e7;
+      --line-strong:#d4d4d8;
+      --bg:#f4f4f5;
+      --bg-2:#fafafa;
+      --panel:#f4f4f5;
+      --card:#fff;
+      --glass:rgba(255,255,255,.88);
+      --green:#10b981;
+      --green-dark:var(--green);
+      --green-soft:rgba(16,185,129,.08);
+      --green-line:rgba(16,185,129,.32);
+      --white:#fff;
+      --shadow:0 18px 42px -34px rgba(24,24,27,.48);
+      --max:1080px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Space Grotesk","PingFang SC","Microsoft YaHei",system-ui,sans-serif;letter-spacing:.1px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%}
+    button{font:inherit}
+    .mono,.kicker,.eyebrow,.section-no,.node-tag,.proof-kicker,.metric-label{font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace}
+    h1,h2,h3{font-family:"Space Grotesk",Inter,"PingFang SC","Microsoft YaHei",sans-serif}
+    .wrap{width:min(var(--max),calc(100vw - 40px));margin:0 auto}
+    .topbar{position:sticky;top:0;z-index:30;background:var(--glass);backdrop-filter:saturate(1.4) blur(14px);-webkit-backdrop-filter:saturate(1.4) blur(14px)}
+    .topbar-inner{width:min(1180px,calc(100vw - 40px));margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:58px}
+    .back-link{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:14px;color:var(--soft);transition:color .2s ease}
+    .back-link:hover{color:var(--ink)}
+    .back-link .arw{transition:transform .22s ease}
+    .back-link:hover .arw{transform:translateX(-3px)}
+    .top-actions{display:inline-flex;gap:10px}
+    .btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 15px;border:1px solid var(--line-strong);border-radius:999px;background:var(--card);color:var(--ink);font-size:13px;font-weight:600;transition:transform .2s ease,border-color .2s ease,background .2s ease}
+    .btn:hover{transform:translateY(-1px);border-color:var(--ink)}
+    section[id]{scroll-margin-top:76px}
+    .shell{width:min(1180px,calc(100vw - 40px));margin:0 auto;display:grid;grid-template-columns:196px minmax(0,1fr);gap:46px;align-items:start}
+    .content{min-width:0}
+    .content .wrap{width:100%}
+    .toc{position:sticky;top:78px;margin-top:96px;padding-right:8px;align-self:start}
+    .toc-title{font-family:"Space Grotesk",sans-serif;font-size:15px;font-weight:600;letter-spacing:-.2px;color:var(--ink);margin-bottom:3px}
+    .toc-kicker{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--faint);margin-bottom:16px}
+    .toc-list{display:flex;flex-direction:column}
+    .toc-list a{display:flex;gap:11px;align-items:baseline;padding:8px 0 8px 15px;margin-left:-1px;border-left:2px solid var(--line);font-size:13.5px;color:var(--muted);transition:color .2s ease,border-color .2s ease}
+    .toc-list a .n{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--faint);transition:color .2s ease}
+    .toc-list a:hover{color:var(--ink)}
+    .toc-list a.active{color:var(--ink);font-weight:600;border-color:var(--ink)}
+    .toc-list a.active .n{color:var(--green)}
+    .hero{padding:76px 0 64px}
+    .kicker,.section-no,.node-tag,.proof-kicker,.metric-label{font-size:9px;letter-spacing:1.1px;text-transform:uppercase}
+    .kicker{display:flex;align-items:center;gap:9px;color:var(--green)}
+    .kicker-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+    h1{max-width:980px;margin:18px 0 18px;font-size:clamp(44px,6vw,78px);line-height:1.02;letter-spacing:-3.2px}
+    .lede{max-width:900px;margin:0;font-size:19px;line-height:1.7;color:var(--muted)}
+    .lede strong{color:var(--ink)}
+    .hero-flow-label{margin-top:38px;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;color:var(--green)}
+    .hero-flow{margin-top:10px;border:1px solid var(--line);border-radius:18px;background:white;overflow:hidden;display:grid;grid-template-columns:repeat(4,1fr);gap:0;align-items:stretch}
+    .hero-step{padding:24px 22px;border-radius:0;background:transparent}
+    .hero-step+.hero-step{border-left:1px solid var(--line)}
+    .hero-step>.eyebrow{display:block;min-height:24px;font-size:9px;line-height:1.2;letter-spacing:1px;text-transform:uppercase;color:var(--faint)}
+    .hero-step b{display:block;margin-top:10px;font-size:16px}
+    .hero-step p{margin:7px 0 0;font-size:12px;line-height:1.55;color:var(--muted)}
+    .meta-grid{margin-top:14px;border:1px solid var(--line);border-radius:16px;background:white;display:grid;grid-template-columns:repeat(4,1fr);overflow:hidden}
+    .meta-cell{padding:17px 18px}
+    .meta-cell+.meta-cell{border-left:1px solid var(--line)}
+    .meta-cell span{display:block;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--faint)}
+    .meta-cell b{display:block;margin-top:7px;font-size:12px;line-height:1.45}
+    .section{padding:74px 0;border-top:1px solid var(--line)}
+    .section-head{max-width:850px;margin-bottom:28px}
+    .section-no{color:var(--green)}
+    h2{margin:13px 0 10px;font-size:clamp(30px,4vw,48px);line-height:1.1;letter-spacing:-1.6px}
+    .section-head p{margin:0;font-size:15px;line-height:1.75;color:var(--muted)}
+    h3{font-size:22px;line-height:1.25}
+    .card{border:1px solid var(--line);border-radius:18px;background:white;padding:28px;box-shadow:var(--shadow)}
+    .lead{margin:0;font-size:16px;line-height:1.75;color:var(--soft)}
+    .lead strong{color:var(--ink)}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .mini-card{border:1px solid var(--line);border-radius:14px;background:white;padding:20px}
+    .mini-card--green{border-color:var(--line);background:white}
+    .mini-card--green h3{color:var(--green)}
+    .mini-card h3{margin:10px 0 8px;font-size:17px}
+    .mini-card p{margin:0;font-size:12.5px;line-height:1.65;color:var(--muted)}
+    .context-rows{display:grid;gap:22px}
+    .context-row-title{margin:0 0 9px;font-size:9px;letter-spacing:1.1px;text-transform:uppercase;color:var(--green)}
+    .context-card{border:1px solid var(--line);border-radius:16px;background:white;overflow:hidden;display:grid;grid-template-columns:repeat(3,1fr)}
+    .context-cell{min-height:160px;padding:22px}
+    .context-cell+.context-cell{border-left:1px solid var(--line)}
+    .context-cell--focus{background:white}
+    .context-cell--focus h3{color:var(--green)}
+    .context-cell>.eyebrow{display:block;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--faint)}
+    .context-cell h3{margin:9px 0 7px;font-size:16px}
+    .context-cell p{margin:0;font-size:12px;line-height:1.6;color:var(--muted)}
+    .route-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .route{border:1px solid var(--line);border-radius:16px;background:white;padding:24px}
+    .route h3{margin:11px 0 9px}
+    .route p,.route li{font-size:12.5px;line-height:1.65;color:var(--muted)}
+    .route ul{margin:14px 0 0;padding-left:19px}
+    .route-verdict{margin-top:17px;padding-top:13px;border-top:1px solid var(--line);font-size:11px;font-weight:700;color:var(--soft)}
+    .decision{margin-top:12px;border:1px solid var(--line);border-radius:18px;background:white;padding:26px}
+    .decision h3{margin:10px 0 8px;color:var(--green-dark)}
+    .decision p{margin:0;font-size:14px;line-height:1.7;color:var(--soft)}
+    .evidence{margin:16px 0 0;border:1px solid var(--line);border-radius:16px;background:white;overflow:hidden}
+    .evidence img{display:block;width:100%;height:auto}
+    .evidence figcaption{display:grid;grid-template-columns:170px 1fr;gap:18px;padding:17px 19px;border-top:1px solid var(--line);font-size:12px;line-height:1.6;color:var(--muted)}
+    .evidence figcaption.evidence-caption--single{grid-template-columns:1fr}
+    .evidence figcaption b{color:var(--ink)}
+    .implication-pair{margin-top:12px;border:1px solid var(--line);border-radius:16px;background:white;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;align-items:stretch}
+    .implication-cell{padding:22px}
+    .implication-cell+.implication-cell{border-left:1px solid var(--line)}
+    .unit-summary-label{color:var(--green);font-size:9px;letter-spacing:1px;text-transform:uppercase}
+    .quality-list,.unit-track{margin-top:14px}
+    .quality-list{padding-left:18px}
+    .quality-list li+li{margin-top:12px}
+    .quality-list li::marker{color:var(--green)}
+    .quality-list b{display:block;font-size:13.5px}
+    .quality-list p{margin:5px 0 0;font-size:11.5px;line-height:1.6;color:var(--muted)}
+    .unit-track{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .unit-token{padding:10px 13px;border:1px solid var(--line-strong);border-radius:10px;background:white;font-size:12px;font-weight:700}
+    .plus{color:var(--green);font-weight:800}
+    .pipeline{padding:24px;border:1px solid var(--line);border-radius:18px;background:white}
+    .pipeline-main{display:grid;grid-template-columns:1fr 26px 1.2fr 26px 1.35fr 26px 1.1fr 26px 1fr;gap:0;align-items:stretch}
+    .pipe-node{position:relative;padding:17px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+    .pipe-node--mine{border-color:var(--line);background:white}
+    .pipe-node--mine b{color:var(--green)}
+    .pipe-node b{display:block;margin-top:9px;font-size:14px}
+    .pipe-node p{margin:6px 0 0;font-size:10.5px;line-height:1.5;color:var(--muted)}
+    .pipe-arrow{position:relative;display:grid;place-items:center}
+    .pipe-arrow:before{content:"";width:100%;height:1px;background:var(--green)}
+    .pipe-arrow:after,.pipeline-support-link:after,.pipeline-audio-feed:after{content:"";position:absolute;width:8px;height:8px;background:var(--green);clip-path:polygon(0 0,100% 50%,0 100%)}
+    .pipe-arrow:after{right:0;top:50%;transform:translateY(-50%)}
+    .pipeline-support{width:58%;margin:0 auto}
+    .pipeline-support-link,.pipeline-audio-feed{position:relative;min-height:38px;display:block}
+    .pipeline-support-link:before,.pipeline-audio-feed:before{content:"";position:absolute;top:0;bottom:0;left:50%;width:1px;background:var(--green)}
+    .pipeline-support-link:after{top:0;left:50%;transform:translateX(-50%) rotate(-90deg)}
+    .pipeline-audio-feed:after{bottom:0;left:50%;transform:translateX(-50%) rotate(90deg)}
+    .pipeline-support-grid{border:1px solid var(--line);border-radius:13px;background:white;overflow:hidden;display:grid;grid-template-columns:1fr 1fr}
+    .pipeline-support-node{padding:16px}
+    .pipeline-support-node+.pipeline-support-node{border-left:1px solid var(--line)}
+    .pipeline-support-node b{color:var(--green)}
+    .pipeline-support-node b{display:block;margin-top:8px;font-size:13px}
+    .pipeline-support-node p{margin:6px 0 0;font-size:10.5px;line-height:1.55;color:var(--muted)}
+    .pipeline-inputs{display:grid;grid-template-columns:1fr 26px 1.2fr 26px 1.35fr 26px 1.1fr 26px 1fr;gap:0}
+    .pipeline-audio-stack{grid-column:7;display:grid;gap:0}
+    .pipeline-audio{padding:12px 14px;border:1px dashed var(--line-strong);border-radius:11px;background:var(--bg);font-size:10.5px;line-height:1.5;color:var(--muted);text-align:center}
+    .pipeline-audio-title{margin-top:7px;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+    .pipeline-audio b{color:var(--ink)}
+    .ownership{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:16px;background:white;overflow:hidden}
+    .ownership .mini-card{border:0;border-radius:0;background:white;box-shadow:none;padding:22px}
+    .ownership .mini-card+.mini-card{border-left:1px solid var(--line)}
+    .logic{border:1px solid var(--line);border-radius:18px;background:var(--bg-2);padding:26px}
+    .logic-head{max-width:800px}
+    .logic-head h3{margin:11px 0 8px}
+    .logic-head p{margin:0;font-size:13.5px;line-height:1.7;color:var(--muted)}
+    .logic-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:20px}
+    .logic-step{position:relative;min-height:215px;border:1px solid var(--line);border-radius:14px;background:white;padding:18px}
+    .logic-step+.logic-step:before{content:"→";position:absolute;left:-16px;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--bg-2);color:var(--green);font-weight:800}
+    .logic-step--focus{border-color:var(--line);background:white}
+    .logic-step--focus h4{color:var(--green)}
+    .logic-step h4{margin:10px 0 7px;font-size:16px}
+    .logic-step p{margin:0;font-size:11.5px;line-height:1.6;color:var(--muted)}
+    .logic-pills{display:grid;gap:7px;margin-top:13px}
+    .logic-pill{padding:9px 10px;border-radius:9px;background:var(--panel);font-size:10px;font-weight:700;line-height:1.4}
+    .logic-pill--keep{border:1px solid var(--line);background:white;color:var(--green)}
+    .logic-pill--omit{border:1px dashed var(--faint);background:rgba(255,255,255,.65);color:var(--muted)}
+    .logic-note{display:block;margin-top:10px;font-size:10px;line-height:1.5;color:var(--faint)}
+    .handoff{margin-top:24px;border:1px solid var(--line);border-radius:18px;background:white;overflow:hidden}
+    .handoff-head{padding:17px 22px;border-bottom:1px solid var(--line)}
+    .handoff-head b{display:block;margin-top:7px;font-size:14px}
+    .handoff-body{display:grid;grid-template-columns:minmax(280px,.72fr) minmax(0,1.28fr);align-items:stretch}
+    .handoff-copy{display:grid;grid-template-rows:repeat(2,1fr)}
+    .handoff-module{padding:22px;background:white}
+    .handoff-module+.handoff-module{border-top:1px solid var(--line)}
+    .handoff-module--visual{background:white}
+    .handoff-module h3{margin:9px 0 7px;font-size:17px}
+    .handoff-module p{margin:0;font-size:11.5px;line-height:1.6;color:var(--muted)}
+    .handoff-mapping{min-height:300px;padding:26px 22px;border-left:1px solid var(--line);display:grid;grid-template-columns:minmax(110px,1fr) minmax(135px,1fr) minmax(270px,2fr);gap:14px;align-items:center;background:var(--bg-2)}
+    .map-column{display:grid;grid-template-rows:auto 58px auto;align-items:center;min-width:0}
+    .map-pill{box-sizing:border-box;width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:999px;background:var(--panel);display:grid;place-items:center;font-size:10.5px;font-weight:700;line-height:1.25;text-align:center}
+    .map-pill--storyboard{border-color:var(--green-line);background:white;color:var(--green-dark)}
+    .map-link{width:1px;height:100%;justify-self:center;background:var(--green)}
+    .map-column--branch .map-pill--script{width:calc((100% - 10px)/2);justify-self:center}
+    .map-branch{position:relative;height:58px}
+    .map-branch:before{content:"";position:absolute;left:50%;top:0;height:29px;border-left:1px solid var(--green)}
+    .map-branch:after{content:"";position:absolute;left:25%;right:25%;top:29px;border-top:1px solid var(--green)}
+    .map-outputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+    .map-output{position:relative}
+    .map-output:before{content:"";position:absolute;left:50%;top:-29px;height:29px;border-left:1px solid var(--green)}
+    .proof-section{margin-top:24px}
+    .proof-head{display:flex;justify-content:space-between;gap:24px;align-items:end;margin-bottom:13px}
+    .proof-head h3{margin:8px 0 0}
+    .proof-head p{max-width:410px;margin:0;font-size:12px;line-height:1.6;color:var(--muted)}
+    .proof-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .proof-card{padding:0;border:1px solid var(--line);border-radius:15px;background:white;overflow:hidden;text-align:left;cursor:pointer;transition:transform .2s,box-shadow .2s}
+    .proof-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+    .proof-card--wide{display:grid;grid-template-columns:1fr;width:100%;margin:16px 0 12px}
+    .proof-card--wide .proof-thumb{aspect-ratio:16/9}
+    .proof-card--wide .proof-thumb img{object-fit:contain}
+    .proof-card--wide .proof-copy{display:flex;flex-direction:column;justify-content:center}
+    .proof-thumb{aspect-ratio:16/9;overflow:hidden;background:var(--panel)}
+    .proof-thumb img{width:100%;height:100%;object-fit:cover}
+    .proof-card[data-gallery] .proof-thumb img{transition:opacity .2s ease}
+    .proof-card[data-gallery] .proof-thumb img.is-swapping{opacity:.08}
+    .proof-copy{padding:17px}
+    .proof-copy h4{margin:8px 0 6px;font-size:15px}
+    .proof-copy p{margin:0;font-size:11.5px;line-height:1.6;color:var(--muted)}
+    .proof-open{display:block;margin-top:10px;font-size:10px;color:var(--green)}
+    .asset-principle{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    .asset-group{border:1px solid var(--line);border-radius:15px;background:white;padding:22px}
+    .asset-group--rule{border-color:var(--line);background:white}
+    .asset-group--rule h3{color:var(--green)}
+    .asset-group h3{margin:9px 0 8px}
+    .asset-group p{margin:0;font-size:12.5px;line-height:1.65;color:var(--muted)}
+    .asset-list{display:flex;flex-wrap:wrap;gap:7px;margin-top:15px}
+    .asset-chip{padding:8px 10px;border:1px solid var(--line);border-radius:999px;background:var(--panel);font-size:10px;font-weight:700}
+    .assembly{margin-top:12px;padding:17px 19px;border:1px solid var(--line);border-radius:12px;background:white;font-size:13px;line-height:1.65;color:var(--soft)}
+    .assembly strong{color:var(--green)}
+    .collab{display:grid;grid-template-columns:1fr 40px 1fr;align-items:stretch}
+    .role{padding:24px;border:1px solid var(--line);border-radius:15px;background:white}
+    .role h3{margin:10px 0 8px}
+    .role p{margin:0;font-size:12.5px;line-height:1.65;color:var(--muted)}
+    .bridge{display:grid;place-items:center;color:var(--green);font-size:20px}
+    .loop{margin-top:12px;padding:16px;border:1px solid var(--line);border-radius:13px;background:white;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap}
+    .loop span{padding:8px 10px;border-radius:8px;background:var(--panel);font-size:10.5px;font-weight:700}
+    .loop b{color:var(--green)}
+    .implementation{margin-top:12px;display:grid;grid-template-columns:1.25fr .75fr;border:1px solid var(--line);border-radius:16px;background:white;overflow:hidden}
+    .implementation img{display:block;width:100%;height:100%;object-fit:cover}
+    .implementation-copy{padding:24px}
+    .implementation-copy h3{margin:10px 0 8px}
+    .implementation-copy p{font-size:12px;line-height:1.65;color:var(--muted)}
+    .timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+    .timeline-item{padding:18px;border-top:3px solid var(--line-strong);background:white;border-radius:0 0 13px 13px}
+    .timeline-item:last-child{border-color:var(--green)}
+    .timeline-item h3{font-size:15px;margin:8px 0 6px}
+    .timeline-item p{font-size:11.5px;line-height:1.55;color:var(--muted);margin:0}
+    .video{border:1px solid var(--line);border-radius:16px;background:white;overflow:hidden}
+    .video-still{position:relative;aspect-ratio:16/8.8;background:var(--panel)}
+    .video-still img{width:100%;height:100%;object-fit:cover}
+    .video-badge{position:absolute;top:14px;left:14px;padding:7px 9px;border-radius:999px;background:rgba(24,24,27,.82);color:white;font-size:9px;letter-spacing:.8px;text-transform:uppercase}
+    .video-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;display:grid;place-items:center;padding-left:3px;background:rgba(255,255,255,.9);font-size:20px;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+    .video figcaption{padding:16px 18px;border-top:1px solid var(--line);font-size:12px;line-height:1.6;color:var(--muted)}
+    .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+    .measurement-scope{margin-top:12px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:white;display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center}.measurement-scope b{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--green)}.measurement-scope span{font-size:11.5px;line-height:1.6;color:var(--soft)}
+    .metric{border:1px solid var(--line);border-radius:15px;background:white;padding:22px}
+    .metric strong{display:block;font-size:38px;line-height:1;color:var(--green)}
+    .metric b{display:block;margin-top:11px;font-size:14px}
+    .metric p{margin:8px 0 0;font-size:11.5px;line-height:1.6;color:var(--muted)}
+    .notice{font-size:10.5px;line-height:1.6;color:var(--faint)}
+    .transfer{display:grid;grid-template-columns:1.2fr .8fr;gap:12px}
+    .mapping{width:100%;border-collapse:collapse}
+    .mapping th,.mapping td{padding:13px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:11.5px;line-height:1.5}
+    .mapping th{font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--faint)}
+    .reflection-list{display:grid;gap:10px}
+    .reflection-item{padding:17px;border:1px solid var(--line);border-radius:13px;background:white}
+    .reflection-item h3{font-size:15px;margin:8px 0 6px}
+    .reflection-item p{margin:0;font-size:11.5px;line-height:1.6;color:var(--muted)}
+    .footer{padding:64px 0 80px;border-top:1px solid var(--line)}
+    .footer h2{margin:0}
+    .footer p{color:var(--muted)}
+    .lightbox{width:min(1180px,94vw);max-height:92vh;padding:0;border:0;border-radius:18px;background:white;box-shadow:0 30px 90px rgba(0,0,0,.38)}
+    .lightbox--document{width:min(1480px,96vw);max-height:96vh}
+    .lightbox::backdrop{background:rgba(9,9,11,.78);backdrop-filter:blur(5px)}
+    .lightbox-top{height:54px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}
+    .lightbox-top span{font-size:10px;color:var(--muted)}
+    .lightbox-close{width:34px;height:34px;border:0;border-radius:50%;outline:0;background:var(--panel);box-shadow:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .lightbox-close:hover,.lightbox-close:focus-visible{outline:0;background:#e4e4e7;box-shadow:none}
+    .lightbox-stage{max-height:68vh;overflow:auto;background:#f0ecec}
+    .lightbox-stage img{display:block;width:100%;height:auto}
+    .lightbox-document{display:none;width:100%;height:100%;border:0;background:white}
+    .lightbox--document .lightbox-stage{height:min(82vh,960px);max-height:none;overflow:hidden;background:white}
+    .lightbox--document .lightbox-stage img{display:none}
+    .lightbox--document .lightbox-document{display:block}
+    .lightbox--document .lightbox-info{display:none}
+    .lightbox-gallery{display:none}
+    .lightbox--gallery{width:min(1180px,calc(100vw - 160px));max-height:96vh;overflow:visible}
+    .lightbox--gallery .lightbox-stage{position:relative;height:min(72vh,820px);max-height:none;display:block;overflow:hidden;background:white}
+    .lightbox--gallery #lightboxImage{display:none}
+    .lightbox--gallery .lightbox-gallery{display:grid;gap:12px;height:100%;overflow-y:auto;padding:0}
+    .lightbox--gallery .lightbox-gallery img{width:100%;height:auto;object-fit:contain;background:white}
+    .gallery-thumbnails{display:none}
+    .lightbox--gallery .gallery-thumbnails{position:absolute;top:54px;left:calc(100% + 14px);z-index:3;display:flex;width:112px;height:min(72vh,820px);padding-right:4px;flex-direction:column;gap:8px;overflow-y:auto}
+    .gallery-thumbnails button{position:relative;flex:0 0 auto;width:100%;padding:0;overflow:hidden;border:2px solid transparent;border-radius:8px;background:#18181b;box-shadow:0 5px 16px rgba(0,0,0,.22);cursor:pointer;opacity:.58;transition:border-color .18s ease,opacity .18s ease,transform .18s ease}
+    .gallery-thumbnails button:hover{opacity:.86}
+    .gallery-thumbnails button.active{border-color:var(--green);opacity:1}
+    .gallery-thumbnails img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+    .gallery-thumbnails span{position:absolute;right:4px;bottom:4px;padding:2px 4px;border-radius:4px;background:rgba(24,24,27,.78);color:white;font:8px "JetBrains Mono",monospace}
+    .lightbox-info{padding:18px}
+    .lightbox-info h3{margin:0 0 7px;font-size:17px}
+    .lightbox-info p{margin:0;font-size:12px;line-height:1.65;color:var(--muted)}
+    @media(max-width:1080px){
+      .logic-steps{grid-template-columns:1fr 1fr}.logic-step+.logic-step:before{display:none}
+      .metrics{grid-template-columns:repeat(2,1fr)}
+      .transfer{grid-template-columns:1fr}
+    }
+    @media(max-width:760px){
+      .lightbox--gallery{width:94vw;overflow:hidden}
+      .lightbox--gallery .gallery-thumbnails{position:static;width:auto;height:auto;padding:10px;flex-direction:row;overflow-x:auto;overflow-y:hidden;background:white}
+      .gallery-thumbnails button{flex-basis:96px}
+      .gallery-thumbnails button.active{transform:translateY(-2px)}
+    }
+    @media(max-width:980px){.shell{grid-template-columns:1fr;gap:0}.toc{display:none}}
+    @media(max-width:760px){
+      .topbar-inner,.shell{width:calc(100vw - 36px)}
+      .hero{padding-top:52px}h1{letter-spacing:-2px}
+      .hero-flow,.grid-3,.route-grid,.meta-grid,.asset-principle,.ownership,.proof-grid,.timeline,.metrics,.collab,.implementation{grid-template-columns:1fr}
+      .ownership .mini-card+.mini-card{border-top:1px solid var(--line);border-left:0}
+      .bridge{transform:rotate(90deg);min-height:22px}
+      .hero-step+.hero-step{border-top:1px solid var(--line);border-left:0}
+      .meta-cell+.meta-cell{border-left:0;border-top:1px solid var(--line)}
+      .context-card{grid-template-columns:1fr}
+      .context-cell{min-height:0}
+      .context-cell+.context-cell{border-top:1px solid var(--line);border-left:0}
+      .logic-steps{grid-template-columns:1fr}.logic-step{min-height:0}
+      .implication-pair,.measurement-scope{grid-template-columns:1fr}
+      .handoff-body{grid-template-columns:1fr}
+      .handoff-mapping{min-height:0;border-left:0;border-top:1px solid var(--line);grid-template-columns:1fr;padding:22px}
+      .map-column{grid-template-rows:auto 42px auto}
+      .map-branch{height:42px}
+      .map-branch:before{height:21px}
+      .map-branch:after{top:21px}
+      .map-output:before{top:-21px;height:21px}
+      .implication-cell+.implication-cell{border-top:1px solid var(--line);border-left:0}
+      .pipeline-main{grid-template-columns:1fr}.pipe-arrow{min-height:22px}
+      .pipe-arrow:before{width:1px;height:100%}
+      .pipe-arrow:after{right:auto;top:auto;bottom:0;left:50%;transform:translateX(-50%) rotate(90deg)}
+      .pipeline-support{width:100%}
+      .pipeline-support-grid{grid-template-columns:1fr}
+      .pipeline-support-node+.pipeline-support-node{border-top:1px solid var(--line);border-left:0}
+      .pipeline-inputs{grid-template-columns:1fr}
+      .pipeline-audio-stack{grid-column:1}
+      .evidence figcaption{grid-template-columns:1fr;gap:5px}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="back-link" href="portfolio.html">
+        <span class="arw mono">&larr;</span>
+        <span>Home</span>
+      </a>
+      <div class="top-actions">
+        <a class="btn" href="portfolio.html#work">All work</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="shell">
+    <aside class="toc" id="toc">
+      <div class="toc-title">Microsoft Xiaoice Animated Storybook</div>
+      <div class="toc-kicker">Case study</div>
+      <nav class="toc-list">
+        <a href="#context"><span class="n">01</span><span>背景与介入</span></a>
+        <a href="#decision"><span class="n">02</span><span>约束与决策</span></a>
+        <a href="#overview"><span class="n">03</span><span>系统全景</span></a>
+        <a href="#script"><span class="n">04</span><span>Story-to-Script</span></a>
+        <a href="#visual"><span class="n">05</span><span>视觉系统</span></a>
+        <a href="#implementation"><span class="n">06</span><span>工程化与修正</span></a>
+        <a href="#impact"><span class="n">07</span><span>发布与结果</span></a>
+        <a href="#transfer"><span class="n">08</span><span>迁移与复盘</span></a>
+      </nav>
+    </aside>
+
+    <div class="content">
+      <section class="hero">
+        <div class="wrap">
+          <div class="kicker"><span class="kicker-dot"></span>Microsoft Xiaoice · Text-to-animation system</div>
+          <h1>Turning Story-to-Animation from a Launch Concept into a Production-Ready System</h1>
+          <p class="lede">面对当时尚不成熟的故事理解能力和不可规模化的传统动画方案，我将阶段目标从<strong>动画片</strong>重新定义为<strong>可动绘本</strong>，并建立 Story-to-Script、Auto Storyboard 与可复用视觉资产系统，为小冰 C 端 App 持续生产“讲故事”内容。</p>
+
+          <div class="hero-flow-label mono">00 / Case study at a glance</div>
+          <div class="hero-flow">
+            <div class="hero-step">
+              <span class="eyebrow">Problem</span>
+              <b>动画片路线无法按期、规模化落地</b>
+              <p>模型能力与传统制作方式，都无法同时满足发布期限和持续供给。</p>
+            </div>
+            <div class="hero-step">
+              <span class="eyebrow">My product decision</span>
+              <b>动画片 → 可动绘本</b>
+              <p>用有限动效、旁白与模块化画面，重新定义阶段成功标准。</p>
+            </div>
+            <div class="hero-step">
+              <span class="eyebrow">My system contribution</span>
+              <b>Story-to-Script ＋ 可复用视觉系统</b>
+              <p>定义故事拆分、规则映射、资产调用与画面组合流程。</p>
+            </div>
+            <div class="hero-step">
+              <span class="eyebrow">Outcome</span>
+              <b>单条生产约 24h → 40min</b>
+              <p>完整 Template 库建成、规则与资产流程稳定后的效率。</p>
+            </div>
+          </div>
+
+          <div class="meta-grid">
+            <div class="meta-cell"><span>Role</span><b>产品重构 · 流程定义 · 系统设计</b></div>
+            <div class="meta-cell"><span>Initiative</span><b>主动扩大范围并发起工程合作</b></div>
+            <div class="meta-cell"><span>Team</span><b>PM ×1 · 我（系统与设计）· 插画师 ×2 · 开发 ×1</b></div>
+            <div class="meta-cell"><span>Period</span><b>2019</b></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="context">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="section-no">01 / 项目背景与我的介入</div>
+            <h2>发布会给出了硬期限，也暴露了不可规模化的生产方式</h2>
+            <p>2019 年发布会将“文本自动生成动画”列为发布能力，团队必须在会前交付真实可运行、可稳定复现的方案。</p>
+          </div>
+
+          <div class="context-rows">
+            <div class="context-row">
+              <div class="context-row-title mono">Product context</div>
+              <div class="context-card">
+                <div class="context-cell">
+                  <span class="eyebrow">End user</span>
+                  <h3>小冰 C 端 App 用户</h3>
+                  <p>用户在 App 内播放“小冰讲故事”内容，消费的是最终成片。</p>
+                </div>
+                <div class="context-cell">
+                  <span class="eyebrow">System role</span>
+                  <h3>内部内容供应系统</h3>
+                  <p>系统服务 PM、设计和内容生产流程，而非面向 C 端用户的创作工具。</p>
+                </div>
+                <div class="context-cell">
+                  <span class="eyebrow">Input → Output</span>
+                  <h3>故事文本 → App 可播放内容</h3>
+                  <p>输入自然语言故事并调用可复用资产，输出画面、动画、旁白和字幕。</p>
+                </div>
+              </div>
+            </div>
+            <div class="context-row">
+              <div class="context-row-title mono">My intervention</div>
+              <div class="context-card">
+                <div class="context-cell">
+                  <span class="eyebrow">Initial ask</span>
+                  <h3>协调插画交付</h3>
+                  <p>PM 提供脚本和素材要求；我原本只需要向两位插画师传递需求并确保按时完成。</p>
+                </div>
+                <div class="context-cell">
+                  <span class="eyebrow">System problem</span>
+                  <h3>重复劳动不断放大</h3>
+                  <p>PM 被脚本撰写占用，插画师持续生产无法复用的一次性素材。</p>
+                </div>
+                <div class="context-cell context-cell--focus">
+                  <span class="eyebrow">My initiative</span>
+                  <h3>主动接手系统定义</h3>
+                  <p>我将范围扩大到动画脚本规则、视觉资产系统和端到端流程。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="decision">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="section-no">02 / 技术约束与产品决策</div>
+            <h2>真正的问题不是怎么生成动画片，而是这个阶段什么才算成功</h2>
+            <p>我先判断两条既有路线为什么无法在期限与资源约束内成立，再重新定义用户应该期待的产品形态。</p>
+          </div>
+
+          <div class="route-grid">
+            <article class="route">
+              <span class="eyebrow">Route A · Model-first</span>
+              <h3>让 AI 真正理解完整故事</h3>
+              <p>模型需要理解物理关系、隐藏信息、跨句指代、人物关系和镜头调度，才可能像导演一样生成连续动画。</p>
+              <ul>
+                <li>“带着一包烟”和“带着一只狗”具有完全不同的物理关系</li>
+                <li>“他、她、他们”跨句后容易失去指代</li>
+                <li>镜头进入、退出与运动依赖完整世界理解</li>
+              </ul>
+              <div class="route-verdict">当时无法在发布周期内稳定落地</div>
+            </article>
+            <article class="route">
+              <span class="eyebrow">Route B · Production-first</span>
+              <h3>沿用传统动画片制作方式</h3>
+              <p>人工完成脚本、分镜、素材、动作和镜头能够控制单条质量，但本质上只是扩大制作团队。</p>
+              <ul>
+                <li>脚本依赖 PM 个人处理，缺少统一标准</li>
+                <li>每条内容定制素材，无法支持批量复用</li>
+                <li>即使做出一条，也不能证明系统可规模化</li>
+              </ul>
+              <div class="route-verdict">可以制作，但无法成为可持续的产品能力</div>
+            </article>
+          </div>
+
+          <div class="decision">
+            <span class="eyebrow">My product decision</span>
+            <h3>把阶段目标从“生成动画片”改成“稳定生成可动绘本”</h3>
+            <p>降低对连续表演、复杂物理关系和精确镜头调度的期待；用有限动效、旁白、字幕和模块化画面形成完整叙事。成功标准由“像动画片”变成“真实可运行、结果可预期、内容可持续生产”。</p>
+          </div>
+
+          <figure class="evidence">
+            <img src="assets/xiaoice-product-reframe-original-v2.jpeg" alt="项目中从动画片制作目标到可动绘本产品形态的对比">
+            <figcaption class="evidence-caption--single"><span>左：依赖逐镜头设计和连续表演的动画片；右：以独立画面和有限动效连接叙事的可动绘本。</span></figcaption>
+          </figure>
+
+          <button class="proof-card proof-card--wide" data-full="assets/xiaoice-mvp-system-boundary-035.jpeg" data-title="MVP：主体图像 + 动画" data-caption="语义分析可以保留宾语，但首版不为宾语生成独立图像，只将主语映射为主体、谓语或表语结构映射为动画。">
+            <div class="proof-thumb"><img src="assets/xiaoice-mvp-system-boundary-035.jpeg" alt="从故事句式到 Script 与视觉画面的 MVP 映射规则"></div>
+            <div class="proof-copy"><span class="proof-kicker">MVP system boundary</span><h4>先实现“主体图像 + 动画”</h4><p>主动缩小视觉语义范围，先证明文字可以稳定生成会动的画面。</p><span class="proof-open">查看原图 ↗</span></div>
+          </button>
+
+          <div class="implication-pair">
+            <div class="implication-cell">
+              <span class="unit-summary-label mono">MVP acceptance criterion</span>
+              <ul class="quality-list">
+                <li><b>每个被选中可视化的句子单元 → 一个对应画面</b><p>画面必须有明确主体，并匹配该句的动作或状态；相邻画面可以继续使用同一角色。</p></li>
+                <li><b>画面更新频率：至少每 2 句话切换一次</b><p>连续两句话可以共用一个画面；进入第 3 句话时必须切换。</p></li>
+              </ul>
+            </div>
+            <div class="implication-cell">
+              <span class="unit-summary-label mono">System implication</span>
+              <div class="unit-track">
+                <span class="unit-token">Complete story</span><span class="plus">=</span>
+                <span class="unit-token">Animation unit 01</span><span class="plus">+</span>
+                <span class="unit-token">Animation unit 02</span><span class="plus">+</span>
+                <span class="unit-token">Animation unit 03</span><span class="plus">…</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="overview">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="section-no">03 / 我定义的系统全景</div>
+            <h2>我把分散在 PM、设计和视频制作中的工作，重新组织成一条可执行链路</h2>
+            <p>这里先明确每个模块的输入、输出和责任边界；后续两节分别展开语言规则与视觉系统。</p>
+          </div>
+
+          <div class="pipeline">
+            <div class="pipeline-inputs">
+              <div class="pipeline-audio-stack">
+                <div class="pipeline-audio"><span class="node-tag">Existing capability</span><div class="pipeline-audio-title"><b>Text-to-Voice to Audio</b></div></div>
+                <span class="pipeline-audio-feed" aria-hidden="true"></span>
+              </div>
+            </div>
+            <div class="pipeline-main">
+              <div class="pipe-node">
+                <span class="node-tag">Input</span>
+                <b>Natural-language Story</b>
+                <p>待生产的故事文本；视觉阶段还会调用可复用资产库。</p>
+              </div>
+              <div class="pipe-arrow" aria-hidden="true"></div>
+              <div class="pipe-node pipe-node--mine">
+                <span class="node-tag">I defined</span>
+                <b>Script</b>
+                <p>拆分、归一、筛选；输出 Scene Context、Subject 与 Action / State。</p>
+              </div>
+              <div class="pipe-arrow" aria-hidden="true"></div>
+              <div class="pipe-node pipe-node--mine">
+                <span class="node-tag">I defined</span>
+                <b>Auto Storyboard</b>
+                <p>匹配 Subject asset + Animation type，并补全 Background + Shot Design。</p>
+              </div>
+              <div class="pipe-arrow" aria-hidden="true"></div>
+              <div class="pipe-node">
+                <span class="node-tag">Implemented with developer</span>
+                <b>Renderer / Compositor</b>
+                <p>组合视觉资产、动画、字幕与音频。</p>
+              </div>
+              <div class="pipe-arrow" aria-hidden="true"></div>
+              <div class="pipe-node">
+                <span class="node-tag">Output</span>
+                <b>Animated Storybook</b>
+                <p>包含画面、动画、旁白和字幕。</p>
+              </div>
+            </div>
+            <div class="pipeline-support">
+              <div class="pipeline-support-link" aria-hidden="true"></div>
+              <div class="pipeline-support-grid">
+                <div class="pipeline-support-node">
+                  <span class="node-tag">I defined</span>
+                  <b>Reusable Asset Library</b>
+                  <p>Subject assets · Animation types · Backgrounds</p>
+                </div>
+                <div class="pipeline-support-node">
+                  <span class="node-tag">I defined</span>
+                  <b>Shot Design Rules</b>
+                  <p>Composition · Position &amp; Scale · Direction · Shot Size · Layering · Transition</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ownership">
+            <div class="mini-card mini-card--green">
+              <span class="eyebrow">My ownership</span>
+              <h3>定义问题、产品形态、流程与规则</h3>
+              <p>我负责 Story-to-Script、Auto Storyboard、视觉资产结构和各模块之间的输入输出。</p>
+            </div>
+            <div class="mini-card">
+              <span class="eyebrow">Developer partner</span>
+              <h3>把规则编排成可运行系统</h3>
+              <p>开发伙伴实现脚本解析、资产调用、合成与 TTS 接入；我们共同用真实故事处理规则例外。</p>
+            </div>
+          </div>
+
+          <div class="route-grid" style="margin-top:16px">
+            <figure class="evidence" style="margin:0">
+              <img src="assets/xiaoice-workflow-before-original.jpeg" alt="系统改造前的人工串行流程">
+              <figcaption><b>Before</b><span>故事被人工逐层翻译为分镜、素材和视频，每一步都包含大量一次性判断。</span></figcaption>
+            </figure>
+            <figure class="evidence" style="margin:0">
+              <img src="assets/xiaoice-workflow-after-original.jpeg" alt="系统改造后的自动化流程">
+              <figcaption><b>After</b><span>系统读取结构化 Script 并调用可复用资产；团队转为补充规则和素材库。</span></figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="script">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="section-no">04 / Story-to-Script</div>
+            <h2>我没有让系统理解完整故事，而是把它约束成可处理的句法单元</h2>
+            <p>关键发现是：大多数需要处理的表达可以归一为动作或状态两类基础结构。于是问题从“理解完整世界”变成“拆分、归一、筛选和输出”。</p>
+          </div>
+
+          <div class="logic">
+            <div class="logic-head">
+              <span class="eyebrow">Core transformation</span>
+              <h3>自然语言 → 系统可执行 Script</h3>
+              <p>Script 只定义“发生什么”；构图、镜头、位置和具体素材由下一阶段的 Auto Storyboard 决定。</p>
+            </div>
+            <div class="logic-steps">
+              <article class="logic-step">
+                <span class="eyebrow">01 · Split</span>
+                <h4>拆成句子单元</h4>
+                <p>按照叙事顺序，把完整故事拆成能够分别处理的原子单元。</p>
+                <div class="logic-pills"><span class="logic-pill">Sentence unit 01</span><span class="logic-pill">Sentence unit 02</span><span class="logic-pill">Sentence unit 03 · …</span></div>
+              </article>
+              <article class="logic-step">
+                <span class="eyebrow">02 · Normalize</span>
+                <h4>归一为有限句式</h4>
+                <p>将复杂表达转换为动作或状态结构，并补全必要的省略主语。</p>
+                <div class="logic-pills"><span class="logic-pill">Sth + Do (+ Object)</span><span class="logic-pill">Sth + Be / Feel / Look + Predicative</span></div>
+              </article>
+              <article class="logic-step logic-step--focus">
+                <span class="eyebrow">03 · My rule</span>
+                <h4>决定是否形成画面</h4>
+                <p>不是每句话都值得单独生成画面；保留叙事重点，并省略无法稳定表达或信息价值较低的单元。</p>
+                <div class="logic-pills"><span class="logic-pill logic-pill--keep">Visualize</span><span class="logic-pill logic-pill--omit">Omit</span></div>
+              </article>
+              <article class="logic-step">
+                <span class="eyebrow">04 · Script output</span>
+                <h4>输出动画脚本单元</h4>
+                <p>每个保留单元输出系统稳定执行所需的核心字段。</p>
+                <div class="logic-pills"><span class="logic-pill">Scene Context</span><span class="logic-pill">Subject</span><span class="logic-pill">Action / State</span></div>
+                <small class="logic-note">Scene Context 可继承；MVP 不为宾语生成独立图像。</small>
+              </article>
+            </div>
+          </div>
+
+          <div class="proof-section">
+            <div class="proof-head">
+              <div><span class="section-no">Original specification</span><h3>我编写的句法与脚本规则</h3></div>
+            </div>
+            <div class="proof-grid">
+              <button class="proof-card" data-doc="动画原理_可编辑整理版_html.html" data-title="复杂叙事的规则拆解" data-caption="完整的 Text-to-Script 原理、句法拆分方法和规则原稿。">
+                <div class="proof-thumb"><img src="assets/xiaoice-rule-decomposition.png" alt="复杂叙事拆句规则"></div>
+                <div class="proof-copy"><span class="proof-kicker">Rule specification</span><h4>复杂叙事的规则拆解</h4><p>判断哪些信息进入主体、动作 / 状态和场景上下文。</p><span class="proof-open">打开完整规则文档 ↗</span></div>
+              </button>
+              <button class="proof-card" data-full="assets/xiaoice-pattern-coordination-042.jpeg" data-title="并列句转换为原子动作" data-caption="将“小红笑了，并吃了一颗糖”转换为两个主谓单元，补全第二句主语，使系统识别两个独立动作。">
+                <div class="proof-thumb"><img src="assets/xiaoice-pattern-coordination-042.jpeg" alt="并列句被拆成两个原子动作"></div>
+                <div class="proof-copy"><span class="proof-kicker">Sentence Transformation Rule</span><h4>并列句转换为原子动作</h4><p>复杂句被规范成“主体 + 动作 / 状态”的可处理单元。</p><span class="proof-open">查看原图 ↗</span></div>
+              </button>
+            </div>
+          </div>
+
+          <div class="handoff">
+            <div class="handoff-head">
+              <span class="section-no">Module handoff</span>
+              <b>Script 定义发生什么；Auto Storyboard 决定它如何成为画面</b>
+            </div>
+            <div class="handoff-body">
+              <div class="handoff-copy">
+                <article class="handoff-module">
+                  <span class="eyebrow">Script output</span>
+                  <h3>系统可执行的叙事单元</h3>
+                  <p>完成文本拆分、句式归一和可视化筛选，输出稳定的语义字段。</p>
+                </article>
+                <article class="handoff-module handoff-module--visual">
+                  <span class="eyebrow">Auto Storyboard</span>
+                  <h3>完整的画面执行单元</h3>
+                  <p>接收 Script 字段，匹配视觉资产，并补全 Script 未定义的画面决策。</p>
+                </article>
+              </div>
+              <div class="handoff-mapping" aria-label="Script 字段与 Auto Storyboard 画面字段的映射">
+                <div class="map-column">
+                  <span class="map-pill map-pill--script">Subject</span>
+                  <span class="map-link" aria-hidden="true"></span>
+                  <span class="map-pill map-pill--storyboard">Subject asset</span>
+                </div>
+                <div class="map-column">
+                  <span class="map-pill map-pill--script">Action / State</span>
+                  <span class="map-link" aria-hidden="true"></span>
+                  <span class="map-pill map-pill--storyboard">Animation type</span>
+                </div>
+                <div class="map-column map-column--branch">
+                  <span class="map-pill map-pill--script">Scene Context</span>
+                  <span class="map-branch" aria-hidden="true"></span>
+                  <div class="map-outputs">
+                    <div class="map-output"><span class="map-pill map-pill--storyboard">Background</span></div>
+                    <div class="map-output"><span class="map-pill map-pill--storyboard">Shot Design</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="visual">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="section-no">05 / Auto Storyboard 与视觉系统</div>
+            <h2>我把一次性插画重构为三类资产库和一套画面规则</h2>
+            <p>脚本自动化之后，如果视觉素材仍按每条故事定制，成本只是被转移给插画师。因此我重新定义素材的生产单位、分类方式和合成规则。</p>
+          </div>
+
+          <figure class="evidence" style="margin-top:0">
+            <img src="assets/xiaoice-visual-asset-library.png" alt="预制素材库与画面合成系统">
+            <figcaption><b>Original system spec</b><span>主体、动画与背景资产保持独立，构图与镜头作为规则层控制它们如何进入最终画面。</span></figcaption>
+          </figure>
+
+          <div class="asset-principle">
+            <article class="asset-group">
+              <span class="eyebrow">Reusable assets</span>
+              <h3>三类可独立扩展的资产库</h3>
+              <p>插画师不再为每条故事制作完整成片，而是持续补充能够跨故事调用的视觉资产。</p>
+              <div class="asset-list"><span class="asset-chip">Subject</span><span class="asset-chip">Animation</span><span class="asset-chip">Background</span></div>
+            </article>
+            <article class="asset-group asset-group--rule">
+              <span class="eyebrow">Visual rules</span>
+              <h3>一套构图与镜头模板</h3>
+              <p>用人物数量、朝向、尺寸、位置、景别和图层关系，约束资产如何组合成稳定画面。</p>
+              <div class="asset-list"><span class="asset-chip">Shot Design</span><span class="asset-chip">Position</span><span class="asset-chip">Layer</span></div>
+            </article>
+          </div>
+
+          <div class="assembly"><strong>Auto Storyboard = Subject + Animation + Background + Shot Design</strong><br>Item / Object 可以作为素材库扩展能力存在，但首个 MVP 不要求为句法中的每个宾语生成独立图像。</div>
+
+          <div class="proof-section">
+            <div class="proof-head">
+              <div><span class="section-no">Library design details</span><h3>资产、模板与命名检索</h3></div>
+              <p>点击查看每一层的变量结构和原始设计证据。</p>
+            </div>
+            <div class="proof-grid">
+              <button class="proof-card" data-gallery="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.046.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.047.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.048.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.049.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.050.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.051.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.052.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.053.jpeg" data-title="主体组合资产" data-caption="从模块化组合规则到高频角色变体、完整物种覆盖与尺寸规范，共 8 张设计原稿。">
+                <div class="proof-thumb"><img src="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.049.jpeg" alt="主体组合资产设计"></div>
+                <div class="proof-copy"><span class="proof-kicker">Subject assets</span><h4>主体组合资产</h4><p>将人物和拟人动物拆成可组合、可继续扩展的变量。</p><span class="proof-open">查看 8 张设计原稿 ↗</span></div>
+              </button>
+              <button class="proof-card" data-full="assets/xiaoice-library-animation.png" data-title="Action / State 与动画变体" data-caption="Do 映射为动作，Be / Feel / Look 映射为状态表现；同一个动作或状态可以调用不同动画变体。">
+                <div class="proof-thumb"><img src="assets/xiaoice-library-animation.png" alt="动作与状态变体"></div>
+                <div class="proof-copy"><span class="proof-kicker">Animation assets</span><h4>Action / State 与动画变体</h4><p>将语言中的动作或状态映射为可调用的动画资产。</p><span class="proof-open">查看具体设计 ↗</span></div>
+              </button>
+              <button class="proof-card" data-full="assets/xiaoice-library-background.png" data-title="背景与空间资产" data-caption="背景保持独立扩展，并由 Scene Context 和 Auto Storyboard 规则进行选择。">
+                <div class="proof-thumb"><img src="assets/xiaoice-library-background.png" alt="背景与空间资产"></div>
+                <div class="proof-copy"><span class="proof-kicker">Background assets</span><h4>背景与空间资产</h4><p>从抽象空间占位到具体场景，背景可跨故事复用。</p><span class="proof-open">查看具体设计 ↗</span></div>
+              </button>
+              <button class="proof-card" data-full="assets/xiaoice-library-composition.png" data-title="构图与镜头模板" data-caption="人物数量、方向、尺寸与位置被组织成可重复调用的构图模板，而不是每次重新布局。">
+                <div class="proof-thumb"><img src="assets/xiaoice-library-composition.png" alt="构图与镜头模板"></div>
+                <div class="proof-copy"><span class="proof-kicker">Shot design rules</span><h4>构图与镜头模板</h4><p>用规则控制不同资产如何稳定进入同一画面。</p><span class="proof-open">查看具体设计 ↗</span></div>
+              </button>
+              <button class="proof-card" data-full="assets/xiaoice-material-naming-rules.png" data-title="素材分类与命名规则" data-caption="类型、语义分类、属性和变体编号共同组成可被设计团队与系统理解的素材 ID。">
+                <div class="proof-thumb"><img src="assets/xiaoice-material-naming-rules.png" alt="素材分类与命名规则"></div>
+                <div class="proof-copy"><span class="proof-kicker">Taxonomy &amp; naming</span><h4>素材分类、命名与检索</h4><p>让 Script 解析结果可以转化为检索条件，也让新增资产直接进入系统。</p><span class="proof-open">查看原始表格 ↗</span></div>
+              </button>
+              <button class="proof-card" data-full="assets/xiaoice-mvp-atomic-story.png" data-title="动画单元的连续组合" data-caption="故事被拆成多个句法单元，每个可视化单元生成对应画面，再通过转场连接为连续内容。">
+                <div class="proof-thumb"><img src="assets/xiaoice-mvp-atomic-story.png" alt="动画单元组成完整故事"></div>
+                <div class="proof-copy"><span class="proof-kicker">Generation units</span><h4>动画单元组成完整故事</h4><p>把资产系统和脚本规则连接成可重复生产的内容链路。</p><span class="proof-open">查看原图 ↗</span></div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="implementation">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="section-no">06 / 工程化、异常与人工修正</div>
+            <h2>我主动找到开发伙伴，用真实故事把设计规则变成系统</h2>
+            <p>规则只有被系统执行、被例外反复检验，才会成为生产能力。自动化没有覆盖的内容则进入半人工或人工处理，而不是假装系统可以理解一切。</p>
+          </div>
+
+          <div class="collab">
+            <article class="role">
+              <span class="eyebrow">My role · System definition</span>
+              <h3>定义产品、流程与规则</h3>
+              <p>提出可动绘本形态，设计 Story-to-Script、Auto Storyboard、视觉资产结构和验证样例。</p>
+            </article>
+            <div class="bridge">⇄</div>
+            <article class="role">
+              <span class="eyebrow">Developer partner · Implementation</span>
+              <h3>把规则编排成可运行逻辑</h3>
+              <p>实现脚本解析、资产调用、视频合成与 TTS 接入，并与我一起处理规则无法覆盖的例外。</p>
+            </article>
+          </div>
+
+          <div class="loop"><span>规则说明</span><b>→</b><span>开发实现</span><b>→</b><span>真实故事验证</span><b>→</b><span>发现例外</span><b>→</b><span>更新规则或素材库</span></div>
+
+          <div class="route-grid" style="margin-top:12px">
+            <button class="proof-card" data-full="assets/xiaoice-pattern-coverage.png" data-title="自动化覆盖与人工边界" data-caption="项目用实际语料区分完全自动、代码优化后可处理、半人工和全人工内容，从而明确系统能力边界。">
+              <div class="proof-thumb"><img src="assets/xiaoice-pattern-coverage.png" alt="自动化覆盖率与人工边界"></div>
+              <div class="proof-copy"><span class="proof-kicker">Human in the loop</span><h4>自动化覆盖之外，保留人工路径</h4><p>系统价值不是消灭所有人工，而是让重复部分自动化，让例外有明确去处。</p><span class="proof-open">查看原图 ↗</span></div>
+            </button>
+            <div class="implementation" style="margin:0;grid-template-columns:1fr">
+              <img src="assets/xiaoice-developer-adjustment-tool.png" alt="开发伙伴搭建的内部调整平台">
+              <div class="implementation-copy">
+                <span class="eyebrow">Developer-built internal tool</span>
+                <h3>为调试和修正保留可编辑参数</h3>
+                <p>该平台由开发伙伴自行搭建，不是我的 UI 设计交付；它证明构图、图层、字幕和动画规则已被工程化为可调参数。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="impact">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="section-no">07 / 发布与业务结果</div>
+            <h2>从发布会能力，发展为可以响应真实业务节奏的生产系统</h2>
+            <p>可动绘本先解决了“能否按时落地”，脚本规则、资产库和工程化流程进一步降低了向 C 端 App 持续供应故事内容的成本。</p>
+          </div>
+
+          <div class="timeline">
+            <article class="timeline-item"><span class="eyebrow">MVP phase</span><h3>交付可运行产品形态</h3><p>用有限动效和受约束的语义范围，证明故事可以稳定生成动态内容。</p></article>
+            <article class="timeline-item"><span class="eyebrow">System expansion</span><h3>补全规则、资产和工具</h3><p>将一次性交付继续发展为可重复使用的内容生产能力。</p></article>
+            <article class="timeline-item"><span class="eyebrow">2020 application</span><h3>响应疫情热点内容</h3><p>系统被用于更快完成与当天业务节奏相关的内容生产。</p></article>
+          </div>
+
+          <figure class="video">
+            <div class="video-still">
+              <img src="assets/xiaoice-pandemic-video-placeholder.png" alt="疫情热点可动绘本视频占位画面">
+              <span class="video-badge">Video placeholder</span>
+              <span class="video-play">▶</span>
+            </div>
+            <figcaption><b>疫情热点内容 · 待替换视频</b><br>当前使用项目静帧占位；后续替换为实际发布视频，用于展示系统如何响应真实内容需求。</figcaption>
+          </figure>
+
+          <div class="measurement-scope"><b>Efficiency measurement scope</b><span>以下 97%、8× 和 3h 三项效率数据，均对应完整 Template 库建成、规则与资产生产流程稳定后的系统阶段。</span></div>
+
+          <div class="metrics">
+            <article class="metric"><strong>≈30–40</strong><b>正式发布内容</b><p>据项目回忆，2019 年正式发布阶段上线约 30–40 条故事内容；准确数量待项目记录确认。</p></article>
+            <article class="metric"><strong>97%</strong><b>视频生产时间节省</b><p>项目阶段记录：从约 24 小时缩短至 40 分钟，自动完成主体、动作、背景、字幕与音频组合。</p></article>
+            <article class="metric"><strong>8×</strong><b>素材库补充提速</b><p>从约 32 小时缩短至 4 小时；团队集中补充可复用资产，而不是重新制作完整内容。</p></article>
+            <article class="metric"><strong>3h</strong><b>热点首批内容</b><p>疫情热点期间，项目记录显示首批内容约 3 小时完成，支持当天发布。</p></article>
+          </div>
+          <p class="notice">效率数据来自项目阶段记录。本案例仅呈现可公开讨论的项目框架与结果；精确发布会阶段、内容规模与业务渠道待补充确认。</p>
+        </div>
+      </section>
+
+      <section class="section" id="transfer">
+        <div class="wrap">
+          <div class="section-head">
+            <div class="section-no">08 / 可迁移的设计原则与复盘</div>
+            <h2>从故事到视频，与从长文到演示文稿，共享同一种系统设计问题</h2>
+            <p>两者都需要把非结构化输入转成结构化中间层，再通过可复用视觉系统生成可编辑的结果。</p>
+          </div>
+
+          <div class="transfer">
+            <div class="card">
+              <span class="eyebrow">Transfer to PPT Agent</span>
+              <table class="mapping">
+                <thead><tr><th>小冰系统</th><th>共同问题</th><th>PPT Agent</th></tr></thead>
+                <tbody>
+                  <tr><td>原始故事</td><td>提取意图与重点</td><td>文档、想法或数据</td></tr>
+                  <tr><td>Script Units</td><td>建立结构和顺序</td><td>章节与页面计划</td></tr>
+                  <tr><td>视觉资产库</td><td>检索、生成与复用</td><td>图片、图表与图形</td></tr>
+                  <tr><td>构图与镜头规则</td><td>在约束中生成变化</td><td>版式与视觉系统</td></tr>
+                  <tr><td>人工修正入口</td><td>保持控制和可编辑性</td><td>锁定、编辑与局部重生成</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="reflection-list">
+              <article class="reflection-item"><span class="eyebrow">01</span><h3>先展示系统理解</h3><p>生成前让用户确认结构、重点和受众，避免方向错误后整体返工。</p></article>
+              <article class="reflection-item"><span class="eyebrow">02</span><h3>坚持单元级编辑</h3><p>允许用户只重做一个场景或一页，而不是推翻整个生成结果。</p></article>
+              <article class="reflection-item"><span class="eyebrow">03</span><h3>规则成为生成护栏</h3><p>把品牌、角色、素材和版式规则放入生成过程，并为例外保留人工修正。</p></article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="wrap"><h2>From story to system.</h2><p>一次产品形态的重新定义，最终成为可复用的生产能力。</p></div>
+      </footer>
+    </div>
+    </div>
+  </main>
+
+  <dialog class="lightbox" id="lightbox">
+    <div class="lightbox-top"><span id="lightboxLabel">Original project evidence</span><button class="lightbox-close" aria-label="关闭">×</button></div>
+    <div class="lightbox-stage"><img id="lightboxImage" src="" alt=""><iframe class="lightbox-document" id="lightboxDocument" title="Text-to-Script rules document"></iframe><div class="lightbox-gallery" id="lightboxGallery"></div></div>
+    <div class="lightbox-info"><h3 id="lightboxTitle"></h3><p id="lightboxCaption"></p></div>
+    <div class="gallery-thumbnails" id="galleryThumbnails" aria-label="图片页码"></div>
+  </dialog>
+
+  <script>
+    const tocLinks=[...document.querySelectorAll('.toc-list a')];
+    const tocSections=tocLinks.map(link=>document.querySelector(link.getAttribute('href'))).filter(Boolean);
+    const updateToc=()=>{let current=tocSections[0];for(const section of tocSections){if(section.getBoundingClientRect().top<=130)current=section}tocLinks.forEach(link=>link.classList.toggle('active',link.getAttribute('href')==='#'+current.id))};
+    addEventListener('scroll',updateToc,{passive:true});updateToc();
+
+    const proofCards=[...document.querySelectorAll('.proof-card')];
+    if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&'IntersectionObserver' in window){
+      proofCards.filter(card=>card.dataset.gallery).forEach(card=>{
+        const images=card.dataset.gallery.split('|').filter(Boolean);
+        const cover=card.querySelector('.proof-thumb img');
+        if(!cover||images.length<2)return;
+        let index=Math.max(0,images.indexOf(cover.getAttribute('src')));
+        let timer;
+        let swapping=false;
+        const swapCover=()=>{
+          if(swapping)return;
+          swapping=true;
+          const nextIndex=(index+1)%images.length;
+          const preload=new Image();
+          preload.onload=()=>{
+            cover.classList.add('is-swapping');
+            setTimeout(()=>{
+              cover.src=images[nextIndex];
+              cover.classList.remove('is-swapping');
+              index=nextIndex;
+              swapping=false;
+            },180);
+          };
+          preload.onerror=()=>{swapping=false};
+          preload.src=images[nextIndex];
+        };
+        const observer=new IntersectionObserver(entries=>{
+          const visible=entries[0]?.isIntersecting;
+          if(visible&&!timer)timer=setInterval(swapCover,2800);
+          if(!visible&&timer){clearInterval(timer);timer=undefined}
+        },{threshold:.25});
+        observer.observe(card);
+      });
+    }
+    const lightbox=document.querySelector('#lightbox');
+    const lightboxImage=document.querySelector('#lightboxImage');
+    const lightboxDocument=document.querySelector('#lightboxDocument');
+    const lightboxGallery=document.querySelector('#lightboxGallery');
+    const lightboxLabel=document.querySelector('#lightboxLabel');
+    const lightboxTitle=document.querySelector('#lightboxTitle');
+    const lightboxCaption=document.querySelector('#lightboxCaption');
+    const galleryThumbnails=document.querySelector('#galleryThumbnails');
+    const getCurrentGalleryIndex=()=>{
+      const images=[...lightboxGallery.querySelectorAll('img')];
+      if(!images.length)return 0;
+      const center=lightboxGallery.getBoundingClientRect().top+lightboxGallery.clientHeight/2;
+      let current=0;
+      let nearest=Infinity;
+      images.forEach((image,index)=>{
+        const rect=image.getBoundingClientRect();
+        const distance=Math.abs(rect.top+rect.height/2-center);
+        if(distance<nearest){nearest=distance;current=index}
+      });
+      return current;
+    };
+    const updateGalleryThumbnails=()=>{
+      const images=[...lightboxGallery.querySelectorAll('img')];
+      const current=getCurrentGalleryIndex();
+      [...galleryThumbnails.children].forEach((thumbnail,index)=>{
+        thumbnail.classList.toggle('active',index===current);
+        thumbnail.setAttribute('aria-current',index===current?'true':'false');
+      });
+    };
+    const scrollGalleryToIndex=index=>{
+      const images=[...lightboxGallery.querySelectorAll('img')];
+      const target=images[index];
+      if(!target)return;
+      const top=lightboxGallery.scrollTop+target.getBoundingClientRect().top-lightboxGallery.getBoundingClientRect().top;
+      lightboxGallery.scrollTo({top,behavior:'smooth'});
+    };
+    const stepGallery=delta=>{
+      const images=[...lightboxGallery.querySelectorAll('img')];
+      if(!images.length)return;
+      scrollGalleryToIndex(Math.max(0,Math.min(images.length-1,getCurrentGalleryIndex()+delta)));
+    };
+    lightboxGallery.addEventListener('scroll',updateGalleryThumbnails,{passive:true});
+    addEventListener('keydown',event=>{
+      if(!lightbox.open||!lightbox.classList.contains('lightbox--gallery'))return;
+      if(event.key==='ArrowUp'||event.key==='ArrowDown'){
+        event.preventDefault();
+        stepGallery(event.key==='ArrowUp'?-1:1);
+      }
+    });
+    proofCards.forEach(card=>card.addEventListener('click',()=>{
+      const isDocument=Boolean(card.dataset.doc);
+      const galleryImages=card.dataset.gallery?.split('|').filter(Boolean)||[];
+      const isGallery=galleryImages.length>0;
+      lightbox.classList.toggle('lightbox--document',isDocument);
+      lightbox.classList.toggle('lightbox--gallery',isGallery);
+      lightboxLabel.textContent=isDocument?'Text-to-Script rule document':isGallery?'Subject asset library':'Original project evidence';
+      lightboxGallery.replaceChildren();
+      galleryThumbnails.replaceChildren();
+      if(isDocument){
+        lightboxDocument.src=card.dataset.doc;
+        lightboxImage.removeAttribute('src');
+      }else if(isGallery){
+        lightboxDocument.removeAttribute('src');
+        lightboxImage.removeAttribute('src');
+        const alt=card.querySelector('img')?.alt||'主体组合资产设计';
+        lightboxGallery.replaceChildren(...galleryImages.map((src,index)=>{
+          const image=document.createElement('img');
+          image.src=src;
+          image.alt=`${alt} ${index+1}`;
+          image.loading=index===0?'eager':'lazy';
+          image.addEventListener('load',updateGalleryThumbnails,{once:true});
+          return image;
+        }));
+        galleryThumbnails.replaceChildren(...galleryImages.map((src,index)=>{
+          const thumbnail=document.createElement('button');
+          const image=document.createElement('img');
+          const label=document.createElement('span');
+          thumbnail.type='button';
+          thumbnail.setAttribute('aria-label',`跳到第 ${index+1} 张`);
+          thumbnail.classList.toggle('active',index===0);
+          thumbnail.setAttribute('aria-current',index===0?'true':'false');
+          image.src=src;
+          image.alt='';
+          image.loading='lazy';
+          label.textContent=String(index+1).padStart(2,'0');
+          thumbnail.append(image,label);
+          thumbnail.addEventListener('click',()=>scrollGalleryToIndex(index));
+          return thumbnail;
+        }));
+      }else{
+        lightboxDocument.removeAttribute('src');
+        lightboxImage.src=card.dataset.full;
+        lightboxImage.alt=card.querySelector('img')?.alt||'项目原始证据';
+      }
+      lightboxTitle.textContent=card.dataset.title||'项目原始证据';
+      lightboxCaption.textContent=card.dataset.caption||'';
+      lightbox.showModal();
+      lightboxGallery.scrollTop=0;
+    }));
+    document.querySelector('.lightbox-close').addEventListener('click',()=>lightbox.close());
+    lightbox.addEventListener('click',event=>{if(event.target===lightbox)lightbox.close()});
+    lightbox.addEventListener('close',()=>{lightboxDocument.removeAttribute('src');lightboxGallery.replaceChildren();galleryThumbnails.replaceChildren();lightbox.classList.remove('lightbox--document','lightbox--gallery')});
+  </script>
+</body>
+</html>

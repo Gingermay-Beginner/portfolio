@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Text to Script的原理和规则</title>
+<style>
+
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #f6f4ef; color: #1f1b18; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; line-height: 1.72; font-size: 16px; }
+main { width: min(1180px, calc(100% - 32px)); margin: 32px auto 56px; background: #fffdf8; border: 1px solid #ded8cd; padding: 34px 38px; }
+h1 { font-size: 30px; margin: 0 0 10px; line-height: 1.25; }
+h2 { font-size: 22px; margin: 34px 0 12px; padding-top: 0; border-top: 0; }
+h3 { font-size: 18px; margin: 24px 0 10px; }
+h4 { font-size: 16px; margin: 18px 0 8px; color: #5b4f45; }
+p, blockquote, ul, ol { margin: 10px 0; }
+ul, ol { padding-left: 1.5em; }
+li { margin: 5px 0; }
+blockquote { border-left: 4px solid #b9824d; background: #fbf4ea; padding: 10px 14px; color: #5e5145; }
+code { background: #f1ece4; border: 1px solid #e1d8cb; border-radius: 4px; padding: 1px 5px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.92em; }
+.role-mark { color: #7a4a16; font-weight: 650; }
+.table-wrap { overflow-x: visible; overflow-y: visible; margin: 14px 0 22px; border: 1px solid #ddd4c6; max-height: none; }
+table { border-collapse: collapse; width: 100%; min-width: 0; background: #fff; }
+th, td { border: 1px solid #bfb8ad; padding: 8px 10px; vertical-align: top; text-align: left; }
+thead th { position: sticky; top: 0; z-index: 5; background: #d9d9d9; font-weight: 700; box-shadow: 0 1px 0 #aaa; }
+tr:nth-child(even) td { background: #fffaf3; }
+.color-table-wrap { max-height: none; }
+.color-table tr:nth-child(even) td { background: #fff; }
+.color-table.unified-case-table td { vertical-align: top; }
+.color-table.unified-case-table { min-width: 0; table-layout: fixed; }
+.color-table.unified-case-table th { white-space: nowrap; }
+.color-table.unified-case-table th:nth-child(1), .color-table.unified-case-table td:nth-child(1) { width: 4%; }
+.color-table.unified-case-table th:nth-child(2), .color-table.unified-case-table td:nth-child(2) { width: 42%; }
+.color-table.unified-case-table th:nth-child(3), .color-table.unified-case-table td:nth-child(3) { width: 11%; }
+.color-table.unified-case-table th:nth-child(4), .color-table.unified-case-table td:nth-child(4) { width: 13%; }
+.color-table.unified-case-table th:nth-child(5), .color-table.unified-case-table td:nth-child(5) { width: 6%; }
+.color-table.unified-case-table th:nth-child(6), .color-table.unified-case-table td:nth-child(6) { width: 8%; }
+.color-table.unified-case-table th:nth-child(7), .color-table.unified-case-table td:nth-child(7) { width: 16%; }
+.color-table.unified-case-table td { overflow-wrap: anywhere; }
+.color-table.unified-case-table .text-cell { line-height: 1.9; }
+.color-table .fill-green { background: #00b050 !important; color: #111; }
+.color-table .fill-yellow { background: #ffff00 !important; color: #111; }
+.color-table .fill-red { background: #ff0000 !important; color: #111; }
+.color-table .fill-blue { background: #00b0f0 !important; color: #111; }
+.tok { display: inline-block; padding: 1px 5px 2px; border-radius: 4px; margin: 1px 2px 3px 0; line-height: 1.35; white-space: nowrap; }
+.tok.orange { background:#f28c28; }
+.tok.blue { background:#168de2; color:#06131f; }
+.tok.gray { background:#bfbfbf; }
+.tok.pink { background:#e9c7c9; }
+.tok.lav { background:#b7b3df; }
+.tok.mint { background:#bdebd9; }
+.tok.lime { background:#c8f28a; }
+.tok.yellow { background:#fff36b; }
+.tok.cyan { background:#9ed9df; }
+.num-line { display: flex; gap: 8px; align-items: flex-start; }
+.num-line .num { min-width: 1.4em; font-weight: 650; }
+@media (max-width: 640px) { body { font-size: 15px; } main { width: 100%; margin: 0; border: 0; padding: 22px 12px 40px; } h1 { font-size: 25px; } h2 { font-size: 19px; } th, td { padding: 7px 6px; } .tok { padding: 1px 4px 2px; } }
+
+</style>
+</head>
+<body>
+<main>
+<h1>Text to Script的原理和规则</h1>
+<h2>一、文字自动生成动画的核心方法</h2>
+<p>动画 = 画 + 动</p>
+<p>动画片 =（画 + 动）<span class="role-mark">【转场】</span>（画 + 动）……</p>
+<h3>核心规则</h3>
+<p class="num-line"><span class="num">1.</span>汉语的基本语法结构为主谓宾，所有长句都可以拆成主谓（宾）结构的短句。</p>
+<p>片段 = 主谓（宾）短句</p>
+<p class="num-line"><span class="num">2.</span>“画” = 主语（宾语）</p>
+<p class="num-line"><span class="num">3.</span>“动” = 谓语</p>
+<p class="num-line"><span class="num">4.</span>每个片段之间提供一个转场动画。</p>
+<h2>二、具体方法</h2>
+<h3>原则</h3>
+<p class="num-line"><span class="num">1.</span>以每个逗号为最小单元，所有<span class="role-mark">【主谓宾句】</span>可被拆分转化为若干个主谓宾短句。</p>
+<p class="num-line"><span class="num">2.</span>P0 阶段，宾语被忽略。</p>
+<p>个别影响故事发展的可以作为新短语的主语，其结构为主系表结构。</p>
+<p>例：小明走过来，拿着一个西瓜。</p>
+<p>（1）小明走过来。</p>
+<p>（2）一个西瓜在（他手里）。</p>
+<p class="num-line"><span class="num">3.</span>主语省略时，跟随前一句主语。</p>
+<p>例：小红吃了冰棍，坐下来，摇晃了几下。</p>
+<p class="num-line"><span class="num">4.</span>不够主谓关系的被省略。</p>
+<p>例：原来。</p>
+<p class="num-line"><span class="num">5.</span>P0 阶段对核心没有影响的部分被省略，包括：定状补、状语从句、介宾短语。</p>
+<p>例：小明从厨房走了出来。</p>
+<p>可处理为：小明走（in）</p>
+<h3>判断对核心是否影响的方法</h3>
+<p class="num-line"><span class="num">1.</span>是否重复出现</p>
+<p class="num-line"><span class="num">2.</span>人工判断</p>
+<h3>文字处理</h3>
+<p>主谓可被分为两种类型：</p>
+<p class="num-line"><span class="num">1.</span>主谓（宾）</p>
+<p><code>sb/sth do (sb/sth)</code></p>
+<p class="num-line"><span class="num">2.</span>主系表</p>
+<p><code>sb/sth be</code></p>
+<h2>三、对应动画</h2>
+<p>主语 = “画”，决定什么东西动，常为具象名词（反例：逻辑）。</p>
+<p>谓语 = “动”，决定如何动，有两种类型：</p>
+<p class="num-line"><span class="num">1.</span>实义动词  </p>
+<p>例：跑、跳、打、吹、吃、给</p>
+<p class="num-line"><span class="num">2.</span>状态  </p>
+<p>例：害羞、美丽、冷、暖</p>
+<h3>表达类型示意</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>表达类型</th><th>动画类型</th><th>动画</th><th>举例</th></tr></thead>
+<tbody>
+<tr><td><code>sb/sth do</code></td><td>主体 + 动画类型 1</td><td>这个动画对应的是主语发出的<span class="role-mark">【实际动作】</span></td><td>小明唱歌</td></tr>
+<tr><td><code>sb/sth be</code></td><td>主体 + 动画类型 2</td><td>这个动画只起到装饰/强调作用</td><td>小明（是/感到）很害羞</td></tr>
+</tbody></table></div>
+<h2>四、拆句示范</h2>
+<h3>原文</h3>
+<p><span class="role-mark">【刘小树】</span>没有说话，不一会，只见他晃晃悠悠，左摇右摆的从厨房走出来，手上还捧着半个大西瓜。</p>
+<h3>拆分</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>序号</th><th>内容</th><th>说明</th><th>类型</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><span class="role-mark">【刘小树】</span>没有说话</td><td>主语：刘小树；谓语：没有说话</td><td><code>sb/sth do</code></td></tr>
+<tr><td>2</td><td>不一会</td><td>省略，跟从下一句</td><td>-</td></tr>
+<tr><td>3</td><td>只见他晃晃悠悠</td><td>“只见”不重要的主谓短语省略；主语：他；“晃晃悠悠”为状语省略</td><td><code>sb/sth do</code></td></tr>
+<tr><td>4</td><td>（他）从厨房走出来</td><td>主语省略跟随前句；状语宾语省略；介宾短语/状语省略；谓语：走；补语省略，动画效果为 in</td><td><code>sb/sth do</code></td></tr>
+<tr><td>5</td><td>半个大西瓜在<span class="role-mark">【刘小树】</span>手上</td><td>主语：半个大西瓜；谓语：在；状宾短语省略</td><td><code>sb/sth be</code></td></tr>
+</tbody></table></div>
+<h3>动画拆分</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>序号</th><th>动画内容</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>boy + 动画 1</td></tr>
+<tr><td>2-4</td><td>boy + 半定制动画 in</td></tr>
+<tr><td>5</td><td>watermelon + 动画 2</td></tr>
+</tbody></table></div>
+<p>说明：西瓜在这个故事中出现了很多次，也是故事发展的核心元素，因此被转为下一个句子的主语。</p>
+<h2>五、特殊情况</h2>
+<h3>1. 宾语保留</h3>
+<p>当宾语为人或拟人化动物时，可保留。</p>
+<p>例：<span class="role-mark">【刘小树】</span>“嘿嘿”一笑，将勺子里的西瓜递给了<span class="role-mark">【美小西】</span>。</p>
+<p>——《刘小树吃西瓜》</p>
+<p>当宾语对核心有影响时，可保留。</p>
+<p>影响核心发展：</p>
+<p>例：<span class="role-mark">【刘小树】</span>没有说话，不一会，只见他晃晃悠悠，左摇右摆的从厨房走出来，手上还捧着半个大西瓜。</p>
+<p>——《刘小树吃西瓜》</p>
+<p>例：原来是一棵梯子形状的藤蔓，它一直长高、长高，最终搭在了彩虹上。</p>
+<p>——《刘小树的奇思妙想》</p>
+<p>不影响核心元素：</p>
+<p>例：<span class="role-mark">【旁白】</span>：<span class="role-mark">【美小西】</span>坐在沙发上，喊着在厨房翻腾东西的<span class="role-mark">【刘小树】</span>。</p>
+<p>——《刘小树吃西瓜》</p>
+<p>例：<span class="role-mark">【旁白】</span>：……小猫懒懒地趴在地板上，……</p>
+<p>——《刘小树吃西瓜》</p>
+<h3>判断提示</h3>
+<ul>
+<li>50 分：直接作为下一画面主体</li>
+<li>60 分：与主语并存在同一画面，但并没有动画（主语才有动画）</li>
+</ul>
+<h2>六、全定制与半定制动画</h2>
+<p>定制内容包括素材内容及数量、构图及方向、背景、动效等等。</p>
+<h3>1. 全定制为所有均确定</h3>
+<h4>（1）Speak</h4>
+<p>适用于单一主体说话。</p>
+<p>句式：<code>sb/sth + “说话内容”</code></p>
+<div class="table-wrap"><table>
+<thead><tr><th>内容</th><th>数量</th><th>位置构图（默认）</th><th>方向</th><th>动效</th></tr></thead>
+<tbody>
+<tr><td>人/动物</td><td>1</td><td>左，肩以上；默认/向后出场的人；例：提问</td><td>面向气泡</td><td>-</td></tr>
+<tr><td>气泡</td><td>1</td><td>右，完整；向先出场的人；例：回答</td><td>指向人</td><td>动画类型 2</td></tr>
+</tbody></table></div>
+<p>注：背景须提前确定全身在背景中的位置之后，等比放大得到。</p>
+<h3>2. 半定制：部分内容确定</h3>
+<h4>（1）特写</h4>
+<p>适用于单一主体。</p>
+<p>句式：<code>sb be / sb do</code></p>
+<div class="table-wrap"><table>
+<thead><tr><th>内容</th><th>数量</th><th>素材</th><th>位置构图（默认）</th><th>方向（左/右）</th><th>动效（动画类型 1/2）</th></tr></thead>
+<tbody>
+<tr><td>人/人形动物</td><td>1</td><td>半身局部</td><td>左右居中</td><td>1 默认；2 与前后镜头保持一致</td><td><code>sb/sth do</code> / <code>sb/sth be</code></td></tr>
+<tr><td>物/自然动物</td><td>1</td><td>完整</td><td>上下左右居中</td><td>向右</td><td>动画类型 1 / 动画类型 2</td></tr>
+</tbody></table></div>
+<h4>（2）In</h4>
+<div class="table-wrap"><table>
+<thead><tr><th>内容</th><th>数量</th><th>素材</th><th>起点（画面外）</th><th>终点</th><th>方向（左/右）</th><th>动效（动画类型 1/2）</th></tr></thead>
+<tbody>
+<tr><td>人/物</td><td>1</td><td>完整</td><td>左</td><td>左右居中，上下根据主体自身确定</td><td>1 默认向右；2 与前后镜头保持一致</td><td>动画类型 1</td></tr>
+<tr><td>人/物</td><td>1</td><td>完整</td><td>右</td><td>左右居中，上下根据主体自身确定</td><td>1 默认向右；2 与前后镜头保持一致</td><td>动画类型 1</td></tr>
+<tr><td>人/物</td><td>1</td><td>完整</td><td>上</td><td>左右居中，上下根据主体自身确定</td><td>1 默认向右；2 与前后镜头保持一致</td><td>动画类型 1</td></tr>
+<tr><td>人/物</td><td>1</td><td>完整</td><td>下</td><td>左右居中，上下根据主体自身确定</td><td>1 默认向右；2 与前后镜头保持一致</td><td>动画类型 1</td></tr>
+</tbody></table></div>
+<h4>（3）Out</h4>
+<div class="table-wrap"><table>
+<thead><tr><th>内容</th><th>数量</th><th>素材</th><th>起点（画面外）</th><th>终点</th><th>方向（左/右）</th><th>动效（动画类型 1/2）</th></tr></thead>
+<tbody>
+<tr><td>人/物</td><td>1</td><td>完整</td><td>左</td><td>左右居中，上下根据主体自身确定</td><td>1 默认向右；2 与前后镜头保持一致</td><td>动画类型 1</td></tr>
+<tr><td>人/物</td><td>1</td><td>完整</td><td>右</td><td>左右居中，上下根据主体自身确定</td><td>1 默认向右；2 与前后镜头保持一致</td><td>动画类型 1</td></tr>
+<tr><td>人/物</td><td>1</td><td>完整</td><td>上</td><td>左右居中，上下根据主体自身确定</td><td>1 默认向右；2 与前后镜头保持一致</td><td>动画类型 1</td></tr>
+<tr><td>人/物</td><td>1</td><td>完整</td><td>下</td><td>左右居中，上下根据主体自身确定</td><td>1 默认向右；2 与前后镜头保持一致</td><td>动画类型 1</td></tr>
+</tbody></table></div>
+<h2>七、实际操作步骤</h2>
+<h3>Step 1：确定核心短语（即片段）内容及数量</h3>
+<h3>Step 2：确定每个片段中主体元素内容及数量</h3>
+<p class="num-line"><span class="num">1.</span>主体即主语所对应的事物。</p>
+<p class="num-line"><span class="num">2.</span>当多个主语同时平等地发出动作或者互动时，则他们同时为主体。</p>
+<p>例：<span class="role-mark">【旁白】</span>：可是到了吃西瓜的时候，三个人却争吵了起来。</p>
+<p>（共 3 人，3 人动）</p>
+<p class="num-line"><span class="num">3.</span>个别场景需要人工判断。</p>
+<p>例：<span class="role-mark">【旁白】</span>：两个小伙伴拍手叫好。</p>
+<p>（共 3 人，2 人动）</p>
+<h3>指代不明的处理方式</h3>
+<p class="num-line"><span class="num">1.</span>缺少主语  </p>
+<p>默认跟随前一句主语。</p>
+<p class="num-line"><span class="num">2.</span>指代不清  </p>
+<p>例：小动物们</p>
+<p>小伙伴们</p>
+<p>解决：“们”默认为三个，具体形象可随机选取。</p>
+<h3>Step 3：确定谓语为 do / be</h3>
+<p class="num-line"><span class="num">1.</span>确定是否为全定制动画：speak</p>
+<p class="num-line"><span class="num">2.</span>确定是否为半定制动画：in / out</p>
+<p>注：同一个主体连续或者同时发出不同动作，则：</p>
+<ul>
+<li>合并为一个动作</li>
+<li>以核心动作为主</li>
+</ul>
+<p>例：小明边唱歌边走着</p>
+<h3>Step 4：确定辅助元素内容及数量</h3>
+<p class="num-line"><span class="num">1.</span>默认情况下没有辅助元素。</p>
+<p class="num-line"><span class="num">2.</span>有宾语保留同一画面时，宾语所指为辅助元素。</p>
+<p class="num-line"><span class="num">3.</span>人工判断这个场景中除了主语之外还有其他人物在场时，为辅助元素。</p>
+<p class="num-line"><span class="num">4.</span>辅助元素的种类不超过 1 个，数量视情况而定。</p>
+<h3>Step 5：待补</h3>
+<blockquote>当前收到截图里 Step 5 未完整出现。</blockquote>
+<h3>Step 6：确定位置</h3>
+<p class="num-line"><span class="num">1.</span>单个元素时，左右居中。</p>
+<p class="num-line"><span class="num">2.</span>主语中含多个元素并发生位移时，以位移终点或起点位置为准。</p>
+<p>左右：按主体数量平均分配空间，不发生遮挡（主体数量小于 4，4 以上人工处理）。</p>
+<p>上下：以成人素材位置为准，所有素材底边对齐。</p>
+<h3>Step 7：确定顺序</h3>
+<p>按从左到右的顺序，先出现的居左。</p>
+<h3>Step 8：确定朝向</h3>
+<p>P0 版所有有生命的物体均为 45 度朝向。</p>
+<p class="num-line"><span class="num">1.</span>单个主体方向向右。</p>
+<p class="num-line"><span class="num">2.</span>多个主体方向向中间，奇数个中间物向右。</p>
+<p class="num-line"><span class="num">3.</span>特殊情况人工调整。</p>
+<h3>Step 9：确定背景</h3>
+<p class="num-line"><span class="num">1.</span>默认自带背景。</p>
+<p>例：太阳公公十足了劲，炙烤着大地。</p>
+<p class="num-line"><span class="num">2.</span>根据文字内容中的地点状语判断。</p>
+<p class="num-line"><span class="num">3.</span>个别场景需要人工帮助判断。</p>
+<p>例：<span class="role-mark">【刘小树】</span>和小伙伴们也离开了常常玩耍的庭院，呆在了<span class="role-mark">【刘小树】</span>家的空调屋子里。<span class="role-mark">【旁白】</span>：<span class="role-mark">【美小西】</span>坐在沙发上，喊着在厨房翻腾东西的<span class="role-mark">【刘小树】</span>……</p>
+<p>如果片段中没有地点状语，则延续同一个主体之前所在的地点。</p>
+<p>例：<span class="role-mark">【刘小树】</span>和小伙伴们也离开了常常玩耍的庭院，呆在了<span class="role-mark">【刘小树】</span>家的空调屋子里。<span class="role-mark">【旁白】</span>：<span class="role-mark">【美小西】</span>坐在沙发上，喊着在厨房翻腾东西的<span class="role-mark">【刘小树】</span>……</p>
+<p class="num-line"><span class="num">4.</span>遇到特殊特写镜头（例：speak），则等比放大。</p>
+<h3>Pattern</h3>
+<p class="num-line"><span class="num">1.</span>小明说：“XXXXXX”  </p>
+<p>构图、方向、位置、动作等见视觉化模板。</p>
+<p class="num-line"><span class="num">2.</span>小明（XXX 地）对小红说  </p>
+<p>位置当作双主角，方向左右相对，顺序默认先说话者在左。</p>
+<p class="num-line"><span class="num">3.</span>小明 + vt + 小红  </p>
+<p>位置当作双主角，方向左右相对，顺序默认施动者在左。</p>
+<h2 id="case-table">八、案例表格整理（第 13-22 页）</h2>
+<h3>统计</h3>
+<ul>
+<li>26（自动）</li>
+<li>10（程序）</li>
+<li>15（半人工）</li>
+<li>16（全人工）</li>
+<li>占比：38%：14.9%：22.3%：23.9%</li>
+</ul>
+<div class="table-wrap color-table-wrap"><table class="color-table unified-case-table">
+<thead><tr><th>No.</th><th>文字</th><th>主体</th><th>构图位置</th><th>动画</th><th>背景</th><th>文法结构/逻辑判断</th></tr></thead>
+<tbody>
+<tr><td class="fill-yellow">1</td><td class="text-cell"><span class="tok lav">炎炎夏日/t</span> <span class="tok gray">，/wd</span> <span class="tok orange">太阳公公/n</span> <span class="tok blue">使足/v</span> <span class="tok gray">了/ule</span> <span class="tok gray">力气/x</span> <span class="tok gray">，/wd</span> <span class="tok blue">炙烤/v</span> <span class="tok gray">着/uzhe</span> <span class="tok gray">大/x</span> <span class="tok pink">地/ude1</span> <span class="tok gray">。/wj</span></td><td class="fill-yellow">太阳</td><td>特写</td><td>1</td><td>室外 1</td><td>双宾语，省略；背景</td></tr>
+<tr><td class="fill-green">2</td><td class="text-cell"><span class="tok orange">小狗/n</span> <span class="tok lime">不停地/d</span> <span class="tok blue">伸着/v</span> <span class="tok gray">舌头/x</span> <span class="tok gray">。/wj</span></td><td class="fill-green">小狗</td><td>特写</td><td>1</td><td>同上</td><td>背景</td></tr>
+<tr><td class="fill-green">3</td><td class="text-cell"><span class="tok orange">小猫/n</span> <span class="tok lime">懒懒地/d</span> <span class="tok blue">趴在/v</span> <span class="tok pink">地/ude1</span> <span class="tok gray">板上/x</span> <span class="tok gray">。/wj</span></td><td class="fill-green">猫</td><td>特写</td><td>1</td><td>同上</td><td>背景</td></tr>
+<tr><td class="fill-red">4</td><td class="text-cell"><span class="tok orange">刘小树/nr</span> <span class="tok gray">和/x</span> <span class="tok orange">小伙伴们/n</span> <span class="tok lav">也/d</span> <span class="tok blue">离开/v</span> <span class="tok gray">了/ule</span> <span class="tok gray">常常玩耍/x</span> <span class="tok pink">的/ude1</span> <span class="tok orange">庭院/n</span> <span class="tok gray">。/wj</span></td><td class="fill-red">男孩 1&amp;2，女孩 1</td><td>-</td><td>Out 向右</td><td>同上</td><td>小伙伴；庭院</td></tr>
+<tr><td class="fill-red">5</td><td class="text-cell"><span class="tok blue">呆在/v</span> <span class="tok gray">了/ule</span> <span class="tok orange">刘小树/nr</span> <span class="tok gray">家/x</span> <span class="tok pink">的/ude1</span> <span class="tok orange">空调屋子/n</span> <span class="tok gray">里/x</span> <span class="tok gray">。/wj</span></td><td class="fill-red">男孩 1&amp;2，女孩 1</td><td>3 人平均分</td><td>1</td><td>室内 1</td><td>主语省略，跟随前一个逗号；空调屋</td></tr>
+<tr><td class="fill-green">6</td><td class="text-cell"><span class="tok orange">美小西/nr</span> <span class="tok blue">坐在/v</span> <span class="tok orange">沙发/n</span> <span class="tok gray">上/x</span> <span class="tok gray">。/wj</span></td><td class="fill-green">女孩 1</td><td>特写</td><td>1</td><td>同上</td><td>-</td></tr>
+<tr><td>7</td><td class="text-cell"><span class="tok blue">喊着/v</span> <span class="tok pink">在/p</span> <span class="tok orange">厨房/n</span> <span class="tok blue">翻腾/v</span> <span class="tok gray">东西/x</span> <span class="tok pink">的/ude1</span> <span class="tok orange">刘小树/nr</span> <span class="tok gray">。/wj</span></td><td>-</td><td>-</td><td>-</td><td>-</td><td>主语省略，跟随前一个逗号</td></tr>
+<tr><td class="fill-blue">8</td><td class="text-cell"><span class="tok gray">“/wyz</span> <span class="tok orange">刘小树/nr</span> <span class="tok gray">，/wd</span> <span class="tok gray">你/x</span> <span class="tok blue">找到/v</span> <span class="tok orange">雪糕/n</span> <span class="tok gray">了/ule</span> <span class="tok gray">吗/x</span> <span class="tok gray">？/wq</span> <span class="tok gray">”/wyy</span></td><td class="fill-green">女孩 1</td><td class="fill-blue">说话_左</td><td>-</td><td>同上</td><td>双引号内为说话，不分析</td></tr>
+<tr><td class="fill-green">9</td><td class="text-cell"><span class="tok orange">刘小树/nr</span> <span class="tok pink">的/ude1</span> <span class="tok orange">声音/n</span> <span class="tok pink">从/p</span> <span class="tok orange">厨房/n</span> <span class="tok blue">传来/v</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 1</td><td>特写</td><td>1</td><td>室内 2</td><td>1 转述刘小树说；2 场景切换</td></tr>
+<tr><td class="fill-blue">10</td><td class="text-cell"><span class="tok gray">“/wyz</span> <span class="tok blue">找到/v</span> <span class="tok gray">了/ule</span> <span class="tok gray">，/wd</span> <span class="tok cyan">不过/c</span> <span class="tok orange">妈妈/n</span> <span class="tok gray">说总/x</span> <span class="tok blue">吃/v</span> <span class="tok orange">雪糕/n</span> <span class="tok gray">对/x</span> <span class="tok orange">身体/n</span> <span class="tok gray">不/x</span> <span class="tok lime">好/a</span> <span class="tok gray">。/wj</span> <span class="tok gray">”/wyy</span></td><td class="fill-green">男孩 1</td><td class="fill-blue">说话_右</td><td>-</td><td>同上</td><td>-</td></tr>
+<tr><td class="fill-green">11</td><td class="text-cell"><span class="tok orange">蒋小淘/nr</span> <span class="tok gray">哇哇/x</span> <span class="tok blue">大叫/v</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 2</td><td>特写</td><td>1</td><td>室内 1</td><td>背景切换回来</td></tr>
+<tr><td class="fill-blue">12</td><td class="text-cell"><span class="tok gray">“/wyz</span> <span class="tok mint">我们/rr</span> <span class="tok yellow">一个人/m</span> <span class="tok blue">吃/v</span> <span class="tok yellow">一盒/m</span> <span class="tok orange">雪糕/n</span> <span class="tok gray">，/wd</span> <span class="tok mint">这/rz</span> <span class="tok gray">天气/x</span> <span class="tok mint">这/rz</span> <span class="tok gray">么/x</span> <span class="tok lime">热/a</span> <span class="tok gray">，/wd</span> <span class="tok gray">不多不多/x</span> <span class="tok gray">。/wj</span> <span class="tok gray">”/wyy</span></td><td class="fill-green">男孩 2</td><td class="fill-blue">说话_左</td><td>-</td><td>同上</td><td>-</td></tr>
+<tr><td class="fill-green">13</td><td class="text-cell"><span class="tok orange">刘小树/nr</span> <span class="tok blue">没有/v</span> <span class="tok blue">说话/v</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 1</td><td>特写</td><td>-</td><td>同上</td><td>-</td></tr>
+<tr><td>14</td><td class="text-cell"><span class="tok lav">不一会儿/t</span> <span class="tok gray">。/wj</span></td><td>-</td><td>-</td><td>-</td><td>-</td><td>状语从句默认省略，跟随下一句</td></tr>
+<tr><td class="fill-green">15</td><td class="text-cell"><span class="tok lav">只见/d</span> <span class="tok mint">他/rr</span> <span class="tok blue">晃晃悠悠/v</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 1</td><td>特写</td><td>1</td><td>同上</td><td>代词主语</td></tr>
+<tr><td class="fill-red">16</td><td class="text-cell"><span class="tok blue">左摇右摆/v</span> <span class="tok pink">地/ude1</span> <span class="tok pink">从/p</span> <span class="tok orange">厨房/n</span> <span class="tok blue">走了出来/v</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 1</td><td class="fill-red">三人均分，1 人动</td><td>1</td><td>同上</td><td>主语省略，跟随前一个逗号</td></tr>
+<tr><td class="fill-green">17</td><td class="text-cell"><span class="tok gray">手上/x</span> <span class="tok lav">还/d</span> <span class="tok blue">捧着/v</span> <span class="tok yellow">半个/m</span> <span class="tok gray">大/x</span> <span class="tok orange">西瓜/n</span> <span class="tok gray">。/wj</span></td><td class="fill-green">西瓜 1.1</td><td>特写</td><td>2</td><td>同上</td><td>主语省略，跟随前一个逗号；重要宾语作为主体</td></tr>
+<tr><td class="fill-green">18</td><td class="text-cell"><span class="tok gray">大/x</span> <span class="tok orange">西瓜/n</span> <span class="tok gray">上面/x</span> <span class="tok blue">渗着/v</span> <span class="tok orange">水珠/n</span> <span class="tok gray">。/wj</span></td><td class="fill-green">西瓜 1.1</td><td>特写</td><td>1</td><td>同上</td><td>-</td></tr>
+<tr><td class="fill-green">19</td><td class="text-cell"><span class="tok blue">摸上去/v</span> <span class="tok gray">。/wj</span></td><td class="fill-green">西瓜 1.1</td><td>特写</td><td>1</td><td>同上</td><td>从句省略，跟随后句</td></tr>
+<tr><td class="fill-green">20</td><td class="text-cell"><span class="tok blue">泛着/v</span> <span class="tok gray">凉意/x</span> <span class="tok gray">。/wj</span></td><td class="fill-green">西瓜 1.1</td><td>特写</td><td>1</td><td>同上</td><td>主语省略，跟随前一个逗号</td></tr>
+<tr><td class="fill-green">21</td><td class="text-cell"><span class="tok orange">刘小树/nr</span> <span class="tok lime">兴奋地/d</span> <span class="tok blue">说着/v</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 1</td><td>特写</td><td>1</td><td>同上</td><td>-</td></tr>
+<tr><td class="fill-blue">22</td><td class="text-cell"><span class="tok gray">“/wyz</span> <span class="tok orange">雪糕/n</span> <span class="tok gray">不能/x</span> <span class="tok blue">吃/v</span> <span class="tok gray">，/wd</span> <span class="tok cyan">但是/c</span> <span class="tok orange">妈妈/n</span> <span class="tok pink">给/p</span> <span class="tok mint">我们/rr</span> <span class="tok blue">留下/v</span> <span class="tok gray">了/ule</span> <span class="tok orange">西瓜/n</span> <span class="tok gray">。/wj</span> <span class="tok gray">”/wyy</span></td><td class="fill-green">男孩 1</td><td class="fill-blue">说话_右</td><td>-</td><td>同上</td><td>背景</td></tr>
+<tr><td class="fill-green">23</td><td class="text-cell"><span class="tok orange">蒋小淘/nr</span> <span class="tok gray">一听/x</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 2</td><td>特写</td><td>-</td><td>同上</td><td>-</td></tr>
+<tr><td class="fill-green">24</td><td class="text-cell"><span class="tok lime">急忙/d</span> <span class="tok blue">跑到/v</span> <span class="tok orange">西瓜/n</span> <span class="tok gray">面前/x</span> <span class="tok gray">。/wj</span></td><td class="fill-green">西瓜 1.1；男孩 2</td><td>特写</td><td>西瓜 2 / 男孩 1</td><td>同上</td><td>1 主语省略；2 介宾短语作状语，西瓜省略</td></tr>
+<tr><td>25</td><td class="text-cell"><span class="tok gray">一/x</span> <span class="tok blue">靠近/v</span> <span class="tok gray">。/wj</span></td><td>-</td><td>-</td><td>-</td><td>-</td><td>状语从句默认省略，跟随下一句</td></tr>
+<tr><td class="fill-blue">26</td><td class="text-cell"><span class="tok mint">他/rr</span> <span class="tok lav">就/d</span> <span class="tok lime">舒服地/d</span> <span class="tok blue">吸了/v</span> <span class="tok yellow">一口/m</span> <span class="tok gray">气/x</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 2</td><td class="fill-blue">特写；P1 可新增模板说前</td><td>1</td><td>同上</td><td>代词主语</td></tr>
+<tr><td class="fill-blue">27</td><td class="text-cell"><span class="tok gray">“/wyz</span> <span class="tok lime">好/a</span> <span class="tok lime">凉快/a</span> <span class="tok gray">呀/x</span> <span class="tok gray">，/wd</span> <span class="tok cyan">要是/c</span> <span class="tok blue">吃/v</span> <span class="tok gray">进/x</span> <span class="tok orange">肚子/n</span> <span class="tok mint">那/rz</span> <span class="tok gray">可真是/x</span> <span class="tok lime">爽快/a</span> <span class="tok gray">呀/x</span> <span class="tok gray">！/wt</span> <span class="tok gray">”/wyy</span></td><td class="fill-green">男孩 2</td><td class="fill-blue">说话_左</td><td>-</td><td>同上</td><td>-</td></tr>
+<tr><td class="fill-green">28</td><td class="text-cell"><span class="tok orange">美小西/nr</span> <span class="tok blue">皱着/v</span> <span class="tok gray">眉头/x</span> <span class="tok gray">。/wj</span></td><td class="fill-green">女孩 1</td><td>特写</td><td>1</td><td>同上</td><td>-</td></tr>
+<tr><td class="fill-green">29</td><td class="text-cell"><span class="tok blue">望着/v</span> <span class="tok gray">眼前/x</span> <span class="tok pink">的/ude1</span> <span class="tok orange">西瓜/n</span> <span class="tok gray">。/wj</span></td><td class="fill-green">西瓜 1.1；女孩 1；西瓜 1.1</td><td>特写；女孩西瓜均分；女孩动</td><td>2 / 1</td><td>同上</td><td>宾语处理方式 1 / 2</td></tr>
+<tr><td class="fill-green">30</td><td class="text-cell"><span class="tok lime">渴望/a</span> <span class="tok gray">又/x</span> <span class="tok lime">犹豫地/d</span> <span class="tok blue">说道/v</span> <span class="tok gray">。/wj</span></td><td class="fill-green">女孩 1</td><td>特写</td><td>-</td><td>同上</td><td>-</td></tr>
+<tr><td class="fill-blue">31</td><td class="text-cell"><span class="tok gray">“/wyz</span> <span class="tok cyan">可是/c</span> <span class="tok mint">我们/rr</span> <span class="tok gray">小孩子/x</span> <span class="tok blue">不能用/v</span> <span class="tok orange">刀具/n</span> <span class="tok gray">，/wd</span> <span class="tok mint">这/rz</span> <span class="tok orange">西瓜/n</span> <span class="tok blue">该怎么吃/v</span> <span class="tok gray">呢/x</span> <span class="tok gray">？/wq</span> <span class="tok gray">”/wyy</span></td><td class="fill-green">女孩 1</td><td class="fill-blue">说话_左</td><td>-</td><td>同上</td><td>P1 可新增模板：说话前角色动作可放入引号外</td></tr>
+<tr><td class="fill-green">32</td><td class="text-cell"><span class="tok orange">刘小树/nr</span> <span class="tok gray">右手/x</span> <span class="tok blue">撑着/v</span> <span class="tok orange">下巴/n</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 1</td><td>特写</td><td>1</td><td>-</td><td>身体局部的主语为身体</td></tr>
+<tr><td class="fill-green">33</td><td class="text-cell"><span class="tok orange">眼睛/n</span> <span class="tok blue">一转/v</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 1</td><td>特写</td><td>1</td><td>-</td><td>主语省略，跟随前一个逗号；身体局部的主语为身体</td></tr>
+<tr><td class="fill-green">34</td><td class="text-cell"><span class="tok lime">开心地/d</span> <span class="tok blue">说道/v</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 1</td><td>特写</td><td>1</td><td>-</td><td>主语省略，跟随前一个逗号</td></tr>
+<tr><td class="fill-blue">35</td><td class="text-cell"><span class="tok gray">“/wyz</span> <span class="tok mint">那/rz</span> <span class="tok mint">我们/rr</span> <span class="tok lav">就/d</span> <span class="tok gray">用/x</span> <span class="tok orange">勺子/n</span> <span class="tok gray">挖/x</span> <span class="tok gray">着/uzhe</span> <span class="tok blue">吃/v</span> <span class="tok gray">吧/x</span> <span class="tok gray">。/wj</span> <span class="tok gray">”/wyy</span></td><td class="fill-green">男孩 1</td><td class="fill-blue">说话_右</td><td>-</td><td>同上</td><td>-</td></tr>
+<tr><td class="fill-red">36</td><td class="text-cell"><span class="tok mint">两个小伙伴/r</span> <span class="tok blue">拍手叫好/v</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 2，女孩 1</td><td class="fill-red">三人均分，2 人动</td><td>1</td><td>同上</td><td>判断两个小伙伴；判断构图</td></tr>
+<tr><td>37</td><td class="text-cell"><span class="tok gray">可/x</span> <span class="tok pink">到/p</span> <span class="tok gray">了/ule</span> <span class="tok blue">吃/v</span> <span class="tok orange">西瓜/n</span> <span class="tok pink">的/ude1</span> <span class="tok lav">时候/t</span> <span class="tok gray">。/wj</span></td><td>-</td><td>-</td><td>-</td><td>-</td><td>时间状语从句省略，跟随后句</td></tr>
+<tr><td class="fill-red">38</td><td class="text-cell"><span class="tok mint">三个人/r</span> <span class="tok lav">却/d</span> <span class="tok blue">争吵/v</span> <span class="tok gray">了/ule</span> <span class="tok gray">起来/x</span> <span class="tok gray">。/wj</span></td><td class="fill-red">男孩 1&amp;2，女孩 1</td><td class="fill-red">三人均分</td><td>1</td><td>同上</td><td>-</td></tr>
+<tr><td>39</td><td class="text-cell"><span class="tok lav">原来呀/d</span> <span class="tok gray">。/wj</span></td><td>-</td><td>-</td><td>-</td><td>-</td><td>复句关联词后跟逗号，省略，跟随下一句</td></tr>
+<tr><td>40</td><td class="text-cell"><span class="tok gray">当/x</span> <span class="tok orange">勺子/n</span> <span class="tok blue">分给/v</span> <span class="tok mint">三个人/r</span> <span class="tok pink">的/ude1</span> <span class="tok lav">时候/t</span> <span class="tok gray">。/wj</span></td><td>-</td><td>-</td><td>-</td><td>-</td><td>时间状语从句省略，跟随后句</td></tr>
+<tr><td class="fill-green">41</td><td class="text-cell"><span class="tok mint">每个人/r</span> <span class="tok pink">的/ude1</span> <span class="tok orange">目标/n</span> <span class="tok lav">都/d</span> <span class="tok blue">对准/v</span> <span class="tok gray">了/ule</span> <span class="tok orange">西瓜/n</span> <span class="tok pink">的/ude1</span> <span class="tok orange">中间/n</span> <span class="tok gray">。/wj</span></td><td class="fill-green">西瓜 1.1</td><td>特写</td><td>1</td><td>同上</td><td>-</td></tr>
+<tr><td>42</td><td class="text-cell"><span class="tok cyan">因为/c</span> <span class="tok gray">。/wj</span></td><td>-</td><td>-</td><td>-</td><td>-</td><td>复句关联词后跟逗号，省略，跟随下一句</td></tr>
+<tr><td>43</td><td class="text-cell"><span class="tok mint">那里/rz</span> <span class="tok lime">最甜/a</span> <span class="tok gray">。/wj</span></td><td>-</td><td>-</td><td>-</td><td>-</td><td>代词主语，复句主语</td></tr>
+<tr><td>44</td><td class="text-cell"><span class="tok orange">汁水/n</span> <span class="tok lime">最多/a</span> <span class="tok gray">。/wj</span></td><td>-</td><td>-</td><td>-</td><td>-</td><td>主语省略，跟随前一个逗号</td></tr>
+<tr><td class="fill-red">45</td><td class="text-cell"><span class="tok gray">有/x</span> <span class="tok yellow">两块/m</span> <span class="tok gray">分别/x</span> <span class="tok pink">在/p</span> <span class="tok orange">刘小树/nr</span> <span class="tok gray">和/x</span> <span class="tok orange">蒋小淘/nr</span> <span class="tok pink">的/ude1</span> <span class="tok orange">勺子/n</span> <span class="tok gray">上/x</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 1&amp;男孩 2</td><td class="fill-red">三人均分，2 人动</td><td>1</td><td>-</td><td>-</td></tr>
+<tr><td class="fill-yellow">46</td><td class="text-cell"><span class="tok gray">剩下/x</span> <span class="tok pink">的/ude1</span> <span class="tok gray">。/wj</span></td><td>-</td><td>-</td><td>-</td><td>-</td><td>跟随后一句</td></tr>
+<tr><td class="fill-green">47</td><td class="text-cell"><span class="tok lav">都/d</span> <span class="tok blue">进了/v</span> <span class="tok mint">两个小朋友/r</span> <span class="tok pink">的/ude1</span> <span class="tok orange">肚子/n</span> <span class="tok gray">里/x</span> <span class="tok gray">。/wj</span></td><td class="fill-green">西瓜 1.2</td><td>特写</td><td>1</td><td>-</td><td>反向转述</td></tr>
+<tr><td class="fill-green">48</td><td class="text-cell"><span class="tok orange">美小西/nr</span> <span class="tok lime">生气地/d</span> <span class="tok gray">嘟/x</span> <span class="tok gray">着/uzhe</span> <span class="tok gray">嘴/x</span> <span class="tok gray">。/wj</span></td><td class="fill-green">女孩 1</td><td>特写</td><td>1</td><td>-</td><td>-</td></tr>
+<tr><td class="fill-green">49</td><td class="text-cell"><span class="tok lav">只好/d</span> <span class="tok lime">慢慢地/d</span> <span class="tok blue">吃着/v</span> <span class="tok orange">西瓜/n</span> <span class="tok pink">的/ude1</span> <span class="tok gray">四周/x</span> <span class="tok gray">。/wj</span></td><td class="fill-green">西瓜 1.2</td><td>特写</td><td>1</td><td>-</td><td>主语省略，跟随前一个逗号</td></tr>
+<tr><td class="fill-red">50</td><td class="text-cell"><span class="tok orange">刘小树/nr</span> <span class="tok gray">和/x</span> <span class="tok orange">蒋小淘/nr</span> <span class="tok blue">面面相觑/v</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 1&amp;男孩 2</td><td class="fill-red">三人均分，2 人动</td><td>1</td><td>-</td><td>-</td></tr>
+<tr><td class="fill-red">51</td><td class="text-cell"><span class="tok lav">这才/d</span> <span class="tok blue">意识到/v</span> <span class="tok mint">自己/rr</span> <span class="tok pink">的/ude1</span> <span class="tok orange">问题/n</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 1&amp;男孩 2</td><td class="fill-red">三人均分，2 人动</td><td>1</td><td>-</td><td>-</td></tr>
+<tr><td class="fill-blue">52</td><td class="text-cell"><span class="tok orange">刘小树/nr</span> <span class="tok gray">“/wyz</span> <span class="tok gray">嘿嘿/x</span> <span class="tok gray">”/wyy</span> <span class="tok blue">一笑/v</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 1</td><td>特写</td><td>1</td><td>-</td><td>P1 可新增模式，“双引号”内容是切仅是拟声词，不作为说话内容</td></tr>
+<tr><td class="fill-red">53</td><td class="text-cell"><span class="tok gray">将/x</span> <span class="tok orange">勺子/n</span> <span class="tok gray">里/x</span> <span class="tok pink">的/ude1</span> <span class="tok orange">西瓜/n</span> <span class="tok blue">递给/v</span> <span class="tok gray">了/ule</span> <span class="tok orange">美小西/nr</span> <span class="tok gray">。/wj</span></td><td class="fill-green">50：女孩 1；60：男孩 1、女孩 1</td><td class="fill-red">特写 / 三人均分</td><td>1</td><td>-</td><td>主语省略；双宾语，西瓜省略，留女孩</td></tr>
+<tr><td class="fill-green">54</td><td class="text-cell"><span class="tok gray">“/wyz</span> <span class="tok gray">对不起/x</span> <span class="tok gray">，/wd</span> <span class="tok gray">我只想/x</span> <span class="tok pink">到/p</span> <span class="tok gray">了/ule</span> <span class="tok mint">自己/rr</span> <span class="tok gray">，/wd</span> <span class="tok blue">没有/v</span> <span class="tok gray">照顾/x</span> <span class="tok pink">到/p</span> <span class="tok gray">你/x</span> <span class="tok gray">。/wj</span> <span class="tok gray">”/wyy</span></td><td class="fill-green">男孩 1</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td class="fill-green">55</td><td class="text-cell"><span class="tok orange">蒋小淘/nr</span> <span class="tok lav">也/d</span> <span class="tok blue">挠了挠头/v</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 2</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td class="fill-green">56</td><td class="text-cell"><span class="tok lime">不好意思地/d</span> <span class="tok blue">看向/v</span> <span class="tok orange">美小西/nr</span> <span class="tok gray">。/wj</span></td><td class="fill-green">男孩 2</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td class="fill-green">57</td><td class="text-cell"><span class="tok gray">“/wyz</span> <span class="tok orange">美小西/nr</span> <span class="tok gray">，/wd</span> <span class="tok gray">不/x</span> <span class="tok lime">好/a</span> <span class="tok gray">意思啊/x</span> <span class="tok gray">，/wd</span> <span class="tok gray">我只想/x</span> <span class="tok gray">着/uzhe</span> <span class="tok lime">好/a</span> <span class="tok blue">吃/v</span> <span class="tok pink">的/ude1</span> <span class="tok gray">了/ule</span> <span class="tok gray">。/wj</span> <span class="tok gray">”/wyy</span></td><td class="fill-green">男孩 2</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td class="fill-green">58</td><td class="text-cell"><span class="tok pink">被/pbei</span> <span class="tok orange">小伙伴/n</span> <span class="tok gray">哄/x</span> <span class="tok gray">着/uzhe</span> <span class="tok pink">的/ude1</span> <span class="tok orange">美小西/nr</span> <span class="tok gray">。/wj</span></td><td class="fill-green">女孩 1</td><td>特写</td><td>2</td><td>-</td><td>-</td></tr>
+<tr><td class="fill-green">59</td><td class="text-cell"><span class="tok lav">终于/d</span> <span class="tok gray">重新/x</span> <span class="tok blue">露出/v</span> <span class="tok gray">了/ule</span> <span class="tok orange">笑脸/n</span> <span class="tok gray">。/wj</span></td><td class="fill-green">女孩 1</td><td>特写</td><td>1</td><td>-</td><td>代词主语</td></tr>
+<tr><td class="fill-red">60</td><td class="text-cell"><span class="tok mint">她/rr</span> <span class="tok lav">也/d</span> <span class="tok lime">歉意地/d</span> <span class="tok blue">看着/v</span> <span class="tok mint">两个小伙伴/r</span> <span class="tok gray">。/wj</span></td><td class="fill-red">男孩 1&amp;2，女孩 1</td><td>女孩 1 动</td><td>1</td><td>-</td><td>-</td></tr>
+<tr><td class="fill-blue">61</td><td class="text-cell"><span class="tok gray">“/wyz</span> <span class="tok gray">不怪/x</span> <span class="tok mint">你们/rr</span> <span class="tok gray">，/wd</span> <span class="tok gray">我/x</span> <span class="tok lav">也/d</span> <span class="tok gray">有错/x</span> <span class="tok gray">，/wd</span> <span class="tok blue">不该/v</span> <span class="tok gray">冲/x</span> <span class="tok gray">着/uzhe</span> <span class="tok mint">你们/rr</span> <span class="tok gray">发脾气/x</span> <span class="tok gray">，/wd</span> <span class="tok gray">是我/x</span> <span class="tok mint">自己/rr</span> <span class="tok blue">吃/v</span> <span class="tok gray">得慢/x</span> <span class="tok pink">的/ude1</span> <span class="tok orange">原因/n</span> <span class="tok gray">。/wj</span> <span class="tok gray">”/wyy</span></td><td class="fill-green">女孩 1</td><td class="fill-blue">说话_左</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td class="fill-yellow">62</td><td class="text-cell"><span class="tok orange">刘小树/nr</span> <span class="tok blue">点点头/v</span> <span class="tok gray">。/wp</span></td><td class="fill-green">男孩 1</td><td class="fill-blue">新增模板，角色动作后面加引号加双引号加说话内容</td><td></td><td></td><td></td></tr>
+<tr><td class="fill-green">63</td><td class="text-cell"><span class="tok gray">“/wyz</span> <span class="tok lav">以后/f</span> <span class="tok mint">我们/rr</span> <span class="tok blue">有/you</span> <span class="tok lime">好/a</span> <span class="tok orange">东西/n</span> <span class="tok lav">一起/s</span> <span class="tok blue">分享/v</span> <span class="tok gray">。/wj</span> <span class="tok gray">”/wyy</span></td><td>男孩 1</td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="fill-green">64</td><td class="text-cell"><span class="tok blue">剩下/v</span> <span class="tok pink">的/ude1</span> <span class="tok mint">那/rzv</span> <span class="tok yellow">两/m</span> <span class="tok cyan">块/q</span> <span class="tok lime">甜/a</span> <span class="tok lime">甜/a</span> <span class="tok pink">的/ude1</span> <span class="tok orange">西瓜/n</span> <span class="tok gray">，/wd</span></td><td class="fill-green">西瓜 1.1</td><td>特写</td><td>1</td><td></td><td></td></tr>
+<tr><td class="fill-red">65</td><td class="text-cell"><span class="tok lav">最终/d</span> <span class="tok pink">被/pbei</span> <span class="tok blue">分/v</span> <span class="tok blue">成/v</span> <span class="tok gray">了/ule</span> <span class="tok yellow">三/m</span> <span class="tok cyan">份/q</span> <span class="tok gray">，/wd</span></td><td>西瓜 1.1</td><td>特写</td><td>1</td><td></td><td></td></tr>
+<tr><td class="fill-red">66</td><td class="text-cell"><span class="tok blue">装/v</span> <span class="tok blue">进/vf</span> <span class="tok gray">了/ule</span> <span class="tok yellow">三/m</span> <span class="tok cyan">个/q</span> <span class="tok orange">小朋友/n</span> <span class="tok cyan">们/k</span> <span class="tok pink">的/ude1</span> <span class="tok orange">肚子/n</span> <span class="tok cyan">里/f</span> <span class="tok gray">。/wj</span></td><td class="fill-red">男孩 1&2，女孩 1</td><td class="fill-red">三人均分同时动</td><td>1</td><td></td><td></td></tr>
+<tr><td class="fill-red">67</td><td class="text-cell"><span class="tok yellow">三/m</span> <span class="tok cyan">个/q</span> <span class="tok orange">人/n</span> <span class="tok pink">的/ude1</span> <span class="tok orange">友谊/n</span> <span class="tok lav">也/d</span> <span class="tok pink">在/p</span> <span class="tok mint">他们/rr</span> <span class="tok pink">的/ude1</span> <span class="tok lav">心里/s</span> <span class="tok lav">悄然/d</span> <span class="tok blue">滋长/v</span> <span class="tok gray">。/wj</span></td><td class="fill-red">男孩 1&2，女孩 1</td><td class="fill-red">三人均分同时动</td><td>1</td><td></td><td></td></tr>
+</tbody></table></div>
+</main>
+</body>
+</html>
