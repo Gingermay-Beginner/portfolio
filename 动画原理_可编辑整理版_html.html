@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Text to Script的原理和规则</title>
+<title>From Natural Language to Executable Scripts</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -15,6 +15,7 @@ body { margin: 0; background: var(--bg); color: var(--ink); font-family: Inter, 
 main { width: min(1180px, calc(100% - 32px)); margin: 32px auto 56px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 38px 42px; }
 h1,h2,h3 { font-family: "Space Grotesk", Inter, "PingFang SC", "Microsoft YaHei", sans-serif; }
 h1 { font-size: 34px; margin: 0 0 12px; line-height: 1.15; letter-spacing: -1px; }
+.document-subtitle { margin: 0 0 34px; color: var(--muted); font-size: 15px; line-height: 1.55; }
 h2 { font-size: 23px; margin: 40px 0 12px; padding-top: 0; border-top: 0; letter-spacing: -.35px; }
 h3 { font-size: 18px; margin: 26px 0 10px; letter-spacing: -.15px; }
 h4 { font-size: 16px; margin: 18px 0 8px; color: var(--soft); }
@@ -107,6 +108,11 @@ body.coverage-only { background: var(--card); }
 body.coverage-only main { width: 100%; margin: 0; border: 0; border-radius: 0; padding: 24px; }
 body.coverage-only main > :not(#case-table):not(.manual-boundaries):not(#case-table-data) { display: none !important; }
 body.coverage-only #case-table { margin: 0 0 12px; }
+body.rules-only #case-table,
+body.rules-only #case-table + .section-subtitle,
+body.rules-only .manual-boundaries,
+body.rules-only #case-table-data { display: none !important; }
+body.rules-only main { padding-top: 72px; }
 @media (max-width: 1100px) { .manual-boundary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .manual-boundary-item:last-child { grid-column: 1 / -1; } }
 @media (max-width: 900px) { .case-table-layout { grid-template-columns: 148px minmax(0, 1fr); gap: 10px; } .coverage-legend { top: 8px; gap: 7px; } .coverage-item { min-height: 70px; padding: 12px; } .coverage-item strong { font-size: 21px; } .coverage-item span { font-size: 12px; } .case-table-layout .table-wrap { overflow-x: auto; } .case-table-layout .unified-case-table { min-width: 900px; } }
 @media (max-width: 640px) { body { font-size: 15px; } main { width: 100%; margin: 0; border: 0; padding: 22px 10px 40px; } h1 { font-size: 25px; } h2 { font-size: 19px; } th, td { padding: 7px 6px; } .tok { padding: 1px 4px 2px; } }
@@ -114,9 +120,14 @@ body.coverage-only #case-table { margin: 0 0 12px; }
 </style>
 </head>
 <body>
-<script>if (new URLSearchParams(location.search).get('view') === 'coverage') document.body.classList.add('coverage-only');</script>
+<script>
+const documentView = new URLSearchParams(location.search).get('view');
+if (documentView === 'coverage') document.body.classList.add('coverage-only');
+if (documentView === 'rules') document.body.classList.add('rules-only');
+</script>
 <main>
-<h1>Text to Script的原理和规则</h1>
+<h1>From Natural Language to Executable Scripts</h1>
+<p class="document-subtitle">Story Decomposition, Sentence Normalization &amp; Visual Mapping Rules</p>
 <h2>一、文字自动生成动画的核心方法</h2>
 <p>动画 = 画 + 动</p>
 <p>动画片 =（画 + 动）<span class="role-mark">【转场】</span>（画 + 动）……</p>

@@ -118,6 +118,16 @@
     .evidence figcaption{display:grid;grid-template-columns:170px 1fr;gap:18px;padding:17px 19px;border-top:1px solid var(--line);font-size:12px;line-height:1.6;color:var(--muted)}
     .evidence figcaption.evidence-caption--single{grid-template-columns:1fr}
     .evidence figcaption b{color:var(--ink)}
+    .evidence-details{border-top:1px solid var(--line)}
+    .evidence-details summary{display:flex;justify-content:space-between;align-items:center;gap:24px;padding:15px 19px;list-style:none;cursor:pointer;font-size:12px;line-height:1.6}
+    .evidence-details summary::-webkit-details-marker{display:none}
+    .evidence-details summary:hover{background:var(--green-soft)}
+    .evidence-summary-copy{color:var(--muted);font-weight:400}
+    .evidence-summary-action{flex:none;color:var(--green-dark);font-weight:700;white-space:nowrap}
+    .evidence-details .collapse-label{display:none}
+    .evidence-details[open] .expand-label{display:none}
+    .evidence-details[open] .collapse-label{display:inline}
+    .evidence-detail-media{border-top:1px solid var(--line)}
     .implication-pair{margin-top:12px;border:1px solid var(--line);border-radius:16px;background:white;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;align-items:stretch}
     .implication-cell{padding:22px}
     .implication-cell+.implication-cell{border-left:1px solid var(--line)}
@@ -206,6 +216,7 @@
     .proof-head p{max-width:410px;margin:0;font-size:12px;line-height:1.6;color:var(--muted)}
     .proof-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
     .proof-card{padding:0;border:1px solid var(--line);border-radius:15px;background:white;overflow:hidden;text-align:left;cursor:pointer;transition:transform .2s,box-shadow .2s}
+    .proof-card--span-two{grid-column:1 / -1}
     .proof-card--coverage{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start}
     .proof-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
     .proof-card--wide{display:grid;grid-template-columns:1fr;width:100%;margin:16px 0 12px}
@@ -253,6 +264,9 @@
     .implementation-copy{padding:24px}
     .implementation-copy h3{margin:10px 0 8px}
     .implementation-copy p{font-size:12px;line-height:1.65;color:var(--muted)}
+    .implementation-copy--proof{padding:17px}
+    .implementation-copy--proof h4{margin:8px 0 6px;font-size:15px;font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+    .implementation-copy--proof p{margin:0;font-size:11.5px;line-height:1.6;color:var(--muted)}
     .timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-bottom:16px;border:1px solid var(--line);border-radius:16px;background:white;overflow:hidden}
     .timeline-item{padding:22px;background:white}
     .timeline-item+.timeline-item{border-left:1px solid var(--line)}
@@ -394,7 +408,7 @@
       <section class="hero">
         <div class="wrap">
           <div class="kicker"><span class="kicker-dot"></span>Microsoft Xiaoice · Text-to-animation system</div>
-          <h1>Turning Story-to-Animation from a Launch Concept into a Production-Ready System</h1>
+          <h1>From a Launch Concept to a Production-Ready System</h1>
           <p class="lede">面对当时尚不成熟的故事理解能力和不可规模化的传统动画方案，我将阶段目标从<strong>动画片</strong>重新定义为<strong>可动绘本</strong>，并建立 Story-to-Script、Auto Storyboard 与可复用视觉资产系统，为小冰 C 端 App 持续生产“讲故事”内容。</p>
 
           <div class="hero-flow-label mono">00 / Case study at a glance</div>
@@ -524,12 +538,14 @@
 
           <figure class="evidence">
             <img src="assets/xiaoice-product-reframe-original-v2.jpeg" alt="项目中从动画片制作目标到可动绘本产品形态的对比">
-            <figcaption class="evidence-caption--single"><span>左：依赖逐镜头设计和连续表演的动画片；右：以独立画面和有限动效连接叙事的可动绘本。</span></figcaption>
-            <img src="assets/XiaoiceAudioBook/作品集_小冰绘本生成完整版_20210114.032.jpeg" alt="同一故事在连续场景动画与可动绘本两种生产逻辑下的画面差异">
+            <details class="evidence-details">
+              <summary><span class="evidence-summary-copy">左：依赖逐镜头设计和连续表演的动画片；右：以独立画面和有限动效连接叙事的可动绘本。</span><span class="evidence-summary-action"><span class="expand-label">查看两种产品形态的逐句画面对比 ↓</span><span class="collapse-label">收起对比 ↑</span></span></summary>
+              <div class="evidence-detail-media"><img src="assets/XiaoiceAudioBook/作品集_小冰绘本生成完整版_20210114.032.jpeg" alt="同一故事在连续场景动画与可动绘本两种生产逻辑下的画面差异"></div>
+            </details>
           </figure>
 
-          <button class="proof-card proof-card--wide" data-full="assets/XiaoiceAudioBook/作品集_小冰绘本生成完整版_20210114.035.jpeg" data-title="MVP：主体图像 + 动画" data-caption="语义分析可以保留宾语，但首版不为宾语生成独立图像，只将主语映射为主体、谓语或表语结构映射为动画。">
-            <div class="proof-thumb"><img src="assets/XiaoiceAudioBook/作品集_小冰绘本生成完整版_20210114.035.jpeg" alt="从故事句式到 Script 与视觉画面的 MVP 映射规则"></div>
+          <button class="proof-card proof-card--wide" data-full="assets/XiaoiceAudioBook/作品集_小冰绘本生成完整版_20210114.035.jpeg?v=20260818-1801" data-title="MVP：主体图像 + 动画" data-caption="语义分析可以保留宾语，但首版不为宾语生成独立图像，只将主语映射为主体、谓语或表语结构映射为动画。">
+            <div class="proof-thumb"><img src="assets/XiaoiceAudioBook/作品集_小冰绘本生成完整版_20210114.035.jpeg?v=20260818-1801" alt="从故事句式到 Script 与视觉画面的 MVP 映射规则"></div>
             <div class="proof-copy"><span class="proof-kicker">MVP system boundary</span><h4>先实现“主体图像 + 动画”</h4><p>主动缩小视觉语义范围，先证明文字可以稳定生成会动的画面。</p><span class="proof-open">查看原图 ↗</span></div>
           </button>
 
@@ -691,8 +707,8 @@
               <div><span class="section-no">Original specification</span><h3>我编写的句法与脚本规则</h3></div>
             </div>
             <div class="proof-grid">
-              <button class="proof-card" data-doc="动画原理_可编辑整理版_html.html" data-title="复杂叙事的规则拆解" data-caption="完整的 Text-to-Script 原理、句法拆分方法和规则原稿。">
-                <div class="proof-thumb"><img src="assets/xiaoice-rule-decomposition.png" alt="复杂叙事拆句规则"></div>
+              <button class="proof-card" data-doc="动画原理_可编辑整理版_html.html?view=rules" data-title="复杂叙事的规则拆解" data-caption="完整的 Text-to-Script 原理、句法拆分方法和规则原稿。">
+                <div class="proof-thumb"><img src="assets/xiaoice-rule-decomposition-cover.svg?v=20260818-9" alt="自然语言故事被拆解为场景、主体和动作字段"></div>
                 <div class="proof-copy"><span class="proof-kicker">Rule specification</span><h4>复杂叙事的规则拆解</h4><p>判断哪些信息进入主体、动作 / 状态和场景上下文。</p><span class="proof-open">打开完整规则文档 ↗</span></div>
               </button>
               <button class="proof-card" data-full="assets/xiaoice-pattern-coordination-042.jpeg" data-title="并列句转换为原子动作" data-caption="将“小红笑了，并吃了一颗糖”转换为两个主谓单元，补全第二句主语，使系统识别两个独立动作。">
@@ -781,7 +797,7 @@
               <p>点击查看每一层的变量结构和原始设计证据。</p>
             </div>
             <div class="proof-grid">
-              <button class="proof-card" data-gallery="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.046.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.047.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.048.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.049.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.050.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.051.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.052.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.053.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.082.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.083.jpeg" data-cover-count="8" data-gallery-label="Subject asset library" data-title="主体组合资产" data-caption="从模块化组合规则、最终生产资产到前期视觉方向探索，共 10 张设计原稿。">
+              <button class="proof-card proof-card--span-two" data-gallery="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.046.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.047.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.048.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.049.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.050.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.051.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.052.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.053.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.082.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.083.jpeg" data-cover-count="8" data-gallery-label="Subject asset library" data-title="主体组合资产" data-caption="从模块化组合规则、最终生产资产到前期视觉方向探索，共 10 张设计原稿。">
                 <div class="proof-thumb"><img src="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.049.jpeg" alt="主体组合资产设计"></div>
                 <div class="proof-copy"><span class="proof-kicker">Subject assets</span><h4>主体组合资产</h4><p>将人物和拟人动物拆成可组合、可继续扩展的变量。</p><span class="proof-open">查看 10 张设计原稿 ↗</span></div>
               </button>
@@ -800,10 +816,6 @@
               <button class="proof-card" data-full="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.081.jpeg" data-title="素材分类、命名与检索" data-caption="类型、语义分类、属性和变体编号共同组成可被设计团队与系统理解的素材 ID。">
                 <div class="proof-thumb"><img src="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.081.jpeg" alt="素材分类、命名与检索规则"></div>
                 <div class="proof-copy"><span class="proof-kicker">Taxonomy &amp; naming</span><h4>素材分类、命名与检索</h4><p>让 Script 解析结果可以转化为检索条件，也让新增资产直接进入系统。</p><span class="proof-open">查看原始表格 ↗</span></div>
-              </button>
-              <button class="proof-card" data-full="assets/xiaoice-mvp-atomic-story.png" data-title="动画单元的连续组合" data-caption="故事被拆成多个句法单元，每个可视化单元生成对应画面，再通过转场连接为连续内容。">
-                <div class="proof-thumb"><img src="assets/xiaoice-mvp-atomic-story.png" alt="动画单元组成完整故事"></div>
-                <div class="proof-copy"><span class="proof-kicker">Generation units</span><h4>动画单元组成完整故事</h4><p>把资产系统和脚本规则连接成可重复生产的内容链路。</p><span class="proof-open">查看原图 ↗</span></div>
               </button>
             </div>
           </div>
@@ -848,9 +860,9 @@
             </button>
             <div class="implementation" style="margin:0;grid-template-columns:1fr">
               <img src="assets/xiaoice-developer-adjustment-tool.png" alt="开发伙伴搭建的内部调整平台">
-              <div class="implementation-copy">
-                <span class="eyebrow">Developer-built internal tool</span>
-                <h3>为调试和修正保留可编辑参数</h3>
+              <div class="implementation-copy implementation-copy--proof">
+                <span class="proof-kicker">Developer-built internal tool</span>
+                <h4>为调试和修正保留可编辑参数</h4>
                 <p>该平台由开发伙伴自行搭建，不是我的 UI 设计交付；它证明构图、图层、字幕和动画规则已被工程化为可调参数。</p>
               </div>
             </div>
