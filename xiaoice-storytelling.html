@@ -206,6 +206,7 @@
     .proof-head p{max-width:410px;margin:0;font-size:12px;line-height:1.6;color:var(--muted)}
     .proof-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
     .proof-card{padding:0;border:1px solid var(--line);border-radius:15px;background:white;overflow:hidden;text-align:left;cursor:pointer;transition:transform .2s,box-shadow .2s}
+    .proof-card--coverage{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start}
     .proof-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
     .proof-card--wide{display:grid;grid-template-columns:1fr;width:100%;margin:16px 0 12px}
     .proof-card--wide .proof-thumb{aspect-ratio:16/9}
@@ -213,6 +214,15 @@
     .proof-card--wide .proof-copy{display:flex;flex-direction:column;justify-content:center}
     .proof-thumb{aspect-ratio:16/9;overflow:hidden;background:var(--panel)}
     .proof-thumb img{width:100%;height:100%;object-fit:cover}
+    .proof-thumb--coverage{padding:10px;background:#e2e5e9;display:flex;flex-direction:column}
+    .coverage-cover-grid{min-height:0;flex:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+    .coverage-cover-item{min-width:0;padding:8px 7px;border-radius:9px;display:flex;flex-direction:column;justify-content:center;gap:2px}
+    .coverage-cover-item strong{font-size:25px;line-height:1;font-weight:760;letter-spacing:-.02em}
+    .coverage-cover-item span{font-size:9px;line-height:1.25;font-weight:700;white-space:nowrap}
+    .coverage-cover-item.auto{background:#edf7f3;color:#356b5b}
+    .coverage-cover-item.code{background:#f0f2fa;color:#53638f}
+    .coverage-cover-item.semi{background:#fbf7eb;color:#80631f}
+    .coverage-cover-item.manual{background:#faf0f1;color:#8d4f54}
     .proof-card[data-gallery] .proof-thumb{position:relative}
     .proof-card[data-gallery] .proof-cover-next{position:absolute;inset:0;z-index:1;opacity:0;pointer-events:none;transition:opacity .48s ease}
     .proof-card[data-gallery] .proof-cover-next.is-visible{opacity:1}
@@ -825,8 +835,15 @@
           <div class="loop"><span>规则说明</span><b>→</b><span>开发实现</span><b>→</b><span>真实故事验证</span><b>→</b><span>发现例外</span><b>→</b><span>更新规则或素材库</span></div>
 
           <div class="route-grid" style="margin-top:12px">
-            <button class="proof-card" data-doc="动画原理_可编辑整理版_html.html#case-table" data-title="自动化覆盖与人工边界" data-caption="项目用实际语料区分 Fully automatic、Automated after rule extension、Semi-manual 和 Full manual 四类内容，从而明确系统能力边界。">
-              <div class="proof-thumb"><img src="assets/xiaoice-pattern-coverage.png" alt="自动化覆盖率与人工边界"></div>
+            <button class="proof-card proof-card--coverage" data-doc="动画原理_可编辑整理版_html.html?view=coverage#case-table" data-title="自动化覆盖与人工边界" data-caption="项目用实际语料区分 Fully automatic processing、Automated after rule extension、Semi-manual processing 和 Full manual processing 四类内容，从而明确系统能力边界。">
+              <div class="proof-thumb proof-thumb--coverage" role="img" aria-label="67 个脚本单元的自动化覆盖率：59.7% 全自动，16.4% 规则扩展后自动化，4.5% 半人工，19.4% 全人工">
+                <div class="coverage-cover-grid">
+                  <div class="coverage-cover-item auto"><strong>59.7%</strong><span>Fully automatic processing</span></div>
+                  <div class="coverage-cover-item code"><strong>16.4%</strong><span>Automated after rule extension</span></div>
+                  <div class="coverage-cover-item semi"><strong>4.5%</strong><span>Semi-manual processing</span></div>
+                  <div class="coverage-cover-item manual"><strong>19.4%</strong><span>Full manual processing</span></div>
+                </div>
+              </div>
               <div class="proof-copy"><span class="proof-kicker">Human in the loop</span><h4>自动化覆盖之外，保留人工路径</h4><p>系统价值不是消灭所有人工，而是让重复部分自动化，让例外有明确去处。</p><span class="proof-open">查看案例表格 ↗</span></div>
             </button>
             <div class="implementation" style="margin:0;grid-template-columns:1fr">

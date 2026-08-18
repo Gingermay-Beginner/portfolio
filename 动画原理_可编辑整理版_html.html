@@ -65,14 +65,23 @@ tr:nth-child(even) td { background: var(--bg-2); }
 .case-table-layout .table-wrap { border: 0; border-radius: 0; }
 .coverage-legend { position: sticky; top: 16px; display: grid; grid-template-columns: 1fr; gap: 10px; margin: 14px 0 22px; }
 .coverage-legend-title { margin: 0 0 2px; color: var(--muted); font-family: "JetBrains Mono", SFMono-Regular, Menlo, monospace; font-size: 12px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
-.coverage-item { min-height: 66px; padding: 11px 13px; border-radius: 6px; color: #fff; display: grid; align-content: center; gap: 2px; line-height: 1.25; }
-.coverage-item strong { font-size: 20px; }
-.coverage-item span { font-size: 13px; font-weight: 650; }
+.coverage-item { min-height: 84px; padding: 15px 16px; border-radius: 8px; color: #fff; display: grid; align-content: center; gap: 5px; line-height: 1.25; }
+.coverage-item strong { font-size: 25px; line-height: 1; }
+.coverage-item span { font-size: 14px; font-weight: 700; }
 .coverage-item.auto { background: #edf7f3; color: #356b5b; }
 .coverage-item.code { background: #f0f2fa; color: #53638f; }
 .coverage-item.semi { background: #fbf7eb; color: #80631f; }
 .coverage-item.manual { background: #faf0f1; color: #8d4f54; }
 .coverage-scope { margin: -4px 0 2px; color: var(--muted); font-size: 11px; line-height: 1.45; }
+.manual-boundaries { margin: 18px 0 24px; overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: var(--card); }
+.manual-boundaries-head { padding: 16px 18px 14px; }
+.manual-boundaries-kicker { margin: 0 0 6px; color: var(--green); font-family: "JetBrains Mono", SFMono-Regular, Menlo, monospace; font-size: 11px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+.manual-boundaries-title { margin: 0 0 5px; color: var(--ink); font-size: 17px; font-weight: 760; }
+.manual-boundaries-intro { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+.manual-boundary-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; border-top: 1px solid var(--line); background: var(--line); }
+.manual-boundary-item { min-width: 0; padding: 14px 15px 16px; background: var(--card); }
+.manual-boundary-item h4 { margin: 0 0 6px; color: var(--ink); font-size: 13px; line-height: 1.35; }
+.manual-boundary-item p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
 .token-legend { display: grid; grid-template-columns: 1fr; gap: 5px; margin-top: 9px; padding-top: 2px; border-top: 0; }
 .token-legend-title { margin: 0 0 3px; color: var(--muted); font-family: "JetBrains Mono", SFMono-Regular, Menlo, monospace; font-size: 11px; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
 .token-key { position: relative; width: 100%; min-height: 28px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--soft); display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 6px; align-items: center; text-align: left; font: inherit; cursor: help; }
@@ -94,12 +103,18 @@ tr:nth-child(even) td { background: var(--bg-2); }
 .token-tooltip b,.token-tooltip span { display: block; }
 .token-tooltip b { margin-bottom: 3px; color: #fff; font-size: 11px; line-height: 1.45; }
 .token-tooltip span { color: var(--line-strong); font-size: 10px; line-height: 1.45; }
-@media (max-width: 900px) { .case-table-layout { grid-template-columns: 124px minmax(0, 1fr); gap: 10px; } .coverage-legend { top: 8px; gap: 7px; } .coverage-item { min-height: 58px; padding: 9px 10px; } .coverage-item strong { font-size: 17px; } .coverage-item span { font-size: 11px; } .case-table-layout .table-wrap { overflow-x: auto; } .case-table-layout .unified-case-table { min-width: 900px; } }
+body.coverage-only { background: var(--card); }
+body.coverage-only main { width: 100%; margin: 0; border: 0; border-radius: 0; padding: 24px; }
+body.coverage-only main > :not(#case-table):not(.manual-boundaries):not(#case-table-data) { display: none !important; }
+body.coverage-only #case-table { margin: 0 0 12px; }
+@media (max-width: 1100px) { .manual-boundary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .manual-boundary-item:last-child { grid-column: 1 / -1; } }
+@media (max-width: 900px) { .case-table-layout { grid-template-columns: 148px minmax(0, 1fr); gap: 10px; } .coverage-legend { top: 8px; gap: 7px; } .coverage-item { min-height: 70px; padding: 12px; } .coverage-item strong { font-size: 21px; } .coverage-item span { font-size: 12px; } .case-table-layout .table-wrap { overflow-x: auto; } .case-table-layout .unified-case-table { min-width: 900px; } }
 @media (max-width: 640px) { body { font-size: 15px; } main { width: 100%; margin: 0; border: 0; padding: 22px 10px 40px; } h1 { font-size: 25px; } h2 { font-size: 19px; } th, td { padding: 7px 6px; } .tok { padding: 1px 4px 2px; } }
 
 </style>
 </head>
 <body>
+<script>if (new URLSearchParams(location.search).get('view') === 'coverage') document.body.classList.add('coverage-only');</script>
 <main>
 <h1>Text to Script的原理和规则</h1>
 <h2>一、文字自动生成动画的核心方法</h2>
@@ -294,6 +309,20 @@ tr:nth-child(even) td { background: var(--bg-2); }
 <p>位置当作双主角，方向左右相对，顺序默认施动者在左。</p>
 <h2 id="case-table">Story-to-Animation Rule Coverage Matrix</h2>
 <p class="section-subtitle">Mapping real story sentences to visual outputs and automation boundaries.</p>
+<section class="manual-boundaries" aria-labelledby="manual-boundaries-title">
+<div class="manual-boundaries-head">
+<p class="manual-boundaries-kicker">Human-in-the-loop boundaries</p>
+<p class="manual-boundaries-title" id="manual-boundaries-title">需要人工介入的五类场景</p>
+<p class="manual-boundaries-intro">人工判断主要介入无法仅靠稳定句法规则完成的视觉决策：黄色代表补充一个关键判断，红色代表需要整体人工设计。</p>
+</div>
+<div class="manual-boundary-grid">
+<article class="manual-boundary-item"><h4>01 · 指代消解</h4><p>结合上下文，判断“小伙伴们”“三个人”等具体对应哪些角色。</p></article>
+<article class="manual-boundary-item"><h4>02 · 成像取舍</h4><p>判断状态描述应独立成像，还是并入、延续或省略前后画面。</p></article>
+<article class="manual-boundary-item"><h4>03 · 非标准物理变化</h4><p>对象拆分、复制或重组超出已有素材与动画模板时，需定制处理。</p></article>
+<article class="manual-boundary-item"><h4>04 · 复杂多人调度</h4><p>多个角色同时出现或动作时，人工决定人物、位置、构图与动作关系。</p></article>
+<article class="manual-boundary-item"><h4>05 · 抽象语义转译</h4><p>将“友谊滋长”等无法直接映射的语义，转化为可理解的视觉隐喻。</p></article>
+</div>
+</section>
 <div class="case-table-layout" id="case-table-data">
 <aside class="coverage-legend" aria-label="Processing coverage">
 <p class="coverage-legend-title">End-to-end coverage</p>
