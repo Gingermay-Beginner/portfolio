@@ -4,28 +4,32 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Text to Script的原理和规则</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 
-:root { color-scheme: light; }
+:root { color-scheme: light; --ink:#18181b; --soft:#3f3f46; --muted:#71717a; --faint:#a1a1aa; --line:#e4e4e7; --line-strong:#d4d4d8; --bg:#f4f4f5; --bg-2:#fafafa; --card:#fff; --green:#10b981; --green-soft:rgba(16,185,129,.08); }
 * { box-sizing: border-box; }
-body { margin: 0; background: #f6f4ef; color: #1f1b18; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; line-height: 1.72; font-size: 16px; }
-main { width: min(1180px, calc(100% - 32px)); margin: 32px auto 56px; background: #fffdf8; border: 1px solid #ded8cd; padding: 34px 38px; }
-h1 { font-size: 30px; margin: 0 0 10px; line-height: 1.25; }
-h2 { font-size: 22px; margin: 34px 0 12px; padding-top: 0; border-top: 0; }
-h3 { font-size: 18px; margin: 24px 0 10px; }
-h4 { font-size: 16px; margin: 18px 0 8px; color: #5b4f45; }
-.section-subtitle { margin: -4px 0 18px; color: #746e67; font-size: 14px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif; line-height: 1.72; font-size: 16px; letter-spacing: .05px; -webkit-font-smoothing: antialiased; }
+main { width: min(1180px, calc(100% - 32px)); margin: 32px auto 56px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 38px 42px; }
+h1,h2,h3 { font-family: "Space Grotesk", Inter, "PingFang SC", "Microsoft YaHei", sans-serif; }
+h1 { font-size: 34px; margin: 0 0 12px; line-height: 1.15; letter-spacing: -1px; }
+h2 { font-size: 23px; margin: 40px 0 12px; padding-top: 0; border-top: 0; letter-spacing: -.35px; }
+h3 { font-size: 18px; margin: 26px 0 10px; letter-spacing: -.15px; }
+h4 { font-size: 16px; margin: 18px 0 8px; color: var(--soft); }
+.section-subtitle { margin: -4px 0 18px; color: var(--muted); font-size: 14px; }
 p, blockquote, ul, ol { margin: 10px 0; }
 ul, ol { padding-left: 1.5em; }
 li { margin: 5px 0; }
-blockquote { border-left: 4px solid #b9824d; background: #fbf4ea; padding: 10px 14px; color: #5e5145; }
-code { background: #f1ece4; border: 1px solid #e1d8cb; border-radius: 4px; padding: 1px 5px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.92em; }
-.role-mark { color: #7a4a16; font-weight: 650; }
-.table-wrap { overflow-x: visible; overflow-y: visible; margin: 14px 0 22px; border: 1px solid #ddd4c6; max-height: none; }
+blockquote { border-left: 4px solid var(--green); background: var(--green-soft); padding: 11px 15px; color: var(--soft); }
+code { background: var(--bg); border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; font-family: "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.9em; }
+.role-mark { color: var(--green); font-weight: 700; }
+.table-wrap { overflow-x: visible; overflow-y: visible; margin: 14px 0 22px; border: 1px solid var(--line); border-radius: 14px; max-height: none; background: var(--card); }
 table { border-collapse: collapse; width: 100%; min-width: 0; background: #fff; }
-th, td { border: 1px solid #bfb8ad; padding: 8px 10px; vertical-align: top; text-align: left; }
-thead th { position: sticky; top: 0; z-index: 5; background: #d9d9d9; font-weight: 700; box-shadow: 0 1px 0 #aaa; }
-tr:nth-child(even) td { background: #fffaf3; }
+th, td { border: 1px solid var(--line); padding: 8px 10px; vertical-align: top; text-align: left; }
+thead th { position: sticky; top: 0; z-index: 5; background: var(--bg); color: var(--soft); font-family: "JetBrains Mono", SFMono-Regular, Menlo, monospace; font-size: 11px; font-weight: 700; box-shadow: 0 1px 0 var(--line-strong); }
+tr:nth-child(even) td { background: var(--bg-2); }
 .color-table-wrap { max-height: none; }
 .color-table tr:nth-child(even) td { background: #fff; }
 .color-table.unified-case-table td { vertical-align: top; }
@@ -58,7 +62,7 @@ tr:nth-child(even) td { background: #fffaf3; }
 .num-line .num { min-width: 1.4em; font-weight: 650; }
 .case-table-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 18px; align-items: start; scroll-margin-top: 0; }
 .coverage-legend { position: sticky; top: 16px; display: grid; gap: 10px; margin: 14px 0 22px; }
-.coverage-legend-title { margin: 0 0 2px; color: #6b665f; font-size: 12px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+.coverage-legend-title { margin: 0 0 2px; color: var(--muted); font-family: "JetBrains Mono", SFMono-Regular, Menlo, monospace; font-size: 12px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
 .coverage-item { min-height: 66px; padding: 11px 13px; border-radius: 6px; color: #fff; display: grid; align-content: center; gap: 2px; line-height: 1.25; }
 .coverage-item strong { font-size: 20px; }
 .coverage-item span { font-size: 13px; font-weight: 650; }
@@ -66,14 +70,40 @@ tr:nth-child(even) td { background: #fffaf3; }
 .coverage-item.code { background: #f0f2fa; color: #53638f; }
 .coverage-item.semi { background: #fbf7eb; color: #80631f; }
 .coverage-item.manual { background: #faf0f1; color: #8d4f54; }
+.token-legend { display: grid; gap: 5px; margin-top: 9px; padding-top: 10px; border-top: 1px solid var(--line); }
+.token-legend-title { margin: 0 0 3px; color: var(--muted); font-family: "JetBrains Mono", SFMono-Regular, Menlo, monospace; font-size: 11px; font-weight: 750; letter-spacing: .1em; text-transform: uppercase; }
+.token-key { position: relative; width: 100%; min-height: 28px; padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--card); color: var(--soft); display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 6px; align-items: center; text-align: left; font: inherit; cursor: help; }
+.token-key:hover,.token-key:focus-visible { border-color: var(--line-strong); background: var(--bg-2); outline: none; }
+.token-swatch { width: 18px; height: 18px; border-radius: 4px; border: 1px solid rgba(24,24,27,.08); }
+.token-swatch.orange { background:#f28c28; }
+.token-swatch.blue { background:#168de2; }
+.token-swatch.mint { background:#bdebd9; }
+.token-swatch.lime { background:#c8f28a; }
+.token-swatch.yellow { background:#fff36b; }
+.token-swatch.pink { background:#e9c7c9; }
+.token-swatch.lav { background:#b7b3df; }
+.token-swatch.cyan { background:#9ed9df; }
+.token-swatch.gray { background:#bfbfbf; }
+.token-key-label { min-width: 0; font-size: 10px; font-weight: 700; line-height: 1.15; }
+.token-key-label code { display: block; width: max-content; margin-bottom: 1px; padding: 0; border: 0; background: transparent; color: var(--ink); font-size: 10px; }
+.token-tooltip { position: absolute; top: 50%; left: calc(100% + 9px); z-index: 30; width: 270px; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--ink); color: white; box-shadow: 0 10px 28px rgba(24,24,27,.22); opacity: 0; visibility: hidden; transform: translate(5px,-50%); transition: opacity .14s ease,transform .14s ease,visibility .14s; pointer-events: none; }
+.token-key:hover .token-tooltip,.token-key:focus .token-tooltip,.token-key:focus-visible .token-tooltip { opacity: 1; visibility: visible; transform: translate(0,-50%); }
+.token-tooltip b,.token-tooltip span { display: block; }
+.token-tooltip b { margin-bottom: 3px; color: #fff; font-size: 11px; line-height: 1.45; }
+.token-tooltip span { color: var(--line-strong); font-size: 10px; line-height: 1.45; }
 @media (max-width: 900px) { .case-table-layout { grid-template-columns: 124px minmax(0, 1fr); gap: 10px; } .coverage-legend { position: sticky; top: 8px; grid-template-columns: 1fr; gap: 7px; } .coverage-item { min-height: 58px; padding: 9px 10px; } .coverage-item strong { font-size: 17px; } .coverage-item span { font-size: 11px; } .case-table-layout .table-wrap { overflow-x: auto; } .case-table-layout .unified-case-table { min-width: 900px; } }
 @media (max-width: 640px) { body { font-size: 15px; } main { width: 100%; margin: 0; border: 0; padding: 22px 10px 40px; } h1 { font-size: 25px; } h2 { font-size: 19px; } th, td { padding: 7px 6px; } .tok { padding: 1px 4px 2px; } }
-body:has(#case-table-data:target) main { width: auto; margin: 16px 10px 40px 148px; padding: 18px 20px 32px; }
+body:has(#case-table-data:target) main { width: auto; margin: 16px 10px 40px 148px; padding: 18px 20px 32px; border-radius: 16px; }
 body:has(#case-table-data:target) .case-table-layout { display: block; }
 body:has(#case-table-data:target) .coverage-legend { position: fixed; top: 16px; left: 10px; width: 124px; margin: 0; z-index: 10; display: grid; grid-template-columns: 1fr; gap: 7px; }
-body:has(#case-table-data:target) .coverage-item { min-height: 58px; padding: 9px 10px; }
-body:has(#case-table-data:target) .coverage-item strong { font-size: 17px; }
-body:has(#case-table-data:target) .coverage-item span { font-size: 11px; }
+body:has(#case-table-data:target) .coverage-item { min-height: 52px; padding: 7px 8px; }
+body:has(#case-table-data:target) .coverage-item strong { font-size: 15px; }
+body:has(#case-table-data:target) .coverage-item span { font-size: 9.5px; }
+body:has(#case-table-data:target) .token-legend { gap: 3px; margin-top: 7px; padding-top: 8px; }
+body:has(#case-table-data:target) .token-legend-title { margin-bottom: 2px; font-size: 9.5px; }
+body:has(#case-table-data:target) .token-key { min-height: 24px; padding: 3px 5px; grid-template-columns: 16px minmax(0,1fr); gap: 5px; }
+body:has(#case-table-data:target) .token-swatch { width: 16px; height: 16px; }
+body:has(#case-table-data:target) .token-key-label,body:has(#case-table-data:target) .token-key-label code { font-size: 9px; }
 body:has(#case-table-data:target) .table-wrap { margin-top: 0; overflow-x: auto; }
 body:has(#case-table-data:target) .unified-case-table { min-width: 900px; }
 
@@ -283,6 +313,18 @@ body:has(#case-table-data:target) .unified-case-table { min-width: 900px; }
 <div class="coverage-item code"><strong>14.9%</strong><span>Automated after rule extension</span></div>
 <div class="coverage-item semi"><strong>22.3%</strong><span>Semi-manual processing</span></div>
 <div class="coverage-item manual"><strong>23.9%</strong><span>Full manual processing</span></div>
+<div class="token-legend" aria-label="Language token legend">
+<p class="token-legend-title">Language marks</p>
+<button class="token-key" type="button" aria-label="n or nr, noun or proper name"><span class="token-swatch orange"></span><span class="token-key-label"><code>n / nr</code>名词</span><span class="token-tooltip" role="tooltip"><b>名词／专有名词：人物、物体或地点，通常用于识别主体和可调用资产。</b><span>Noun / proper name: identifies a person, object, or place that may become the subject or a retrievable visual asset.</span></span></button>
+<button class="token-key" type="button" aria-label="v, verb"><span class="token-swatch blue"></span><span class="token-key-label"><code>v</code>动词</span><span class="token-tooltip" role="tooltip"><b>动词：描述动作或状态，是匹配 Animation Type 的主要依据。</b><span>Verb: describes an action or state and is the primary signal for selecting an animation type.</span></span></button>
+<button class="token-key" type="button" aria-label="r, pronoun"><span class="token-swatch mint"></span><span class="token-key-label"><code>r</code>代词</span><span class="token-tooltip" role="tooltip"><b>代词：如“他、我们、那里”，需要结合上下文还原它所指的主体。</b><span>Pronoun: requires contextual coreference to resolve the subject it refers to.</span></span></button>
+<button class="token-key" type="button" aria-label="a or d, descriptive word"><span class="token-swatch lime"></span><span class="token-key-label"><code>a / d</code>描述词</span><span class="token-tooltip" role="tooltip"><b>形容词／副词：补充状态、情绪或动作方式，可能影响动画变体。</b><span>Adjective / adverb: adds state, emotion, or manner and may modify the selected animation variant.</span></span></button>
+<button class="token-key" type="button" aria-label="m, numeral or quantifier"><span class="token-swatch yellow"></span><span class="token-key-label"><code>m</code>数量词</span><span class="token-tooltip" role="tooltip"><b>数量词：提供对象数量或次数信息，用于决定资产数量与画面组合。</b><span>Numeral / quantifier: provides count or frequency information for asset quantity and scene assembly.</span></span></button>
+<button class="token-key" type="button" aria-label="p or u, relation or structural marker"><span class="token-swatch pink"></span><span class="token-key-label"><code>p / u</code>关系词</span><span class="token-tooltip" role="tooltip"><b>介词／结构助词：标记地点、方向、所属等关系，通常参与规则判断而非独立成像。</b><span>Preposition / structural particle: marks spatial, directional, or possessive relationships used by rules rather than rendered alone.</span></span></button>
+<button class="token-key" type="button" aria-label="t or cue, time or narrative cue"><span class="token-swatch lav"></span><span class="token-key-label"><code>t / cue</code>叙事提示</span><span class="token-tooltip" role="tooltip"><b>时间／叙事提示：表示时间推进或叙述转折，常用于拆句、转场或省略判断。</b><span>Time / discourse cue: signals progression or transition and helps determine sentence splitting, scene changes, or omission.</span></span></button>
+<button class="token-key" type="button" aria-label="c, conjunction"><span class="token-swatch cyan"></span><span class="token-key-label"><code>c</code>连词</span><span class="token-tooltip" role="tooltip"><b>连词：连接并列或转折内容，帮助判断是否要拆成多个原子动作。</b><span>Conjunction: connects coordinated or contrasting clauses and helps decide whether to split them into atomic actions.</span></span></button>
+<button class="token-key" type="button" aria-label="x w or aspect particle, other token"><span class="token-swatch gray"></span><span class="token-key-label"><code>x / w / u</code>其他</span><span class="token-tooltip" role="tooltip"><b>其他／标点／时态助词：保留语言结构信息，但通常不会直接生成视觉资产。</b><span>Other / punctuation / aspect particle: preserves linguistic structure but usually does not generate a visual asset directly.</span></span></button>
+</div>
 </aside>
 <div class="table-wrap color-table-wrap"><table class="color-table unified-case-table">
 <thead><tr><th>No.</th><th>文字</th><th>主体</th><th>构图位置</th><th>动画</th><th>背景</th><th>文法结构/逻辑判断</th></tr></thead>
