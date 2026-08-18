@@ -79,7 +79,7 @@
     .meta-cell+.meta-cell{border-left:1px solid var(--line)}
     .meta-cell span{display:block;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--faint)}
     .meta-cell b{display:block;margin-top:7px;font-size:12px;line-height:1.45}
-    .section{padding:74px 0;border-top:1px solid var(--line)}
+.section{padding:74px 0}
     .section-head{max-width:850px;margin-bottom:28px}
     .section-no{color:var(--green)}
     h2{margin:13px 0 10px;font-size:clamp(30px,4vw,48px);line-height:1.1;letter-spacing:-1.6px}
@@ -170,6 +170,7 @@
     .logic-step+.logic-step:before{content:"→";position:absolute;left:-16px;top:50%;transform:translateY(-50%);width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--bg-2);color:var(--green);font-weight:800}
     .logic-step--focus{border-color:var(--line);background:white}
     .logic-step--focus h4{color:var(--green)}
+    .logic-step--focus .logic-pill{color:var(--green)}
     .logic-step h4{margin:10px 0 7px;font-size:16px}
     .logic-step p{margin:0;font-size:11.5px;line-height:1.6;color:var(--muted)}
     .logic-pills{display:grid;gap:7px;margin-top:13px}
@@ -212,8 +213,9 @@
     .proof-card--wide .proof-copy{display:flex;flex-direction:column;justify-content:center}
     .proof-thumb{aspect-ratio:16/9;overflow:hidden;background:var(--panel)}
     .proof-thumb img{width:100%;height:100%;object-fit:cover}
-    .proof-card[data-gallery] .proof-thumb img{transition:opacity .2s ease}
-    .proof-card[data-gallery] .proof-thumb img.is-swapping{opacity:.08}
+    .proof-card[data-gallery] .proof-thumb{position:relative}
+    .proof-card[data-gallery] .proof-cover-next{position:absolute;inset:0;z-index:1;opacity:0;pointer-events:none;transition:opacity .48s ease}
+    .proof-card[data-gallery] .proof-cover-next.is-visible{opacity:1}
     .proof-copy{padding:17px}
     .proof-copy h4{margin:8px 0 6px;font-size:15px}
     .proof-copy p{margin:0;font-size:11.5px;line-height:1.6;color:var(--muted)}
@@ -241,17 +243,18 @@
     .implementation-copy{padding:24px}
     .implementation-copy h3{margin:10px 0 8px}
     .implementation-copy p{font-size:12px;line-height:1.65;color:var(--muted)}
-    .timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
-    .timeline-item{padding:18px;border-top:3px solid var(--line-strong);background:white;border-radius:0 0 13px 13px}
-    .timeline-item:last-child{border-color:var(--green)}
+    .timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-bottom:16px;border:1px solid var(--line);border-radius:16px;background:white;overflow:hidden}
+    .timeline-item{padding:22px;background:white}
+    .timeline-item+.timeline-item{border-left:1px solid var(--line)}
     .timeline-item h3{font-size:15px;margin:8px 0 6px}
     .timeline-item p{font-size:11.5px;line-height:1.55;color:var(--muted);margin:0}
-    .video{border:1px solid var(--line);border-radius:16px;background:white;overflow:hidden}
+    .video{width:100%;margin:0;border:1px solid var(--line);border-radius:16px;background:white;overflow:hidden}
     .video-still{position:relative;aspect-ratio:16/8.8;background:var(--panel)}
-    .video-still img{width:100%;height:100%;object-fit:cover}
-    .video-badge{position:absolute;top:14px;left:14px;padding:7px 9px;border-radius:999px;background:rgba(24,24,27,.82);color:white;font-size:9px;letter-spacing:.8px;text-transform:uppercase}
-    .video-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px;border-radius:50%;display:grid;place-items:center;padding-left:3px;background:rgba(255,255,255,.9);font-size:20px;box-shadow:0 12px 30px rgba(0,0,0,.18)}
-    .video figcaption{padding:16px 18px;border-top:1px solid var(--line);font-size:12px;line-height:1.6;color:var(--muted)}
+    .video-still video{display:block;width:100%;height:100%;object-fit:cover}
+    .video-play-button{position:absolute;left:50%;top:50%;z-index:2;transform:translate(-50%,-50%);width:68px;height:68px;border:0;border-radius:50%;display:grid;place-items:center;padding:0 0 0 4px;background:rgba(255,255,255,.94);color:var(--ink);font-size:24px;cursor:pointer;box-shadow:0 12px 32px rgba(0,0,0,.2);transition:opacity .2s ease,transform .2s ease}
+    .video-play-button:hover{transform:translate(-50%,-50%) scale(1.04)}
+    .video-play-button:focus-visible{outline:3px solid var(--green);outline-offset:4px}
+    .video-play-button.is-hidden{opacity:0;pointer-events:none}
     .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
     .measurement-scope{margin-top:12px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:white;display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:center}.measurement-scope b{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--green)}.measurement-scope span{font-size:11.5px;line-height:1.6;color:var(--soft)}
     .metric{border:1px solid var(--line);border-radius:15px;background:white;padding:22px}
@@ -263,13 +266,13 @@
     .mapping{width:100%;border-collapse:collapse}
     .mapping th,.mapping td{padding:13px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:11.5px;line-height:1.5}
     .mapping th{font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--faint)}
-    .reflection-list{display:grid;gap:10px}
+    .reflection-list{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
     .reflection-item{padding:17px;border:1px solid var(--line);border-radius:13px;background:white}
     .reflection-item h3{font-size:15px;margin:8px 0 6px}
     .reflection-item p{margin:0;font-size:11.5px;line-height:1.6;color:var(--muted)}
-    .footer{padding:64px 0 80px;border-top:1px solid var(--line)}
-    .footer h2{margin:0}
-    .footer p{color:var(--muted)}
+.reflection-closing{margin-top:28px;padding-top:28px}
+    .reflection-closing h2{margin:0}
+    .reflection-closing p{margin:8px 0 0;color:var(--muted)}
     .lightbox{width:min(1180px,94vw);max-height:92vh;padding:0;border:0;border-radius:18px;background:white;box-shadow:0 30px 90px rgba(0,0,0,.38)}
     .lightbox--document{width:min(1480px,96vw);max-height:96vh}
     .lightbox::backdrop{background:rgba(9,9,11,.78);backdrop-filter:blur(5px)}
@@ -316,6 +319,8 @@
       .topbar-inner,.shell{width:calc(100vw - 36px)}
       .hero{padding-top:52px}h1{letter-spacing:-2px}
       .hero-flow,.grid-3,.route-grid,.meta-grid,.asset-principle,.ownership,.proof-grid,.timeline,.metrics,.collab,.implementation{grid-template-columns:1fr}
+      .timeline-item+.timeline-item{border-top:1px solid var(--line);border-left:0}
+      .reflection-list{grid-template-columns:1fr}
       .ownership .mini-card+.mini-card{border-top:1px solid var(--line);border-left:0}
       .bridge{transform:rotate(90deg);min-height:22px}
       .hero-step+.hero-step{border-top:1px solid var(--line);border-left:0}
@@ -371,7 +376,7 @@
         <a href="#visual"><span class="n">05</span><span>视觉系统</span></a>
         <a href="#implementation"><span class="n">06</span><span>工程化与修正</span></a>
         <a href="#impact"><span class="n">07</span><span>发布与结果</span></a>
-        <a href="#transfer"><span class="n">08</span><span>迁移与复盘</span></a>
+        <a href="#reflection"><span class="n">08</span><span>设计复盘</span></a>
       </nav>
     </aside>
 
@@ -420,7 +425,7 @@
           <div class="section-head">
             <div class="section-no">01 / 项目背景与我的介入</div>
             <h2>发布会给出了硬期限，也暴露了不可规模化的生产方式</h2>
-            <p>2019 年发布会将“文本自动生成动画”列为发布能力，团队必须在会前交付真实可运行、可稳定复现的方案。</p>
+            <p>“小冰讲故事”已经具备将故事文本转为语音的能力。为了进一步吸引儿童用户、增强内容表现力，团队希望在音频基础上加入图像与动画，并将“文本自动生成动画”列为 2019 年发布会能力；我们必须在会前交付真实可运行、可稳定复现的方案。</p>
           </div>
 
           <div class="context-rows">
@@ -439,8 +444,8 @@
                 </div>
                 <div class="context-cell">
                   <span class="eyebrow">Input → Output</span>
-                  <h3>故事文本 → App 可播放内容</h3>
-                  <p>输入自然语言故事并调用可复用资产，输出画面、动画、旁白和字幕。</p>
+                  <h3>故事文本 → 图像 + 动效的可动绘本</h3>
+                  <p>输入自然语言故事，输出包含画面、动画、旁白和字幕的可动绘本内容。</p>
                 </div>
               </div>
             </div>
@@ -455,7 +460,7 @@
                 <div class="context-cell">
                   <span class="eyebrow">System problem</span>
                   <h3>重复劳动不断放大</h3>
-                  <p>PM 被脚本撰写占用，插画师持续生产无法复用的一次性素材。</p>
+                  <p>PM 被脚本撰写占用，插画师持续生产无法复用的一次性素材；开发在负责最终实现的同时，还不得不承担缺少标准的剪辑与大量细碎调整。</p>
                 </div>
                 <div class="context-cell context-cell--focus">
                   <span class="eyebrow">My initiative</span>
@@ -510,10 +515,11 @@
           <figure class="evidence">
             <img src="assets/xiaoice-product-reframe-original-v2.jpeg" alt="项目中从动画片制作目标到可动绘本产品形态的对比">
             <figcaption class="evidence-caption--single"><span>左：依赖逐镜头设计和连续表演的动画片；右：以独立画面和有限动效连接叙事的可动绘本。</span></figcaption>
+            <img src="assets/XiaoiceAudioBook/作品集_小冰绘本生成完整版_20210114.032.jpeg" alt="同一故事在连续场景动画与可动绘本两种生产逻辑下的画面差异">
           </figure>
 
-          <button class="proof-card proof-card--wide" data-full="assets/xiaoice-mvp-system-boundary-035.jpeg" data-title="MVP：主体图像 + 动画" data-caption="语义分析可以保留宾语，但首版不为宾语生成独立图像，只将主语映射为主体、谓语或表语结构映射为动画。">
-            <div class="proof-thumb"><img src="assets/xiaoice-mvp-system-boundary-035.jpeg" alt="从故事句式到 Script 与视觉画面的 MVP 映射规则"></div>
+          <button class="proof-card proof-card--wide" data-full="assets/XiaoiceAudioBook/作品集_小冰绘本生成完整版_20210114.035.jpeg" data-title="MVP：主体图像 + 动画" data-caption="语义分析可以保留宾语，但首版不为宾语生成独立图像，只将主语映射为主体、谓语或表语结构映射为动画。">
+            <div class="proof-thumb"><img src="assets/XiaoiceAudioBook/作品集_小冰绘本生成完整版_20210114.035.jpeg" alt="从故事句式到 Script 与视觉画面的 MVP 映射规则"></div>
             <div class="proof-copy"><span class="proof-kicker">MVP system boundary</span><h4>先实现“主体图像 + 动画”</h4><p>主动缩小视觉语义范围，先证明文字可以稳定生成会动的画面。</p><span class="proof-open">查看原图 ↗</span></div>
           </button>
 
@@ -648,17 +654,17 @@
                 <p>按照叙事顺序，把完整故事拆成能够分别处理的原子单元。</p>
                 <div class="logic-pills"><span class="logic-pill">Sentence unit 01</span><span class="logic-pill">Sentence unit 02</span><span class="logic-pill">Sentence unit 03 · …</span></div>
               </article>
-              <article class="logic-step">
+              <article class="logic-step logic-step--focus">
                 <span class="eyebrow">02 · Normalize</span>
                 <h4>归一为有限句式</h4>
                 <p>将复杂表达转换为动作或状态结构，并补全必要的省略主语。</p>
                 <div class="logic-pills"><span class="logic-pill">Sth + Do (+ Object)</span><span class="logic-pill">Sth + Be / Feel / Look + Predicative</span></div>
               </article>
-              <article class="logic-step logic-step--focus">
+              <article class="logic-step">
                 <span class="eyebrow">03 · My rule</span>
                 <h4>决定是否形成画面</h4>
                 <p>不是每句话都值得单独生成画面；保留叙事重点，并省略无法稳定表达或信息价值较低的单元。</p>
-                <div class="logic-pills"><span class="logic-pill logic-pill--keep">Visualize</span><span class="logic-pill logic-pill--omit">Omit</span></div>
+                <div class="logic-pills"><span class="logic-pill">Visualize</span><span class="logic-pill logic-pill--omit">Omit</span></div>
               </article>
               <article class="logic-step">
                 <span class="eyebrow">04 · Script output</span>
@@ -738,7 +744,7 @@
           </div>
 
           <figure class="evidence" style="margin-top:0">
-            <img src="assets/xiaoice-visual-asset-library.png" alt="预制素材库与画面合成系统">
+            <img src="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.045.jpeg" alt="预制素材库与画面合成系统">
             <figcaption><b>Original system spec</b><span>主体、动画与背景资产保持独立，构图与镜头作为规则层控制它们如何进入最终画面。</span></figcaption>
           </figure>
 
@@ -765,24 +771,24 @@
               <p>点击查看每一层的变量结构和原始设计证据。</p>
             </div>
             <div class="proof-grid">
-              <button class="proof-card" data-gallery="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.046.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.047.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.048.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.049.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.050.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.051.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.052.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.053.jpeg" data-title="主体组合资产" data-caption="从模块化组合规则到高频角色变体、完整物种覆盖与尺寸规范，共 8 张设计原稿。">
+              <button class="proof-card" data-gallery="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.046.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.047.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.048.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.049.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.050.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.051.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.052.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.053.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.082.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.083.jpeg" data-cover-count="8" data-gallery-label="Subject asset library" data-title="主体组合资产" data-caption="从模块化组合规则、最终生产资产到前期视觉方向探索，共 10 张设计原稿。">
                 <div class="proof-thumb"><img src="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.049.jpeg" alt="主体组合资产设计"></div>
-                <div class="proof-copy"><span class="proof-kicker">Subject assets</span><h4>主体组合资产</h4><p>将人物和拟人动物拆成可组合、可继续扩展的变量。</p><span class="proof-open">查看 8 张设计原稿 ↗</span></div>
+                <div class="proof-copy"><span class="proof-kicker">Subject assets</span><h4>主体组合资产</h4><p>将人物和拟人动物拆成可组合、可继续扩展的变量。</p><span class="proof-open">查看 10 张设计原稿 ↗</span></div>
               </button>
-              <button class="proof-card" data-full="assets/xiaoice-library-animation.png" data-title="Action / State 与动画变体" data-caption="Do 映射为动作，Be / Feel / Look 映射为状态表现；同一个动作或状态可以调用不同动画变体。">
-                <div class="proof-thumb"><img src="assets/xiaoice-library-animation.png" alt="动作与状态变体"></div>
-                <div class="proof-copy"><span class="proof-kicker">Animation assets</span><h4>Action / State 与动画变体</h4><p>将语言中的动作或状态映射为可调用的动画资产。</p><span class="proof-open">查看具体设计 ↗</span></div>
+              <button class="proof-card" data-gallery="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.059.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.060.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.061.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.062.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.063.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.064.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.065.jpeg" data-gallery-label="Animation asset library" data-title="Action / State 与动画变体" data-caption="从通用动作与状态分类、动画参数，到高频动作定制与下一阶段探索，共 7 张设计原稿。">
+                <div class="proof-thumb"><img src="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.062.jpeg" alt="动作、状态与动画变体设计"></div>
+                <div class="proof-copy"><span class="proof-kicker">Animation assets</span><h4>Action / State 与动画变体</h4><p>将语言中的动作或状态映射为可调用的动画资产。</p><span class="proof-open">查看 7 张设计原稿 ↗</span></div>
               </button>
-              <button class="proof-card" data-full="assets/xiaoice-library-background.png" data-title="背景与空间资产" data-caption="背景保持独立扩展，并由 Scene Context 和 Auto Storyboard 规则进行选择。">
-                <div class="proof-thumb"><img src="assets/xiaoice-library-background.png" alt="背景与空间资产"></div>
-                <div class="proof-copy"><span class="proof-kicker">Background assets</span><h4>背景与空间资产</h4><p>从抽象空间占位到具体场景，背景可跨故事复用。</p><span class="proof-open">查看具体设计 ↗</span></div>
+              <button class="proof-card" data-gallery="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.066.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.067.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.068.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.069.jpeg" data-gallery-label="Background asset library" data-title="背景与空间资产" data-caption="从空间与地平线规则到完整生产背景，共 4 张设计原稿；背景由 Scene Context 和 Auto Storyboard 规则进行选择。">
+                <div class="proof-thumb"><img src="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.067.jpeg" alt="背景与空间资产设计"></div>
+                <div class="proof-copy"><span class="proof-kicker">Background assets</span><h4>背景与空间资产</h4><p>从抽象空间占位到具体场景，背景可跨故事复用。</p><span class="proof-open">查看 4 张设计原稿 ↗</span></div>
               </button>
-              <button class="proof-card" data-full="assets/xiaoice-library-composition.png" data-title="构图与镜头模板" data-caption="人物数量、方向、尺寸与位置被组织成可重复调用的构图模板，而不是每次重新布局。">
-                <div class="proof-thumb"><img src="assets/xiaoice-library-composition.png" alt="构图与镜头模板"></div>
-                <div class="proof-copy"><span class="proof-kicker">Shot design rules</span><h4>构图与镜头模板</h4><p>用规则控制不同资产如何稳定进入同一画面。</p><span class="proof-open">查看具体设计 ↗</span></div>
+              <button class="proof-card" data-gallery="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.070.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.071.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.072.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.073.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.074.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.075.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.076.jpeg" data-gallery-label="Shot design template library" data-title="构图与镜头模板" data-caption="从景别、网格与主体布局，到单人及双人对话取景，共 7 张 Shot Design 规则原稿。">
+                <div class="proof-thumb"><img src="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.074.jpeg" alt="构图与镜头模板设计"></div>
+                <div class="proof-copy"><span class="proof-kicker">Shot design rules</span><h4>构图与镜头模板</h4><p>用规则控制不同资产如何稳定进入同一画面。</p><span class="proof-open">查看 7 张设计原稿 ↗</span></div>
               </button>
-              <button class="proof-card" data-full="assets/xiaoice-material-naming-rules.png" data-title="素材分类与命名规则" data-caption="类型、语义分类、属性和变体编号共同组成可被设计团队与系统理解的素材 ID。">
-                <div class="proof-thumb"><img src="assets/xiaoice-material-naming-rules.png" alt="素材分类与命名规则"></div>
+              <button class="proof-card" data-full="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.081.jpeg" data-title="素材分类、命名与检索" data-caption="类型、语义分类、属性和变体编号共同组成可被设计团队与系统理解的素材 ID。">
+                <div class="proof-thumb"><img src="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.081.jpeg" alt="素材分类、命名与检索规则"></div>
                 <div class="proof-copy"><span class="proof-kicker">Taxonomy &amp; naming</span><h4>素材分类、命名与检索</h4><p>让 Script 解析结果可以转化为检索条件，也让新增资产直接进入系统。</p><span class="proof-open">查看原始表格 ↗</span></div>
               </button>
               <button class="proof-card" data-full="assets/xiaoice-mvp-atomic-story.png" data-title="动画单元的连续组合" data-caption="故事被拆成多个句法单元，每个可视化单元生成对应画面，再通过转场连接为连续内容。">
@@ -819,9 +825,9 @@
           <div class="loop"><span>规则说明</span><b>→</b><span>开发实现</span><b>→</b><span>真实故事验证</span><b>→</b><span>发现例外</span><b>→</b><span>更新规则或素材库</span></div>
 
           <div class="route-grid" style="margin-top:12px">
-            <button class="proof-card" data-full="assets/xiaoice-pattern-coverage.png" data-title="自动化覆盖与人工边界" data-caption="项目用实际语料区分完全自动、代码优化后可处理、半人工和全人工内容，从而明确系统能力边界。">
+            <button class="proof-card" data-doc="动画原理_可编辑整理版_html.html#case-table-data" data-title="自动化覆盖与人工边界" data-caption="项目用实际语料区分 Fully automatic、Automated after rule extension、Semi-manual 和 Full manual 四类内容，从而明确系统能力边界。">
               <div class="proof-thumb"><img src="assets/xiaoice-pattern-coverage.png" alt="自动化覆盖率与人工边界"></div>
-              <div class="proof-copy"><span class="proof-kicker">Human in the loop</span><h4>自动化覆盖之外，保留人工路径</h4><p>系统价值不是消灭所有人工，而是让重复部分自动化，让例外有明确去处。</p><span class="proof-open">查看原图 ↗</span></div>
+              <div class="proof-copy"><span class="proof-kicker">Human in the loop</span><h4>自动化覆盖之外，保留人工路径</h4><p>系统价值不是消灭所有人工，而是让重复部分自动化，让例外有明确去处。</p><span class="proof-open">查看案例表格 ↗</span></div>
             </button>
             <div class="implementation" style="margin:0;grid-template-columns:1fr">
               <img src="assets/xiaoice-developer-adjustment-tool.png" alt="开发伙伴搭建的内部调整平台">
@@ -846,16 +852,16 @@
           <div class="timeline">
             <article class="timeline-item"><span class="eyebrow">MVP phase</span><h3>交付可运行产品形态</h3><p>用有限动效和受约束的语义范围，证明故事可以稳定生成动态内容。</p></article>
             <article class="timeline-item"><span class="eyebrow">System expansion</span><h3>补全规则、资产和工具</h3><p>将一次性交付继续发展为可重复使用的内容生产能力。</p></article>
-            <article class="timeline-item"><span class="eyebrow">2020 application</span><h3>响应疫情热点内容</h3><p>系统被用于更快完成与当天业务节奏相关的内容生产。</p></article>
+            <article class="timeline-item"><span class="eyebrow">2019 application</span><h3>响应疫情热点内容</h3><p>系统被用于更快完成与当天业务节奏相关的内容生产。</p></article>
           </div>
 
           <figure class="video">
             <div class="video-still">
-              <img src="assets/xiaoice-pandemic-video-placeholder.png" alt="疫情热点可动绘本视频占位画面">
-              <span class="video-badge">Video placeholder</span>
-              <span class="video-play">▶</span>
+              <video controls playsinline preload="metadata" poster="assets/xiaoice-pandemic-video-placeholder.png" aria-label="小冰讲故事疫情版可动绘本视频">
+                <source src="assets/小冰讲故事疫情版-6795.mov">
+              </video>
+              <button class="video-play-button" type="button" aria-label="播放小冰讲故事疫情版视频">▶</button>
             </div>
-            <figcaption><b>疫情热点内容 · 待替换视频</b><br>当前使用项目静帧占位；后续替换为实际发布视频，用于展示系统如何响应真实内容需求。</figcaption>
           </figure>
 
           <div class="measurement-scope"><b>Efficiency measurement scope</b><span>以下 97%、8× 和 3h 三项效率数据，均对应完整 Template 库建成、规则与资产生产流程稳定后的系统阶段。</span></div>
@@ -870,40 +876,22 @@
         </div>
       </section>
 
-      <section class="section" id="transfer">
+      <section class="section" id="reflection">
         <div class="wrap">
           <div class="section-head">
-            <div class="section-no">08 / 可迁移的设计原则与复盘</div>
-            <h2>从故事到视频，与从长文到演示文稿，共享同一种系统设计问题</h2>
-            <p>两者都需要把非结构化输入转成结构化中间层，再通过可复用视觉系统生成可编辑的结果。</p>
+            <div class="section-no">08 / 设计原则与复盘</div>
+            <h2>这次项目让我形成了三条系统设计原则</h2>
+            <p>产品形态、内容规则与人工修正必须一起定义，自动化才能从发布会能力发展为稳定的生产系统。</p>
           </div>
 
-          <div class="transfer">
-            <div class="card">
-              <span class="eyebrow">Transfer to PPT Agent</span>
-              <table class="mapping">
-                <thead><tr><th>小冰系统</th><th>共同问题</th><th>PPT Agent</th></tr></thead>
-                <tbody>
-                  <tr><td>原始故事</td><td>提取意图与重点</td><td>文档、想法或数据</td></tr>
-                  <tr><td>Script Units</td><td>建立结构和顺序</td><td>章节与页面计划</td></tr>
-                  <tr><td>视觉资产库</td><td>检索、生成与复用</td><td>图片、图表与图形</td></tr>
-                  <tr><td>构图与镜头规则</td><td>在约束中生成变化</td><td>版式与视觉系统</td></tr>
-                  <tr><td>人工修正入口</td><td>保持控制和可编辑性</td><td>锁定、编辑与局部重生成</td></tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="reflection-list">
-              <article class="reflection-item"><span class="eyebrow">01</span><h3>先展示系统理解</h3><p>生成前让用户确认结构、重点和受众，避免方向错误后整体返工。</p></article>
-              <article class="reflection-item"><span class="eyebrow">02</span><h3>坚持单元级编辑</h3><p>允许用户只重做一个场景或一页，而不是推翻整个生成结果。</p></article>
-              <article class="reflection-item"><span class="eyebrow">03</span><h3>规则成为生成护栏</h3><p>把品牌、角色、素材和版式规则放入生成过程，并为例外保留人工修正。</p></article>
-            </div>
+          <div class="reflection-list">
+            <article class="reflection-item"><span class="eyebrow">01</span><h3>先定义阶段成功标准</h3><p>在能力与期限受限时，先明确什么能够按期稳定交付，避免用理想终局判断首版产品。</p></article>
+            <article class="reflection-item"><span class="eyebrow">02</span><h3>把复杂叙事拆成稳定单元</h3><p>将故事理解问题转成句式归一、可视化筛选和资产匹配，让系统可以逐步实现与验证。</p></article>
+            <article class="reflection-item"><span class="eyebrow">03</span><h3>为自动化保留人工修正</h3><p>规则处理高频场景，人工编辑器承接语义歧义和例外，兼顾生产效率与内容质量。</p></article>
           </div>
+          <div class="reflection-closing"><h2>From story to system.</h2><p>这次项目最终留下的，不只是一批可动绘本，而是一套能够持续生产内容的系统。</p></div>
         </div>
       </section>
-
-      <footer class="footer">
-        <div class="wrap"><h2>From story to system.</h2><p>一次产品形态的重新定义，最终成为可复用的生产能力。</p></div>
-      </footer>
     </div>
     </div>
   </main>
@@ -916,6 +904,14 @@
   </dialog>
 
   <script>
+    const featureVideo=document.querySelector('.video-still video');
+    const featureVideoPlay=document.querySelector('.video-play-button');
+    if(featureVideo&&featureVideoPlay){
+      featureVideoPlay.addEventListener('click',()=>{featureVideo.muted=false;featureVideo.play()});
+      featureVideo.addEventListener('play',()=>featureVideoPlay.classList.add('is-hidden'));
+      featureVideo.addEventListener('pause',()=>featureVideoPlay.classList.remove('is-hidden'));
+      featureVideo.addEventListener('ended',()=>featureVideoPlay.classList.remove('is-hidden'));
+    }
     const tocLinks=[...document.querySelectorAll('.toc-list a')];
     const tocSections=tocLinks.map(link=>document.querySelector(link.getAttribute('href'))).filter(Boolean);
     const updateToc=()=>{let current=tocSections[0];for(const section of tocSections){if(section.getBoundingClientRect().top<=130)current=section}tocLinks.forEach(link=>link.classList.toggle('active',link.getAttribute('href')==='#'+current.id))};
@@ -924,9 +920,16 @@
     const proofCards=[...document.querySelectorAll('.proof-card')];
     if(!matchMedia('(prefers-reduced-motion: reduce)').matches&&'IntersectionObserver' in window){
       proofCards.filter(card=>card.dataset.gallery).forEach(card=>{
-        const images=card.dataset.gallery.split('|').filter(Boolean);
+        const galleryImages=card.dataset.gallery.split('|').filter(Boolean);
+        const coverCount=Number(card.dataset.coverCount)||galleryImages.length;
+        const images=galleryImages.slice(0,coverCount);
         const cover=card.querySelector('.proof-thumb img');
         if(!cover||images.length<2)return;
+        const overlay=document.createElement('img');
+        overlay.className='proof-cover-next';
+        overlay.alt='';
+        overlay.setAttribute('aria-hidden','true');
+        card.querySelector('.proof-thumb').append(overlay);
         let index=Math.max(0,images.indexOf(cover.getAttribute('src')));
         let timer;
         let swapping=false;
@@ -936,13 +939,20 @@
           const nextIndex=(index+1)%images.length;
           const preload=new Image();
           preload.onload=()=>{
-            cover.classList.add('is-swapping');
-            setTimeout(()=>{
+            overlay.src=images[nextIndex];
+            const finishTransition=event=>{
+              if(event.propertyName!=='opacity')return;
+              overlay.removeEventListener('transitionend',finishTransition);
               cover.src=images[nextIndex];
-              cover.classList.remove('is-swapping');
               index=nextIndex;
+              overlay.style.transition='none';
+              overlay.classList.remove('is-visible');
+              void overlay.offsetWidth;
+              overlay.style.removeProperty('transition');
               swapping=false;
-            },180);
+            };
+            overlay.addEventListener('transitionend',finishTransition);
+            requestAnimationFrame(()=>requestAnimationFrame(()=>overlay.classList.add('is-visible')));
           };
           preload.onerror=()=>{swapping=false};
           preload.src=images[nextIndex];
@@ -1010,7 +1020,7 @@
       const isGallery=galleryImages.length>0;
       lightbox.classList.toggle('lightbox--document',isDocument);
       lightbox.classList.toggle('lightbox--gallery',isGallery);
-      lightboxLabel.textContent=isDocument?'Text-to-Script rule document':isGallery?'Subject asset library':'Original project evidence';
+      lightboxLabel.textContent=isDocument?'Text-to-Script rule document':isGallery?(card.dataset.galleryLabel||'Visual asset library'):'Original project evidence';
       lightboxGallery.replaceChildren();
       galleryThumbnails.replaceChildren();
       if(isDocument){

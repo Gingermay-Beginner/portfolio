@@ -14,6 +14,7 @@ h1 { font-size: 30px; margin: 0 0 10px; line-height: 1.25; }
 h2 { font-size: 22px; margin: 34px 0 12px; padding-top: 0; border-top: 0; }
 h3 { font-size: 18px; margin: 24px 0 10px; }
 h4 { font-size: 16px; margin: 18px 0 8px; color: #5b4f45; }
+.section-subtitle { margin: -4px 0 18px; color: #746e67; font-size: 14px; }
 p, blockquote, ul, ol { margin: 10px 0; }
 ul, ol { padding-left: 1.5em; }
 li { margin: 5px 0; }
@@ -39,10 +40,10 @@ tr:nth-child(even) td { background: #fffaf3; }
 .color-table.unified-case-table th:nth-child(7), .color-table.unified-case-table td:nth-child(7) { width: 16%; }
 .color-table.unified-case-table td { overflow-wrap: anywhere; }
 .color-table.unified-case-table .text-cell { line-height: 1.9; }
-.color-table .fill-green { background: #00b050 !important; color: #111; }
-.color-table .fill-yellow { background: #ffff00 !important; color: #111; }
-.color-table .fill-red { background: #ff0000 !important; color: #111; }
-.color-table .fill-blue { background: #00b0f0 !important; color: #111; }
+.color-table .fill-green { background: #edf7f3 !important; color: #356b5b; }
+.color-table .fill-yellow { background: #fbf7eb !important; color: #80631f; }
+.color-table .fill-red { background: #faf0f1 !important; color: #8d4f54; }
+.color-table .fill-blue { background: #f0f2fa !important; color: #53638f; }
 .tok { display: inline-block; padding: 1px 5px 2px; border-radius: 4px; margin: 1px 2px 3px 0; line-height: 1.35; white-space: nowrap; }
 .tok.orange { background:#f28c28; }
 .tok.blue { background:#168de2; color:#06131f; }
@@ -55,7 +56,26 @@ tr:nth-child(even) td { background: #fffaf3; }
 .tok.cyan { background:#9ed9df; }
 .num-line { display: flex; gap: 8px; align-items: flex-start; }
 .num-line .num { min-width: 1.4em; font-weight: 650; }
-@media (max-width: 640px) { body { font-size: 15px; } main { width: 100%; margin: 0; border: 0; padding: 22px 12px 40px; } h1 { font-size: 25px; } h2 { font-size: 19px; } th, td { padding: 7px 6px; } .tok { padding: 1px 4px 2px; } }
+.case-table-layout { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 18px; align-items: start; scroll-margin-top: 0; }
+.coverage-legend { position: sticky; top: 16px; display: grid; gap: 10px; margin: 14px 0 22px; }
+.coverage-legend-title { margin: 0 0 2px; color: #6b665f; font-size: 12px; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
+.coverage-item { min-height: 66px; padding: 11px 13px; border-radius: 6px; color: #fff; display: grid; align-content: center; gap: 2px; line-height: 1.25; }
+.coverage-item strong { font-size: 20px; }
+.coverage-item span { font-size: 13px; font-weight: 650; }
+.coverage-item.auto { background: #edf7f3; color: #356b5b; }
+.coverage-item.code { background: #f0f2fa; color: #53638f; }
+.coverage-item.semi { background: #fbf7eb; color: #80631f; }
+.coverage-item.manual { background: #faf0f1; color: #8d4f54; }
+@media (max-width: 900px) { .case-table-layout { grid-template-columns: 124px minmax(0, 1fr); gap: 10px; } .coverage-legend { position: sticky; top: 8px; grid-template-columns: 1fr; gap: 7px; } .coverage-item { min-height: 58px; padding: 9px 10px; } .coverage-item strong { font-size: 17px; } .coverage-item span { font-size: 11px; } .case-table-layout .table-wrap { overflow-x: auto; } .case-table-layout .unified-case-table { min-width: 900px; } }
+@media (max-width: 640px) { body { font-size: 15px; } main { width: 100%; margin: 0; border: 0; padding: 22px 10px 40px; } h1 { font-size: 25px; } h2 { font-size: 19px; } th, td { padding: 7px 6px; } .tok { padding: 1px 4px 2px; } }
+body:has(#case-table-data:target) main { width: auto; margin: 16px 10px 40px 148px; padding: 18px 20px 32px; }
+body:has(#case-table-data:target) .case-table-layout { display: block; }
+body:has(#case-table-data:target) .coverage-legend { position: fixed; top: 16px; left: 10px; width: 124px; margin: 0; z-index: 10; display: grid; grid-template-columns: 1fr; gap: 7px; }
+body:has(#case-table-data:target) .coverage-item { min-height: 58px; padding: 9px 10px; }
+body:has(#case-table-data:target) .coverage-item strong { font-size: 17px; }
+body:has(#case-table-data:target) .coverage-item span { font-size: 11px; }
+body:has(#case-table-data:target) .table-wrap { margin-top: 0; overflow-x: auto; }
+body:has(#case-table-data:target) .unified-case-table { min-width: 900px; }
 
 </style>
 </head>
@@ -254,15 +274,16 @@ tr:nth-child(even) td { background: #fffaf3; }
 <p>位置当作双主角，方向左右相对，顺序默认先说话者在左。</p>
 <p class="num-line"><span class="num">3.</span>小明 + vt + 小红  </p>
 <p>位置当作双主角，方向左右相对，顺序默认施动者在左。</p>
-<h2 id="case-table">八、案例表格整理（第 13-22 页）</h2>
-<h3>统计</h3>
-<ul>
-<li>26（自动）</li>
-<li>10（程序）</li>
-<li>15（半人工）</li>
-<li>16（全人工）</li>
-<li>占比：38%：14.9%：22.3%：23.9%</li>
-</ul>
+<h2 id="case-table">Story-to-Animation Rule Coverage Matrix</h2>
+<p class="section-subtitle">Mapping real story sentences to visual outputs and automation boundaries.</p>
+<div class="case-table-layout" id="case-table-data">
+<aside class="coverage-legend" aria-label="Processing coverage">
+<p class="coverage-legend-title">Processing coverage</p>
+<div class="coverage-item auto"><strong>38%</strong><span>Fully automatic processing</span></div>
+<div class="coverage-item code"><strong>14.9%</strong><span>Automated after rule extension</span></div>
+<div class="coverage-item semi"><strong>22.3%</strong><span>Semi-manual processing</span></div>
+<div class="coverage-item manual"><strong>23.9%</strong><span>Full manual processing</span></div>
+</aside>
 <div class="table-wrap color-table-wrap"><table class="color-table unified-case-table">
 <thead><tr><th>No.</th><th>文字</th><th>主体</th><th>构图位置</th><th>动画</th><th>背景</th><th>文法结构/逻辑判断</th></tr></thead>
 <tbody>
@@ -334,6 +355,7 @@ tr:nth-child(even) td { background: #fffaf3; }
 <tr><td class="fill-red">66</td><td class="text-cell"><span class="tok blue">装/v</span> <span class="tok blue">进/vf</span> <span class="tok gray">了/ule</span> <span class="tok yellow">三/m</span> <span class="tok cyan">个/q</span> <span class="tok orange">小朋友/n</span> <span class="tok cyan">们/k</span> <span class="tok pink">的/ude1</span> <span class="tok orange">肚子/n</span> <span class="tok cyan">里/f</span> <span class="tok gray">。/wj</span></td><td class="fill-red">男孩 1&2，女孩 1</td><td class="fill-red">三人均分同时动</td><td>1</td><td></td><td></td></tr>
 <tr><td class="fill-red">67</td><td class="text-cell"><span class="tok yellow">三/m</span> <span class="tok cyan">个/q</span> <span class="tok orange">人/n</span> <span class="tok pink">的/ude1</span> <span class="tok orange">友谊/n</span> <span class="tok lav">也/d</span> <span class="tok pink">在/p</span> <span class="tok mint">他们/rr</span> <span class="tok pink">的/ude1</span> <span class="tok lav">心里/s</span> <span class="tok lav">悄然/d</span> <span class="tok blue">滋长/v</span> <span class="tok gray">。/wj</span></td><td class="fill-red">男孩 1&2，女孩 1</td><td class="fill-red">三人均分同时动</td><td>1</td><td></td><td></td></tr>
 </tbody></table></div>
+</div>
 </main>
 </body>
 </html>
