@@ -44,7 +44,12 @@
     .back-link:hover{color:var(--ink)}
     .back-link .arw{transition:transform .22s ease}
     .back-link:hover .arw{transform:translateX(-3px)}
-    .top-actions{display:inline-flex;gap:10px}
+    .top-actions{display:inline-flex;align-items:center;gap:10px}
+    .lang-toggle{display:inline-flex;align-items:center;gap:2px;height:36px;padding:3px;border:1px solid var(--line-strong);border-radius:999px;background:var(--card)}
+    .lang-toggle button{display:grid;place-items:center;min-width:31px;height:28px;padding:0 8px;border:0;border-radius:999px;background:transparent;color:var(--muted);font-family:"JetBrains Mono","SFMono-Regular",Consolas,monospace;font-size:11px;font-weight:700;letter-spacing:.3px;cursor:pointer;transition:background .2s ease,color .2s ease}
+    .lang-toggle button:hover{color:var(--ink)}
+    .lang-toggle button.active{background:var(--ink);color:#fff}
+    .lang-toggle button:focus-visible{outline:2px solid var(--green);outline-offset:2px}
     .btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 15px;border:1px solid var(--line-strong);border-radius:999px;background:var(--card);color:var(--ink);font-size:13px;font-weight:600;transition:transform .2s ease,border-color .2s ease,background .2s ease}
     .btn:hover{transform:translateY(-1px);border-color:var(--ink)}
     section[id]{scroll-margin-top:76px}
@@ -316,13 +321,15 @@
     .lightbox--gallery .lightbox-stage{position:relative;height:min(72vh,820px);max-height:none;display:block;overflow:hidden;background:white}
     .lightbox--gallery #lightboxImage{display:none}
     .lightbox--gallery .lightbox-gallery{display:grid;gap:12px;height:100%;overflow-y:auto;padding:0}
-    .lightbox--gallery .lightbox-gallery img{width:100%;height:auto;object-fit:contain;background:white}
+    .lightbox--gallery .lightbox-gallery img,.lightbox--gallery .lightbox-gallery video{display:block;width:100%;height:auto;object-fit:contain;background:white}
+    .lightbox--gallery .lightbox-gallery video{background:#18181b}
     .gallery-thumbnails{display:none}
     .lightbox--gallery .gallery-thumbnails{position:absolute;top:54px;left:calc(100% + 14px);z-index:3;display:flex;width:112px;height:min(72vh,820px);padding-right:4px;flex-direction:column;gap:8px;overflow-y:auto}
     .gallery-thumbnails button{position:relative;flex:0 0 auto;width:100%;padding:0;overflow:hidden;border:2px solid transparent;border-radius:8px;background:#18181b;box-shadow:0 5px 16px rgba(0,0,0,.22);cursor:pointer;opacity:.58;transition:border-color .18s ease,opacity .18s ease,transform .18s ease}
     .gallery-thumbnails button:hover{opacity:.86}
     .gallery-thumbnails button.active{border-color:var(--green);opacity:1}
     .gallery-thumbnails img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+    .gallery-video-thumb{display:grid;width:100%;aspect-ratio:16/9;place-items:center;background:#24242a;color:white;font-size:22px}
     .gallery-thumbnails span{position:absolute;right:4px;bottom:4px;padding:2px 4px;border-radius:4px;background:rgba(24,24,27,.78);color:white;font:8px "JetBrains Mono",monospace}
     .lightbox-info{padding:18px}
     .lightbox-info h3{margin:0 0 7px;font-size:17px}
@@ -382,6 +389,10 @@
         <span>Home</span>
       </a>
       <div class="top-actions">
+        <div class="lang-toggle" role="group" aria-label="Language">
+          <button type="button" data-language="en" aria-pressed="false">EN</button>
+          <button type="button" data-language="zh" class="active" aria-pressed="true">中</button>
+        </div>
         <a class="btn" href="portfolio.html#work">All work</a>
       </div>
     </div>
@@ -801,9 +812,9 @@
                 <div class="proof-thumb"><img src="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.049.jpeg" alt="主体组合资产设计"></div>
                 <div class="proof-copy"><span class="proof-kicker">Subject assets</span><h4>主体组合资产</h4><p>将人物和拟人动物拆成可组合、可继续扩展的变量。</p><span class="proof-open">查看 10 张设计原稿 ↗</span></div>
               </button>
-              <button class="proof-card" data-gallery="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.059.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.060.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.061.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.062.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.063.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.064.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.065.jpeg" data-gallery-label="Animation asset library" data-title="Action / State 与动画变体" data-caption="从通用动作与状态分类、动画参数，到高频动作定制与下一阶段探索，共 7 张设计原稿。">
+              <button class="proof-card" data-gallery="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.059.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.060.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.061.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.062.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.063.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.064.jpeg|assets/XiaoiceAudioBook/XiaoiceMotion.MP4" data-cover-count="6" data-gallery-label="Animation asset library" data-title="Action / State 与动画变体" data-caption="从通用动作与状态分类、动画参数，到高频动作定制与动态演示，共 6 张设计原稿与 1 段视频。">
                 <div class="proof-thumb"><img src="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.062.jpeg" alt="动作、状态与动画变体设计"></div>
-                <div class="proof-copy"><span class="proof-kicker">Animation assets</span><h4>Action / State 与动画变体</h4><p>将语言中的动作或状态映射为可调用的动画资产。</p><span class="proof-open">查看 7 张设计原稿 ↗</span></div>
+                <div class="proof-copy"><span class="proof-kicker">Animation assets</span><h4>Action / State 与动画变体</h4><p>将语言中的动作或状态映射为可调用的动画资产。</p><span class="proof-open">查看 6 张设计原稿与动态演示 ↗</span></div>
               </button>
               <button class="proof-card" data-gallery="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.066.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.067.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.068.jpeg|assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.069.jpeg" data-gallery-label="Background asset library" data-title="背景与空间资产" data-caption="从空间与地平线规则到完整生产背景，共 4 张设计原稿；背景由 Scene Context 和 Auto Storyboard 规则进行选择。">
                 <div class="proof-thumb"><img src="assets/XiaoiceAudioBook/小冰动画绘本最新完整版（作品集_小冰绘本生成完整版_20210114）.067.jpeg" alt="背景与空间资产设计"></div>
@@ -932,7 +943,9 @@
     <div class="gallery-thumbnails" id="galleryThumbnails" aria-label="图片页码"></div>
   </dialog>
 
+  <script src="xiaoice-i18n.js"></script>
   <script>
+    const pageI18n=window.xiaoiceI18n||{language:'zh',t:value=>value};
     const featureVideo=document.querySelector('.video-still video');
     const featureVideoPlay=document.querySelector('.video-play-button');
     if(featureVideo&&featureVideoPlay){
@@ -1002,21 +1015,22 @@
     const lightboxTitle=document.querySelector('#lightboxTitle');
     const lightboxCaption=document.querySelector('#lightboxCaption');
     const galleryThumbnails=document.querySelector('#galleryThumbnails');
+    const isVideoSource=src=>/\.(mp4|mov|webm)(?:[?#].*)?$/i.test(src);
+    const getGalleryMedia=()=>[...lightboxGallery.children].filter(item=>item.matches('img,video'));
     const getCurrentGalleryIndex=()=>{
-      const images=[...lightboxGallery.querySelectorAll('img')];
-      if(!images.length)return 0;
+      const media=getGalleryMedia();
+      if(!media.length)return 0;
       const center=lightboxGallery.getBoundingClientRect().top+lightboxGallery.clientHeight/2;
       let current=0;
       let nearest=Infinity;
-      images.forEach((image,index)=>{
-        const rect=image.getBoundingClientRect();
+      media.forEach((item,index)=>{
+        const rect=item.getBoundingClientRect();
         const distance=Math.abs(rect.top+rect.height/2-center);
         if(distance<nearest){nearest=distance;current=index}
       });
       return current;
     };
     const updateGalleryThumbnails=()=>{
-      const images=[...lightboxGallery.querySelectorAll('img')];
       const current=getCurrentGalleryIndex();
       [...galleryThumbnails.children].forEach((thumbnail,index)=>{
         thumbnail.classList.toggle('active',index===current);
@@ -1024,16 +1038,15 @@
       });
     };
     const scrollGalleryToIndex=index=>{
-      const images=[...lightboxGallery.querySelectorAll('img')];
-      const target=images[index];
+      const target=getGalleryMedia()[index];
       if(!target)return;
       const top=lightboxGallery.scrollTop+target.getBoundingClientRect().top-lightboxGallery.getBoundingClientRect().top;
       lightboxGallery.scrollTo({top,behavior:'smooth'});
     };
     const stepGallery=delta=>{
-      const images=[...lightboxGallery.querySelectorAll('img')];
-      if(!images.length)return;
-      scrollGalleryToIndex(Math.max(0,Math.min(images.length-1,getCurrentGalleryIndex()+delta)));
+      const media=getGalleryMedia();
+      if(!media.length)return;
+      scrollGalleryToIndex(Math.max(0,Math.min(media.length-1,getCurrentGalleryIndex()+delta)));
     };
     lightboxGallery.addEventListener('scroll',updateGalleryThumbnails,{passive:true});
     addEventListener('keydown',event=>{
@@ -1058,8 +1071,18 @@
       }else if(isGallery){
         lightboxDocument.removeAttribute('src');
         lightboxImage.removeAttribute('src');
-        const alt=card.querySelector('img')?.alt||'主体组合资产设计';
+        const alt=card.querySelector('img')?.alt||pageI18n.t('主体组合资产设计');
         lightboxGallery.replaceChildren(...galleryImages.map((src,index)=>{
+          if(isVideoSource(src)){
+            const video=document.createElement('video');
+            video.src=src;
+            video.controls=true;
+            video.playsInline=true;
+            video.preload='metadata';
+            video.setAttribute('aria-label',`${card.dataset.title||pageI18n.t('动画资产')}${pageI18n.language==='en'?' motion demo':'动态演示'}`);
+            video.addEventListener('loadedmetadata',updateGalleryThumbnails,{once:true});
+            return video;
+          }
           const image=document.createElement('img');
           image.src=src;
           image.alt=`${alt} ${index+1}`;
@@ -1069,33 +1092,40 @@
         }));
         galleryThumbnails.replaceChildren(...galleryImages.map((src,index)=>{
           const thumbnail=document.createElement('button');
-          const image=document.createElement('img');
           const label=document.createElement('span');
           thumbnail.type='button';
-          thumbnail.setAttribute('aria-label',`跳到第 ${index+1} 张`);
+          thumbnail.setAttribute('aria-label',pageI18n.language==='en'?`Go to item ${index+1}`:`跳到第 ${index+1} 项`);
           thumbnail.classList.toggle('active',index===0);
           thumbnail.setAttribute('aria-current',index===0?'true':'false');
-          image.src=src;
-          image.alt='';
-          image.loading='lazy';
           label.textContent=String(index+1).padStart(2,'0');
-          thumbnail.append(image,label);
+          if(isVideoSource(src)){
+            const videoThumb=document.createElement('div');
+            videoThumb.className='gallery-video-thumb';
+            videoThumb.textContent='▶';
+            thumbnail.append(videoThumb,label);
+          }else{
+            const image=document.createElement('img');
+            image.src=src;
+            image.alt='';
+            image.loading='lazy';
+            thumbnail.append(image,label);
+          }
           thumbnail.addEventListener('click',()=>scrollGalleryToIndex(index));
           return thumbnail;
         }));
       }else{
         lightboxDocument.removeAttribute('src');
         lightboxImage.src=card.dataset.full;
-        lightboxImage.alt=card.querySelector('img')?.alt||'项目原始证据';
+        lightboxImage.alt=card.querySelector('img')?.alt||pageI18n.t('项目原始证据');
       }
-      lightboxTitle.textContent=card.dataset.title||'项目原始证据';
+      lightboxTitle.textContent=card.dataset.title||pageI18n.t('项目原始证据');
       lightboxCaption.textContent=card.dataset.caption||'';
       lightbox.showModal();
       lightboxGallery.scrollTop=0;
     }));
     document.querySelector('.lightbox-close').addEventListener('click',()=>lightbox.close());
     lightbox.addEventListener('click',event=>{if(event.target===lightbox)lightbox.close()});
-    lightbox.addEventListener('close',()=>{lightboxDocument.removeAttribute('src');lightboxGallery.replaceChildren();galleryThumbnails.replaceChildren();lightbox.classList.remove('lightbox--document','lightbox--gallery')});
+    lightbox.addEventListener('close',()=>{lightboxGallery.querySelectorAll('video').forEach(video=>video.pause());lightboxDocument.removeAttribute('src');lightboxGallery.replaceChildren();galleryThumbnails.replaceChildren();lightbox.classList.remove('lightbox--document','lightbox--gallery')});
   </script>
 </body>
 </html>
