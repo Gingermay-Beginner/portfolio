@@ -543,5 +543,5 @@ document.querySelectorAll('.coverage-item[data-status]').forEach((item) => {
   item.querySelector('strong').textContent = percentageByStatus[item.dataset.status];
 });
 </script>
-</body>
+<script>document.documentElement.lang = new URLSearchParams(location.search).get("lang") === "en" ? "en" : "zh-CN";</script><script src="portfolio-zh-dictionary.js"></script><script src="portfolio-translate.js"></script></body>
 </html>

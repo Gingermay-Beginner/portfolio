@@ -1,0 +1,16 @@
+/* Shared language navigation. */
+.case-language{display:inline-flex;align-items:center;gap:2px;padding:3px;border:1px solid var(--line-strong,#d4d4d8);border-radius:999px;background:var(--card,#fff);white-space:nowrap;flex-shrink:0;}
+.case-language a{display:inline-flex;align-items:center;justify-content:center;min-width:36px;height:28px;padding:0 9px;border-radius:999px;font:600 12px/1 Inter,"PingFang SC",sans-serif;text-decoration:none;color:var(--ink,#18181b);}
+.case-language a[aria-current="page"]{color:#fff;background:var(--ink,#18181b);}
+.case-language a:focus-visible{outline:2px solid #10b981;outline-offset:2px;}
+.topbar .top-actions{align-items:center;}
+:lang(zh-CN) body{font-family:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;}
+:lang(zh-CN) p{overflow-wrap:break-word;}
+:lang(zh-CN) .hero h1{line-height:1.12;}
+@media(max-width:380px){.topbar-inner .top-actions{gap:6px;}.topbar-inner .btn{padding-inline:10px;}.case-language a{min-width:30px;padding-inline:6px;}}
+@media(max-width:360px){.nav-shell .top-actions{gap:6px;}.nav-shell .top-actions .btn{padding-inline:12px;}}
+
+/* Decorative cover artwork must not widen the page on phones. */
+html:has(.nav-shell){overflow-x:clip;}
+
+@media(max-width:480px){.im2-grid{grid-template-columns:minmax(0,1fr);}.im2-state{min-width:0;}.im2-caret-stage{max-width:100%;}}

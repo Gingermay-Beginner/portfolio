@@ -1,0 +1,1532 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>语音优先输入法 — 意图感知输入 · Bingnan Jiang</title>
+  <meta name="description" content="Looop 语音优先输入法案例：面向桌面 AI 工作流，从语音转文本走向语音理解意图，提供逐字与意图两种模式。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f4f5;
+      --bg-2: #fafafa;
+      --ink: #18181b;
+      --soft: #3f3f46;
+      --muted: #71717a;
+      --faint: #a1a1aa;
+      --line: #e4e4e7;
+      --line-strong: #d4d4d8;
+      --card: #ffffff;
+      --card-2: #fafafa;
+      --glass: rgba(255, 255, 255, .88);
+      --accent: #18181b;
+      --green: #10b981;
+      --shadow: 0 10px 28px -18px rgba(24, 24, 27, .22);
+      --shadow-soft: 0 6px 20px -16px rgba(24, 24, 27, .3);
+      --radius: 18px;
+      --radius-lg: 22px;
+      --max: 1080px;
+      font-family: "Space Grotesk", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      letter-spacing: .1px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      font-family: Inter, "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    }
+    a { color: inherit; text-decoration: none; }
+    a, button { -webkit-tap-highlight-color: transparent; }
+    ::selection { background: rgba(24, 24, 27, .13); color: var(--ink); }
+
+    .wrap { width: min(var(--max), calc(100vw - 40px)); margin: 0 auto; }
+    .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+    h1, h2, h3, .disp { font-family: "Space Grotesk", Inter, sans-serif; }
+
+    /* ---------- Top bar ---------- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--glass);
+      backdrop-filter: saturate(1.4) blur(14px);
+      -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    }
+    .topbar-inner {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 58px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--soft);
+      transition: color .2s ease;
+    }
+    .back-link:hover { color: var(--ink); }
+    .back-link .arw { transition: transform .22s ease; }
+    .back-link:hover .arw { transform: translateX(-3px); }
+    .top-actions { display: inline-flex; gap: 10px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 36px;
+      padding: 0 15px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--line-strong);
+      background: var(--card);
+      color: var(--ink);
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); border-color: var(--ink); }
+
+    /* ---------- Eyebrow / kickers ---------- */
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .kicker .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+    .sec-num {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-weight: 500;
+    }
+
+    /* ---------- Hero ---------- */
+    .hero { padding: 72px 0 40px; }
+    .hero h1 {
+      font-size: clamp(42px, 7vw, 76px);
+      line-height: 1.02;
+      letter-spacing: -1.6px;
+      margin: 20px 0 0;
+      font-weight: 700;
+    }
+    .hero .lede {
+      font-size: clamp(18px, 2.4vw, 23px);
+      line-height: 1.5;
+      color: var(--soft);
+      max-width: 640px;
+      margin: 22px 0 0;
+    }
+    .hero .lede em { font-style: normal; color: var(--ink); font-weight: 600; }
+    .hero-recording { margin-top: 32px; }
+    .hero-recording .video-cap { margin-bottom: 10px; }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      margin-top: 46px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--card);
+      overflow: hidden;
+    }
+    .meta-cell { padding: 18px 20px; border-right: 1px solid var(--line); }
+    .meta-cell:last-child { border-right: none; }
+    .meta-cell .k {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10.5px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+    .meta-cell .v {
+      margin-top: 7px;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.35;
+    }
+    .meta-cell .v a {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--ink); border-bottom: 1px solid var(--line-strong);
+      transition: border-color .2s ease;
+    }
+    .meta-cell .v a:hover { border-color: var(--ink); }
+    .meta-cell .v a svg { width: 15px; height: 15px; }
+
+    /* ---------- Section frame ---------- */
+    section.block { padding: 52px 0; }
+    .sec-head { max-width: 680px; margin-bottom: 34px; }
+    .sec-head h2 {
+      font-size: clamp(26px, 4vw, 38px);
+      line-height: 1.1;
+      letter-spacing: -0.8px;
+      margin: 14px 0 0;
+      font-weight: 600;
+    }
+    .sec-head p { font-size: 16.5px; line-height: 1.6; color: var(--muted); margin: 14px 0 0; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+    }
+
+    /* ---------- Text bits ---------- */
+    .lead { font-size: 16px; line-height: 1.6; color: var(--soft); margin: 0 0 14px; max-width: 660px; }
+    .lead:last-child { margin-bottom: 0; }
+    .points { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 10px; }
+    .points li { position: relative; padding-left: 22px; font-size: 15px; line-height: 1.55; color: var(--soft); }
+    .points li::before { content: ""; position: absolute; left: 2px; top: 9px; width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .points li b { color: var(--ink); font-weight: 600; }
+    .note { margin: 16px 0 0; font-size: 14px; color: var(--muted); line-height: 1.6; }
+    .mini-h {
+      font-family: "Space Grotesk", sans-serif; font-weight: 600;
+      font-size: 17px; letter-spacing: -0.2px; margin: 28px 0 14px;
+    }
+    .mini-h .mk {
+      display: block; margin-bottom: 7px; font-weight: 500;
+      font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: 1px; text-transform: uppercase; color: var(--green);
+    }
+
+    /* ---------- Duo cards (tension / modes) ---------- */
+    .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .def { border: 1px solid var(--line); border-radius: 14px; padding: 20px; background: var(--card-2); }
+    .def-h {
+      display: inline-flex; align-items: center; gap: 9px;
+      font-family: "Space Grotesk", sans-serif; font-weight: 600;
+      font-size: 16px; letter-spacing: -0.2px;
+    }
+    .def-h .d { width: 7px; height: 7px; border-radius: 50%; background: var(--green); }
+    .def p { margin: 10px 0 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+    /* ---------- Callout ---------- */
+    .callout {
+      margin-top: 20px;
+      /* Light. A callout is the conclusion of the cards above it, not a banner
+         interrupting them, and an ink slab made it read as a different kind of
+         thing. This is what .callout--light already was — now the only kind. */
+      background: var(--card-2); border: 1px solid var(--line);
+      color: var(--ink); border-radius: 14px; padding: 20px 22px;
+    }
+    .callout > strong {
+      display: block; margin-bottom: 8px;
+      font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted);
+    }
+    .callout span { font-size: 15.5px; line-height: 1.55; color: var(--soft); }
+    .callout span strong { color: var(--ink); font-weight: 600; }
+    .callout--summary { padding: 0; border: 0; background: transparent; margin-top: 24px; }
+
+    /* ---------- Proof figure ---------- */
+    /* Frameless: the paired dark cards (with their own radius + shadow) sit
+       directly on the page — no outer white card, no padding, no boxed caption. */
+    .figure-dark {
+      margin: 24px 0 0;
+    }
+    .figure-pad { padding: 0; }
+    .figure-dark img {
+      display: block; width: 100%; height: auto; border-radius: 12px;
+    }
+    .figure-dark figcaption {
+      padding: 16px 2px 0; color: var(--muted); font-size: 13px; line-height: 1.55;
+    }
+
+    /* The comparison is deliberately code, not a baked screenshot: its text
+       treatments, selected state, and responsive reflow stay inspectable. */
+    .mode-code-grid {
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 20px;
+    }
+    .mode-code-grid > section { display: flex; flex-direction: column; min-width: 0; }
+    .mode-code-label {
+      margin: 0 0 10px; color: #71809e; font: 600 10px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+      letter-spacing: .1em;
+    }
+    .mode-code-label b { color: #2a3241; }
+    .mode-code-surface {
+      min-height: 390px; box-sizing: border-box; padding: 22px 20px 16px;
+      flex: 1; display: flex; flex-direction: column; border-radius: 20px;
+      background: linear-gradient(135deg, #222938, #1d2330); color: #f7f8fc;
+      box-shadow: 0 12px 24px rgba(18, 23, 34, .16);
+    }
+    .mode-code-transcript, .mode-code-summary { margin: 0; font-size: 13px; line-height: 1.7; letter-spacing: -.01em; }
+    .mode-code-transcript { color: rgba(247,248,252,.93); }
+    .mode-code-fill { color: rgba(247,248,252,.48); }
+    .mode-code-drop { color: rgba(247,248,252,.43); text-decoration: line-through; text-decoration-color: rgba(247,248,252,.34); }
+    .mode-code-fix { color: #0A84FF; background: rgba(10,132,255,.22); border-radius: 4px; padding: 0 2px; text-decoration: line-through; text-decoration-color: #0A84FF; }
+    .mode-code-summary h4 { margin: 0 0 14px; font-size: 15px; line-height: 1.25; color: #fff; }
+    .mode-code-summary ul { margin: 0; padding-left: 18px; }
+    .mode-code-summary li { margin: 0 0 10px; padding-left: 2px; color: rgba(247,248,252,.76); }
+    .mode-code-summary li::marker { color: #fff; }
+    .mode-code-summary strong { color: #fff; }
+    .mode-code-next { margin: 14px 0 0; padding-top: 14px; border-top: 1px solid rgba(255,255,255,.13); color: rgba(247,248,252,.76); }
+    .mode-code-next b { margin-right: 8px; color: #fff; font: 600 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .1em; }
+    .mode-code-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: auto; padding-top: 18px; }
+    .mode-code-tools, .mode-code-switch { display: flex; align-items: center; gap: 6px; }
+    .mode-code-button {
+      display: inline-flex; align-items: center; justify-content: center; min-height: 28px; padding: 0 10px; border: 0; border-radius: 9px;
+      background: #43516f; color: #f3f6ff; font: 500 11px/1 ui-sans-serif, system-ui, sans-serif;
+    }
+    .mode-code-button--icon { width: 28px; padding: 0; }
+    .mode-code-button--tool { gap: 5px; }
+    .mode-code-button svg { width: 13px; height: 13px; flex: 0 0 auto; stroke: currentColor; fill: none; stroke-width: 1.65; stroke-linecap: round; stroke-linejoin: round; }
+    .mode-code-switch { padding: 3px; border-radius: 10px; background: rgba(12,16,25,.65); gap: 2px; }
+    .mode-code-switch span { padding: 7px 12px; border-radius: 7px; color: rgba(247,248,252,.55); font-size: 11px; }
+    .mode-code-switch .is-active { background: #0A84FF; color: #fff; }
+    @media (max-width: 820px) {
+      .mode-code-grid { grid-template-columns: 1fr; }
+      .mode-code-surface { min-height: 350px; }
+    }
+
+    /* ---------- Interaction anatomy — two voice entries + one selection surface ---------- */
+    .bar-anatomy { margin-top: 24px; }
+    .bar-stage { padding:0; background:transparent; border:0; }
+    .flow-group + .flow-group { border-top: 1px solid var(--line); margin-top: 26px; padding-top: 26px; }
+    .flow-group-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 16px; }
+    .flow-group-head b { font-family: "Space Grotesk", sans-serif; font-size: 14px; letter-spacing: -.1px; }
+    .flow-group-head span { color: var(--muted); font-size: 12.5px; }
+    .voice-entry-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .entry-flow { min-width: 0; padding: 17px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+    .bar-state-head {
+      font-family: "JetBrains Mono", monospace; font-size: 10.5px; letter-spacing: 1px;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .entry-flow h4 { margin: 7px 0 0; font-family: "Space Grotesk", sans-serif; font-size: 17px; letter-spacing: -.2px; }
+    .bar-state-note { color: var(--muted); font-size: 12.5px; line-height: 1.5; margin: 7px 0 14px; }
+    .bar-state-note b { color: var(--ink); font-weight: 600; }
+
+    /* the pill shell — one shape, four fills */
+    .bpill {
+      position: relative; height: 36px; border-radius: 12px;
+      background: #14141a; box-shadow: 0 1px 2px rgba(0,0,0,.4);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 0 8px; color: #ececf1;
+    }
+    .bidle { font-size: 12.5px; color: #ececf1; white-space: nowrap; }
+    .bkey {
+      background: rgba(255,255,255,.14); border-radius: 4px; padding: 2px 6px;
+      font-family: "JetBrains Mono", monospace; font-size: 10px;
+    }
+
+    /* waveform (listening) */
+    .bwave { width: 72px; height: 14px; overflow: visible; transition: opacity .18s ease; }
+    .bwave path { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.2; }
+    .bwave .bg { stroke: rgba(255,255,255,.18); }
+    .bwave .fg { stroke: #ececf1; }
+
+    /* action buttons — hidden until the listening pill is hovered */
+    .bbtn {
+      width: 22px; height: 22px; border-radius: 7px; flex-shrink: 0; padding: 0; border: 0;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; cursor: pointer; transition: opacity .2s ease;
+    }
+    .bbtn svg { width: 10px; height: 10px; }
+    .bbtn--cancel { color: #ececf1; background: rgba(255,255,255,.06); }
+    .bbtn--submit { color: #14141a; background: #ececf1; }
+    .bpill--listen:hover .bbtn { opacity: 1; }
+    .bpill--listen:hover .bwave { opacity: .28; }
+    .bpill-hint {
+      font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: .3px;
+      color: var(--muted); text-align: center;
+    }
+    .bpill-hint .k {
+      background: var(--line); border-radius: 4px; padding: 1px 5px; color: var(--ink);
+    }
+
+    /* selection actions */
+    .bverbs { display: flex; gap: 5px; }
+    .bverb {
+      font-size: 10px; border-radius: 999px; padding: 3px 8px; white-space: nowrap;
+      background: rgba(255,255,255,.08); color: rgba(236,236,241,.7);
+    }
+    .bverb--on { background: #ececf1; color: #14141a; }
+    .bverb--voice { background: #6b68b6; color: #fff; margin-left: auto; }
+    .state-path { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 14px; }
+    .state-path span { font-family: "JetBrains Mono", monospace; font-size: 9.5px; letter-spacing: .3px; color: var(--muted); background: var(--line); border-radius: 4px; padding: 3px 5px; }
+    .state-path span:last-child { background: #e9e8ff; color: #5551ad; }
+    .state-path i { color: var(--faint); font-style: normal; font-size: 11px; }
+    .caret-mark { width: 2px; height: 19px; margin-left: 7px; background: #ececf1; }
+    .context-grid { display: grid; grid-template-columns: minmax(180px, .75fr) minmax(0, 1.25fr); gap: 22px; align-items: center; }
+    .context-copy h4 { margin: 7px 0; font-family: "Space Grotesk", sans-serif; font-size: 17px; letter-spacing: -.2px; }
+    .context-copy p { margin: 0; color: var(--muted); font-size: 12.5px; line-height: 1.5; }
+    .selection-demo { padding: 15px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); }
+    .selection-text { margin-bottom: 12px; color: var(--soft); font-size: 13px; line-height: 1.5; }
+    .selection-text mark { border-radius: 3px; padding: 1px 3px; background: #d9d8ff; color: var(--ink); }
+    .interaction-rule { margin-top: 18px; padding: 0; background: transparent; color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .interaction-rule b { color: var(--ink); }
+
+    /* Confirmed Voice IME state model — shared shell, three entry contexts. */
+    .im2-flow { padding:26px; border:1px solid var(--line); border-radius:14px; background:var(--card-2); }
+    .im2-flow + .im2-flow { margin-top:16px; }
+    .im2-head { display:flex; gap:10px; align-items:baseline; margin-bottom:12px; }
+    .im2-head b { font-family:"JetBrains Mono",monospace; font-size:10px; letter-spacing:1px; color:var(--green); }
+    .im2-head span { color:var(--muted); font-size:12px; }
+    .im2-grid { display:grid; grid-template-columns:repeat(4,1fr); background:transparent; }
+    .im2-grid--selection { grid-template-columns:1.25fr repeat(2,1fr); }
+    .im2-state { min-height:178px; padding:17px; display:flex; flex-direction:column; }
+    .im2-name { color:var(--muted); text-align:center; font:10px "JetBrains Mono",monospace; letter-spacing:1px; text-transform:uppercase; }
+    .im2-note { margin:12px 0 0; text-align:center; color:var(--muted); font-size:12px; }
+    .im2-note b { color:var(--ink); }
+    .im2-pill { position:relative; align-self:center; width:88px; height:36px; margin-top:auto; margin-bottom:0; border-radius:12px; background:#1F2431; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 5px rgba(31,36,49,.18); }
+    .im2-pill--wide { width:140px; justify-content:space-between; padding:0 6px; }
+    .im2-spring { width:72px; height:14px; overflow:visible; }.im2-spring path { fill:none; stroke-linecap:round; stroke-linejoin:round; stroke-width:1.2; }.im2-spring .bg { stroke:rgba(255,255,255,.18); }.im2-spring .fg { stroke:#fff; }
+    .im2-tip { position:absolute; bottom:calc(100% + 7px); padding:5px 7px; border-radius:7px; background:#1F2431; color:#fff; font-size:10px; white-space:nowrap; }
+    .im2-key { padding:2px 5px; border-radius:4px; background:rgba(255,255,255,.14); font:10px "JetBrains Mono",monospace; }
+    .im2-icon { position:relative; display:grid; place-items:center; width:24px; height:24px; border-radius:7px; color:#fff; background:rgba(255,255,255,.08); font-size:13px; }.im2-icon--done { background:#fff; color:#1F2431; }
+    .im2-icon--done .im2-tip { bottom:calc(100% + 8px); left:50%; transform:translateX(-50%); }
+    .im2-caret-stage { position:relative; align-self:center; width:140px; height:60px; margin-top:auto; margin-bottom:0; }.im2-caret { position:absolute; top:0; left:50%; width:2px; height:20px; border-radius:1px; background:#1F2431; transform:translateX(-50%); }.im2-caret-stage .im2-pill { position:absolute; bottom:0; left:50%; margin:0; transform:translateX(-50%); }
+    .im2-selection { min-height:24px; margin:auto 0 2px; display:flex; align-items:center; color:#3E4760; font-size:16px; }.im2-selection mark { padding:2px 3px; border-radius:3px; background:#0A84FF; color:#fff; }.im2-selection .im2-caret-inline { display:inline-block; width:2px; height:20px; margin-left:5px; margin-right:1px; background:#1F2431; }
+    .im2-actions { display:inline-flex; align-self:center; margin-top:auto; padding:4px; border-radius:12px; background:#fff; box-shadow:0 4px 18px rgba(31,36,49,.12); }.im2-grid--selection .im2-state:first-child .im2-actions { margin-top:12px; }.im2-action { display:inline-flex; align-items:center; gap:6px; min-height:36px; padding:0 10px; border-radius:8px; color:#1F2431; font-size:12px; white-space:nowrap; }.im2-action--on { order:-1; background:#1F2431; color:#fff; }.im2-action svg { width:16px; height:16px; fill:currentColor; }
+    .im2-grid--selection .im2-state:first-child .im2-selection mark { position:relative; z-index:0; isolation:isolate; display:inline-block; padding:2px 3px; background:transparent; color:#3E4760; }
+    .im2-grid--selection .im2-state:first-child .im2-selection mark::before { content:""; position:absolute; z-index:-1; top:0; bottom:0; left:0; width:0; border-radius:3px; background:#0A84FF; animation:selection-sweep 6.4s ease-in-out infinite; }
+    .im2-grid--selection .im2-state:first-child .im2-selection mark::after { content:""; position:absolute; right:auto; top:-3px; width:2px; height:28px; border-radius:1px; background:#1F2431; animation:selection-caret 6.4s ease-in-out infinite; }
+    .im2-grid--selection .im2-state:first-child .im2-caret-inline { display:none; }
+    .im2-grid--selection .im2-state:first-child .im2-actions { animation: selection-bar-arrive 6.4s ease-in-out infinite; }
+    @keyframes selection-sweep { 0%, 10% { width:0; opacity:1; } 30%, 90% { width:100%; opacity:1; } 90.01%, 100% { width:100%; opacity:0; } }
+    @keyframes selection-caret { 0%, 10% { left:0; opacity:1; } 30%, 78% { left:calc(100% + 3px); opacity:1; } 92%, 100% { left:calc(100% + 3px); opacity:0; } }
+    @keyframes selection-bar-arrive { 0%, 30% { opacity:0; transform:translateY(-7px) scale(.96); } 41%, 78% { opacity:1; transform:translateY(0) scale(1); } 92%, 100% { opacity:0; transform:translateY(-7px) scale(.96); } }
+    @media (prefers-reduced-motion: reduce) { .im2-grid--selection .im2-state:first-child .im2-selection mark::before, .im2-grid--selection .im2-state:first-child .im2-selection mark::after, .im2-grid--selection .im2-state:first-child .im2-actions { animation:none; } .im2-grid--selection .im2-state:first-child .im2-selection mark::before { width:100%; } }
+    .im2-quote { margin:auto 0 0; color:#0A84FF; text-align:center; font-size:16px; }.im2-grid--selection .im2-pill { margin-top:auto; }
+
+    /* ---------- Three tiers (Verbatim annotation legend) ----------
+       Explains the side-by-side figure above it. The self-correction accent is
+       the app's live blue token (#0A84FF) — the legend swatch must point at
+       the real colour in the image, so this block keeps its own --v-acc rather
+       than the page's green (green stays a decorative section kicker only). */
+    .tiers { --v-acc: #0A84FF; --v-acc-soft: rgba(10, 132, 255, .09); margin-top: 30px; }
+    /* Open table: no outer box, no vertical dividers — columns are spaced by a
+       grid gap and rows by a single hairline. Reads as editorial, not boxed. */
+    .tier-table { margin-top: 16px; }
+    .tier-row { display: grid; grid-template-columns: 104px 1.35fr 1.05fr 1.1fr; column-gap: 26px; }
+    .tier-row + .tier-row { border-top: 1px solid var(--line); }
+    .tier-head { border-bottom: 1px solid var(--line-strong); }
+    .tier-head + .tier-row { border-top: none; }
+    .tier-head .tc {
+      padding-top: 0; padding-bottom: 11px;
+      font-family: "JetBrains Mono", monospace; font-size: 10.5px; font-weight: 500;
+      letter-spacing: 1px; text-transform: uppercase; color: var(--faint);
+    }
+    .tc { padding: 18px 0; font-size: 13.5px; line-height: 1.55; color: var(--soft); }
+    .tc b { color: var(--ink); font-weight: 600; }
+    .tc i { font-style: italic; }
+    /* "What it is" cell = a dark mini-bubble (how the tier actually reads in the
+       Verbatim view, matching the figure above) over a plain-text example. */
+    .tk-demo {
+      /* Match the blue-charcoal surface used by the Verbatim / Intent pair,
+         rather than the page's near-black text token. */
+      background: #1F2431; color: #f7f8fc;
+      border-radius: 9px; padding: 9px 12px; margin-bottom: 9px;
+      font-size: 13px; line-height: 1.65;
+    }
+    .tk-ex { font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+    .tk-fill { color: rgba(255, 255, 255, .42); }                 /* filler: dimmed, no strike */
+    .tk-drop { color: rgba(255, 255, 255, .42);                   /* drift: gray strikethrough */
+      text-decoration: line-through; text-decoration-color: rgba(255, 255, 255, .34); }
+    .tk-fix {                                                      /* self-correction: accent hi + strike */
+      color: #0A84FF; background: rgba(10, 132, 255, .24);
+      border-radius: 4px; padding: 0 3px;
+      text-decoration: line-through; text-decoration-color: rgba(10, 132, 255, .65);
+    }
+    .tc-name b { display: block; font-family: "Space Grotesk", sans-serif; }
+    .tc-name code {
+      display: inline-block; margin-top: 7px;
+      font-family: "JetBrains Mono", monospace; font-size: 11.5px;
+      color:#159B68; background:rgba(21,155,104,.10);
+      padding: 1px 6px; border-radius: 5px;
+    }
+    .tc-name code.tier-fill { color:#159B68; background:rgba(21,155,104,.10); }
+
+    /* ---------- Capabilities tabs ---------- */
+    .caps { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 22px; align-items: stretch; }
+    .vtabs { display: flex; flex-direction: column; gap: 8px; }
+    .vtab {
+      text-align: left; border: 1px solid var(--line); border-radius: 12px;
+      padding: 13px 15px; background: var(--card-2); cursor: pointer; font: inherit;
+      transition: border-color .2s ease, background .2s ease, box-shadow .2s ease, transform .2s ease;
+    }
+    .vtab:hover { border-color: var(--line-strong); }
+    .vtab.is-active { border-color: var(--ink); background: var(--card); box-shadow: var(--shadow-soft); transform: translateY(-1px); }
+    .vtab-t {
+      display: flex; align-items: baseline; gap: 10px;
+      font-family: "Space Grotesk", sans-serif; font-weight: 600;
+      font-size: 14.5px; letter-spacing: -0.2px; color: var(--ink);
+    }
+    .vtab-idx { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--faint); }
+    .vtab.is-active .vtab-idx { color: var(--green); }
+    .vtab-d { margin: 6px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+
+    .vdemo {
+      border: 1px solid var(--line); border-radius: 16px; background: var(--card-2);
+      padding: 26px; display: flex; flex-direction: column; justify-content: center;
+    }
+    .vpanel { display: none; }
+    .vpanel.is-active { display: flex; flex-direction: column; gap: 12px; }
+    .vbubble { position: relative; border-radius: 16px; font-size: 14px; line-height: 1.55; max-width: 92%; width: fit-content; }
+    .vbubble--raw {
+      align-self: flex-start; padding: 13px 16px 13px 42px;
+      background: var(--ink); border: 1px solid rgba(255, 255, 255, .08); color: #fff;
+      box-shadow: 0 12px 26px -16px rgba(0, 0, 0, .45); border-bottom-left-radius: 5px;
+    }
+    .vbubble--noicon { padding-left: 16px; }
+    .vloop { position:absolute; left:14px; top:16px; width:22px; height:auto; overflow:visible; }
+    .vloop path { fill:none; stroke:rgba(255,255,255,.68); stroke-width:2.45; stroke-linecap:round; stroke-linejoin:round; }
+    .vstrike {
+      text-decoration: line-through; text-decoration-color: rgba(255, 255, 255, .4);
+      color: rgba(255, 255, 255, .5); background: rgba(255, 255, 255, .1);
+      border-radius: 4px; padding: 0 3px;
+    }
+    .vbubble--out {
+      align-self: flex-end; padding: 13px 16px;
+      background: var(--card); border: 1px solid var(--line); color: var(--ink); font-weight: 500;
+      box-shadow: 0 8px 22px -16px rgba(24, 24, 27, .25);
+    }
+    .vbubble--out .vzh { display: block; margin-top: 6px; color: var(--muted); font-weight: 400; }
+    .vout-title { font-weight: 600; color: var(--ink); margin-bottom: 7px; }
+    .vout-line { display: flex; align-items: flex-start; gap: 9px; font-weight: 400; line-height: 1.5; }
+    .vout-line + .vout-line { margin-top: 5px; }
+    .vout-line::before { content: ""; flex: none; width: 5px; height: 5px; margin-top: 8px; border-radius: 50%; background: var(--green); }
+    /* One clip, two simultaneous readings — shown as related cards, not as an
+       interactive toggle. The overlap makes their shared source explicit. */
+    .v-compare { position:relative; align-self:center; width:min(100%,660px); min-height:414px; }
+    .v-compare-toggle { display:inline-flex; position:absolute; z-index:2; top:0; left:50%; transform:translateX(-50%); gap:2px; padding:3px; border:1px solid var(--line); border-radius:9px; background:#fff; }
+    .v-compare-toggle span { padding:6px 11px; border-radius:6px; color:var(--muted); font:600 11px/1 "Space Grotesk", sans-serif; }
+    .v-compare-toggle .is-active { background:#1F2431; color:#fff; box-shadow:0 1px 3px rgba(24,24,27,.18); }
+    .v-compare-card { position:absolute; width:84%; box-sizing:border-box; padding:17px 20px; border:1px solid var(--line); border-radius:16px; background:#fff; box-shadow:0 10px 26px -20px rgba(24,24,27,.34); }
+    .v-compare-card--raw { top:44px; left:0; color:#3e4760; }
+    .v-compare-card--structured { right:0; bottom:0; z-index:1; color:var(--ink); }
+    .v-compare-label { margin:0 0 12px; color:var(--faint); font:600 10px/1 "JetBrains Mono", monospace; letter-spacing:.1em; text-transform:uppercase; }
+    .v-compare-raw { font-size:14px; line-height:1.62; letter-spacing:-.01em; }
+    .v-compare-card--structured .vout-title { margin-bottom:10px; font-size:16px; }
+    .v-compare-card--structured .vout-line { gap:12px; font-size:14px; }
+    .v-compare-card--structured .vout-line + .vout-line { margin-top:8px; }
+    @media (max-width: 620px) { .v-compare { min-height:0; padding-top:44px; } .v-compare-card { position:relative; width:100%; padding:19px; } .v-compare-card--raw { top:auto; } .v-compare-card--structured { margin-top:-18px; } }
+    .vact {
+      align-self: flex-start; display: inline-flex; align-items: center; gap: 8px;
+      margin: 2px 0 2px 4px; font-family: "JetBrains Mono", monospace; font-size: 11.5px;
+      color: var(--soft); background: var(--card); border: 1px solid var(--line-strong);
+      border-radius: 999px; padding: 6px 13px;
+    }
+    .vact svg { width: 13px; height: 13px; }
+
+    /* ---------- Scene / step columns (not cards — divided by hairlines) ---------- */
+    .scenes { display: grid; grid-template-columns: repeat(3, 1fr); column-gap:14px; }
+    .scenes > * + * { padding-left:0; }
+    .scene-k {
+      font-family: "JetBrains Mono", monospace; font-size: 10px;
+      letter-spacing: 1.1px; text-transform: uppercase; color: var(--faint);
+    }
+    .scene-t {
+      font-family: "Space Grotesk", sans-serif; font-weight: 600;
+      font-size: 15px; letter-spacing: -0.2px; margin: 9px 0 6px;
+    }
+    .scene-d { color: var(--muted); font-size: 13px; line-height: 1.5; }
+    /* ---------- Brand expression ---------- */
+    .brand-route { margin:0 0 18px; }
+    .brand-route img { display:block; width:100%; height:auto; border-radius:12px; }
+    .brand-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; }
+    .brand-module { min-height:164px; padding:20px; border:1px solid var(--line); border-radius:14px; background:var(--card-2); }
+    .brand-index { font:500 10px/1 "JetBrains Mono", monospace; letter-spacing:1px; text-transform:uppercase; color:var(--faint); }
+    .brand-module h3 { margin:14px 0 8px; font-family:"Space Grotesk", sans-serif; font-size:16px; letter-spacing:-.2px; }
+    .brand-module p { margin:0; color:var(--muted); font-size:13px; line-height:1.55; }
+    .brand-module--motion, .brand-module--visual, .brand-module--product { position:relative; padding-bottom:112px; }
+    .brand-loop-demo, .brand-hotkey-space, .brand-listening-space { position:absolute; left:20px; right:20px; bottom:28px; height:56px; display:flex; align-items:center; justify-content:center; }
+    .brand-loop-demo { width:auto; max-width:none; margin:0; }
+    .brand-loop-demo svg { width:38%; max-width:124px; }
+    .brand-loop-demo svg { display:block; width:100%; height:auto; overflow:visible; }
+    .brand-loop-demo path {
+      fill:none; stroke:var(--ink); stroke-width:2.45; stroke-linecap:round; stroke-linejoin:round;
+      stroke-dasharray:100; stroke-dashoffset:100;
+      animation:brand-loop-trace 6.8s cubic-bezier(.42,0,.58,1) infinite;
+    }
+    .brand-listening-bar { display:flex; align-items:center; justify-content:center; width:88px; height:36px; border-radius:12px; background:#1F2431; box-shadow:0 2px 5px rgba(31,36,49,.18); }
+    .brand-listening-bar .im2-spring { margin:0; }
+    .brand-keyboard { display:flex; gap:3px; padding:5px; border-radius:9px; background:#242424; box-shadow:0 2px 5px rgba(0,0,0,.20); }
+    .brand-kbd-key { display:grid; place-items:center; min-width:22px; height:22px; padding:0 4px; border:1px solid rgba(255,255,255,.10); border-radius:4px; background:#2E2E2E; color:#DEDEDE; font:600 10px/1 Inter, sans-serif; }
+    .brand-kbd-key--wide { min-width:48px; }
+    .brand-kbd-key--active { border-color:#0A84FF; background:#0A84FF; color:#fff; box-shadow:0 1px 2px rgba(10,132,255,.35); }
+    @keyframes brand-loop-trace {
+      0%, 8% { stroke-dashoffset:100; opacity:.28; }
+      48%, 56% { stroke-dashoffset:0; opacity:1; }
+      92% { stroke-dashoffset:-100; opacity:.28; }
+      100% { stroke-dashoffset:-100; opacity:.28; }
+    }
+    @media (prefers-reduced-motion: reduce) { .brand-loop-demo path { animation:none; stroke-dashoffset:0; opacity:1; } }
+    /* The three case scenes are direct ports of the 480 × 320 Figma frames.
+       They deliberately share the Figma canvas ratio and component dimensions. */
+    .scene-viz { position:relative; container-type:inline-size; aspect-ratio:3 / 2; margin-bottom:15px; overflow:hidden; border:1px solid #e4e4e7; border-radius:10px; background:#e4e4e7; }
+    .sv-surface { position:absolute; overflow:hidden; border-radius:6.25%; background:#fff; }
+    .sv-surface--dark { background:#14141a; box-shadow:0 2px 3px rgba(0,0,0,.35); }
+    .sv-lines { position:absolute; display:flex; flex-direction:column; gap:5%; }
+    .sv-lines i { display:block; height:8%; min-height:2px; border-radius:999px; background:#d4d4d8; }
+    .sv-lines--dark i { background:rgba(212,212,216,.3); }
+    .sv-voice { position:absolute; display:flex; align-items:center; gap:7.3%; box-sizing:border-box; width:17.08%; height:8.125%; padding:0 4.17%; border-radius:10px; background:#14141a; box-shadow:0 2px 3px rgba(0,0,0,.35); }
+    .sv-voice i { width:7.32%; aspect-ratio:1; border-radius:4px; background:#fff; }
+    .sv-default { position:absolute; width:8.33%; height:2.5%; border-radius:200px; background:rgba(20,20,26,.4); }
+    .sv-cursor { position:absolute; width:5%; height:7.5%; object-fit:contain; }
+    .sv-caret { position:absolute; width:.625%; height:8.125%; border-radius:2px; background:#18181b; }
+    .sv-key { position:absolute; display:grid; place-items:center; width:5%; aspect-ratio:1; border-radius:8px; color:#e4e4e7; background:#71717a; font:500 clamp(7px,1.7vw,16px)/1 "JetBrains Mono", monospace; }
+    .sv-send { position:absolute; display:grid; place-items:center; width:6.67%; aspect-ratio:1; border-radius:100px; background:#71717a; }
+    .sv-send img { width:66%; height:66%; transform:rotate(180deg) scaleY(-1); }
+    /* 01 — Long-form output surface (Figma 40000029:3665). */
+    /* Use paired horizontal/vertical radii: a single percentage made the
+       shorter panel's corners flatten vertically as the card resized. */
+    .scene-viz--writing .sv-surface { left:28.96%; top:34.69%; display:flex; gap:12%; width:41.67%; height:30.63%; padding:4.17%; border-radius:7.143% / 14.286%; }
+    .sv-write-col, .sv-write-list { display:flex; flex:1; min-width:0; flex-direction:column; justify-content:space-between; }
+    .sv-write-col { gap:8%; }.sv-write-col i, .sv-write-row i { display:block; height:8%; min-height:2px; border-radius:999px; background:rgba(212,212,216,.3); }.sv-write-col i:last-child { width:28%; }
+    .sv-write-row { display:flex; align-items:center; gap:12%; height:8%; }.sv-write-row i { height:100%; }.sv-write-row i:first-child { width:auto; height:100%; aspect-ratio:1; flex:0 0 auto; }.sv-write-row i:last-child { flex:1; }
+    /* 02 — Hotkey at the caret (Figma 40000027:3562). */
+    .scene-viz--vibe .sv-surface { left:23.54%; top:35.31%; width:50%; height:28.75%; padding:5%; border-radius:8.333% / 21.739%; }
+    .scene-viz--vibe .sv-lines { left:10%; top:26.09%; width:80%; height:26.09%; justify-content:space-between; gap:0; }.scene-viz--vibe .sv-lines i { flex:0 0 33.33%; height:33.33%; }.scene-viz--vibe .sv-lines i:nth-child(2) { width:46.67%; }
+    .scene-viz--vibe .sv-caret { left:46.15%; top:44.38%; }.scene-viz--vibe .sv-voice { left:calc(46.15% - 20px); top:calc(44.38% + 17px); width:40px; height:14px; }.scene-viz--vibe .sv-key { left:calc(46.15% - 6.5px); top:88.75%; width:13px; height:13px; aspect-ratio:auto; border-radius:4px; font-size:9px; }.scene-viz--vibe .sv-send { right:10%; top:60.87%; width:8.33%; }
+    /* 03 — Context-triggered selection (Figma 40000027:3601). */
+    .scene-viz--language .sv-surface { left:24.79%; top:18.4375%; width:50%; height:62.5%; padding:10%; border-radius:8.333% / 10%; }
+    .scene-viz--language .sv-lines { left:10%; top:12%; width:80%; height:28%; justify-content:space-between; gap:0; }.scene-viz--language .sv-lines i { flex:0 0 14.286%; height:14.286%; background:#0A84FF; }.scene-viz--language .sv-lines i:first-child { width:90.625%; margin-left:9.375%; }.scene-viz--language .sv-lines i:nth-child(3) { width:43.75%; }
+    .scene-viz--language .sv-letter { position:absolute; left:10%; top:10%; color:#0A84FF; font:800 3.333cqw/1 "JetBrains Mono", monospace; }
+    .scene-viz--language .sv-caret { left:47.604%; top:38.4375%; }.scene-viz--language .sv-voice { left:39.583%; top:47.1875%; width:16.667%; height:8.125%; }
+
+    /* ---------- Loom video ---------- */
+    .loom-embed-box {
+      position: relative; width: 100%; padding-top: 62.5%;
+      border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+      background: var(--card-2);
+    }
+    .loom-embed-box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .video-wrap { margin-top: 22px; }
+    .video-cap {
+      font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: .6px; text-transform: uppercase; color: var(--muted); margin: 0 0 10px;
+    }
+
+    /* ---------- Reflection ---------- */
+    .reflect { background: var(--ink); color: #fff; border-radius: var(--radius-lg); padding: 44px 40px; }
+    .reflect .rk {
+      font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: 1.3px; text-transform: uppercase; color: var(--green);
+    }
+    .reflect .big {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(24px, 3.6vw, 36px);
+      line-height: 1.14; letter-spacing: -0.6px; font-weight: 600; margin: 16px 0 0;
+    }
+    .reflect .big .fade { color: #a1a1aa; }
+    .reflect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 30px; }
+    .reflect-grid .rc strong {
+      display: block; font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: 1.1px; text-transform: uppercase; color: #71717a; margin-bottom: 8px;
+    }
+    .reflect-grid .rc p { margin: 0; color: #d4d4d8; font-size: 15px; line-height: 1.6; }
+
+    /* ---------- Footer ---------- */
+    footer { padding: 40px 0 60px; margin-top: 8px; }
+    .foot-inner { width: min(1180px, calc(100vw - 40px)); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    .foot-meta { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--faint); letter-spacing: .4px; }
+    .foot-meta strong { color: var(--soft); font-weight: 600; }
+
+    /* ---------- Shell + left section nav ---------- */
+    section[id] { scroll-margin-top: 76px; }
+    .shell {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 196px minmax(0, 1fr);
+      gap: 46px;
+      align-items: start;
+    }
+    .content { min-width: 0; }
+    .content .wrap { width: 100%; }
+    .toc { position: sticky; top: 78px; margin-top: 96px; padding-right: 8px; }
+    .toc-title {
+      font-family: "Space Grotesk", sans-serif; font-size: 15px; font-weight: 600;
+      letter-spacing: -0.2px; color: var(--ink); margin-bottom: 3px;
+    }
+    .toc-kicker {
+      font-family: "JetBrains Mono", monospace; font-size: 10px;
+      letter-spacing: 1.3px; text-transform: uppercase; color: var(--faint); margin-bottom: 16px;
+    }
+    .toc-list { display: flex; flex-direction: column; }
+    .toc-list a {
+      display: flex; gap: 11px; align-items: baseline;
+      padding: 8px 0 8px 15px; margin-left: -1px;
+      border-left: 2px solid var(--line);
+      font-size: 13.5px; color: var(--muted);
+      transition: color .2s ease, border-color .2s ease;
+    }
+    .toc-list a .n { font-family: "JetBrains Mono", monospace; font-size: 10.5px; color: var(--faint); transition: color .2s ease; }
+    .toc-list a:hover { color: var(--ink); }
+    .toc-list a.active { color: var(--ink); font-weight: 600; border-color: var(--ink); }
+    .toc-list a.active .n { color: var(--green); }
+
+    /* ---- 04 Interaction model — open editorial tables, same language as .tiers.
+       Two tables share .im-*: the loop (stage × capability × trigger) and the
+       three summon mechanisms (how × form × serves). ---- */
+    .im-table { margin-top: 16px; }
+    .im-row { display: grid; grid-template-columns: 168px 1.5fr 1fr; column-gap: 26px; align-items: start; }
+    .im-row + .im-row { border-top: 1px solid var(--line); }
+    .im-head { border-bottom: 1px solid var(--line-strong); }
+    .im-head + .im-row { border-top: none; }
+    .im-head .ic {
+      padding-top: 0; padding-bottom: 11px;
+      font-family: "JetBrains Mono", monospace; font-size: 10.5px; font-weight: 500;
+      letter-spacing: 1px; text-transform: uppercase; color: var(--faint);
+    }
+    .ic { padding: 15px 0; font-size: 13.5px; line-height: 1.55; color: var(--soft); }
+    .ic b { color: var(--ink); font-weight: 600; }
+    .ic-stage { color: var(--ink); font-weight: 600; }
+    @media (max-width: 820px) {
+      .im-row { grid-template-columns: 1fr; column-gap: 0; }
+      .im-head { display: none; }
+      .im-row .ic + .ic { border-top: 1px solid var(--line); }
+      .ic { padding: 12px 0; }
+      .ic-stage { padding-top: 14px; }
+      .ic[data-label]::before {
+        content: attr(data-label); display: block; margin-bottom: 4px;
+        font-family: "JetBrains Mono", monospace; font-size: 10px;
+        letter-spacing: 1px; text-transform: uppercase; color: var(--faint);
+      }
+    }
+
+    /* ---- Three summon mechanisms — mini schematics. The point of the three is
+       *where* the bar appears, so the pill stays identical and only the
+       surroundings change: docked at the bottom / at the caret / over a
+       selection. ---- */
+    .entry-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 16px; }
+    .entry-card { display: flex; flex-direction: column; }
+    .es-screen {
+      /* Portfolio diagrams scale as a single 350px-wide reference canvas. */
+      --voice-bar-w: max(40px, 11.43cqw);
+      --voice-bar-h: max(14px, 4cqw);
+      --option-size: max(13px, 3.71cqw);
+      --dock-compact-w: max(28px, 8cqw);
+      --dock-compact-h: max(4px, 1.14cqw);
+      --dock-expanded-w: var(--voice-bar-w);
+      --dock-expanded-h: 14px;
+      position:relative; container-type:inline-size; aspect-ratio:3 / 2; height:auto; border-radius:10px; background:#e4e4e7; border:1px solid #e4e4e7; padding:0; overflow:hidden;
+    }
+    .es-app { position:absolute; width:50%; height:62.5%; border-radius:10px; background:#fff; overflow:hidden; }
+    .es-hotkey .es-app { left:23.5%; top:15.3%; }
+    .es-pick .es-app { left:25%; top:15.6%; }
+    .es-lines { display: flex; flex-direction: column; gap:max(7px, 2cqw); }
+    .es-line { height:max(4px, 1.14cqw); border-radius:999px; background: var(--line-strong); }
+    .es-line.w1 { width: 72%; } .es-line.w2 { width: 90%; } .es-line.w3 { width: 56%; }
+    /* Figma source of truth: the same compact bar is placed by each trigger. */
+    .es-pill { height: var(--voice-bar-h); width: var(--voice-bar-w); border-radius: 5px; background: #14141a; box-shadow: 0 1px 3px rgba(0,0,0,.35); display: flex; align-items: center; gap: 3px; padding: 0 10px; }
+    .es-pill i { width:max(3px,.86cqw); height:max(3px,.86cqw); border-radius:2px; background:#fff; display:block; flex:0 0 max(3px,.86cqw); }
+    /* 1 — docked, with the pointer at the compact entry affordance */
+    .es-dock .es-lines { display: none; }
+    .es-dock-trigger { position:absolute; left:calc(50% - (var(--dock-expanded-w) / 2)); top:calc(87% - var(--dock-expanded-h)); width:var(--dock-expanded-w); height:var(--dock-expanded-h); transform:none; border:0; padding:0; background:transparent; cursor:pointer; }
+    .es-default { position:absolute; left:50%; bottom:0; width:var(--dock-compact-w); height:var(--dock-compact-h); border-radius:999px; background:rgba(20,20,26,.4); animation:es-dock-compact 4s ease-in-out infinite; }
+    .es-mouse { position:absolute; left:calc(50% + max(14px, 4cqw)); top:max(1px, .29cqw); width:max(13px,3.71cqw); height:auto; pointer-events:none; z-index:2; animation:es-mouse-sweep 4s ease-in-out infinite; }
+    .es-dock-expanded { position:absolute; right:0; bottom:0; width:var(--dock-expanded-w); height:var(--dock-expanded-h); transform:scale(.88); display:flex; align-items:center; gap:max(3px,.86cqw); padding:0 max(10px,2.86cqw); box-sizing:border-box; border-radius:max(10px,2.86cqw); background:#14141a; box-shadow:0 2px 3px rgba(0,0,0,.35); opacity:0; z-index:1; animation:es-dock-expand 4s ease-in-out infinite; }
+    .es-dock-expanded i { width:max(3px,.86cqw); height:max(3px,.86cqw); border-radius:3px; background:#fff; display:block; flex:0 0 max(3px,.86cqw); }
+    .es-dock-trigger:hover .es-default, .es-dock-trigger:focus-visible .es-default { opacity: 0; }
+    .es-dock-trigger:hover .es-dock-expanded, .es-dock-trigger:focus-visible .es-dock-expanded { opacity:1; transform:scale(1); }
+    .es-dock-trigger:hover .es-default, .es-dock-trigger:hover .es-mouse, .es-dock-trigger:hover .es-dock-expanded,
+    .es-dock-trigger:focus-visible .es-default, .es-dock-trigger:focus-visible .es-mouse, .es-dock-trigger:focus-visible .es-dock-expanded { animation-play-state: paused; }
+    /* The pointer approaches the compact entry from the right, then holds just
+       outside the expanded bar's edge — it never sits on top of the bar. */
+    @keyframes es-mouse-sweep { 0%, 24%, 100% { transform:translateX(max(8px,2.29cqw)); } 40%, 70% { transform:translateX(0); } 84% { transform:translateX(max(8px,2.29cqw)); } }
+    @keyframes es-dock-compact { 0%, 28%, 100% { opacity: 1; transform: translateX(-50%) scale(1); } 40%, 72% { opacity: 0; transform: translateX(-50%) scale(.82); } 84% { opacity: 1; transform: translateX(-50%) scale(1); } }
+    @keyframes es-dock-expand { 0%, 28%, 100% { opacity:0; transform:scale(.88); } 40%, 72% { opacity:1; transform:scale(1); } 84% { opacity:0; transform:scale(.88); } }
+    @keyframes es-hotkey-caret { 0%, 8% { opacity:0; } 12%, 18% { opacity:1; } 22%, 28% { opacity:0; } 32%, 38% { opacity:1; } 42%, 48% { opacity:0; } 52%, 100% { opacity:1; } }
+    @keyframes es-hotkey-key { 0%, 54%, 100% { background:var(--muted); transform:scale(1); } 58% { background:#0A84FF; transform:scale(1.1); } 62%, 66% { background:#0A84FF; transform:scale(1); } 70% { background:var(--muted); transform:scale(.95); } }
+    @keyframes es-hotkey-bar { 0%, 68%, 100% { opacity:0; transform:translateY(-3px) scale(.9); } 76%, 92% { opacity:1; transform:translateY(0) scale(1); } 96% { opacity:0; transform:translateY(-3px) scale(.9); } }
+    @keyframes es-pick-selection { 0%, 20%, 100% { width:0; } 52%, 94% { width:17.5%; } 97% { width:0; } }
+    @keyframes es-pick-caret { 0%, 20%, 100% { left:30%; } 52%, 94% { left:49.27%; } 97% { left:30%; } }
+    @keyframes es-pick-menu { 0%, 56%, 100% { opacity:0; transform:translateY(-3px) scale(.92); } 62%, 72% { opacity:1; transform:translateY(0) scale(1); } 76% { opacity:0; transform:translateY(-2px) scale(.95); } }
+    @keyframes es-pick-menu-press { 0%, 66% { transform:scale(1); background:#14141a; } 70% { transform:scale(.88); background:#0A84FF; } 74%, 100% { transform:scale(1); background:#14141a; } }
+    @keyframes es-pick-bar { 0%, 74%, 100% { opacity: 0; transform: translateY(-3px) scale(.9); } 82%, 94% { opacity: 1; transform: translateY(0) scale(1); } 97% { opacity: 0; transform: translateY(-3px) scale(.9); } }
+    /* 2 — hotkey places the bar at the caret; the key hint stays separate */
+    .es-hotkey .es-lines, .es-pick .es-lines { position:absolute; width:40%; gap:max(8px, 2.29cqw); }
+    .es-hotkey .es-lines { left:28.5%; top:22.8%; }
+    .es-pick .es-lines { left:30%; top:23.1%; }
+    .es-hotkey .es-lines .es-line, .es-pick .es-lines .es-line { height:max(4px, 1.14cqw); }
+    .es-hotkey .es-lines .w1, .es-hotkey .es-lines .w2 { width:100%; }
+    .es-hotkey .es-lines .w3 { width:42%; }
+    .es-caret-bar { position:absolute; display:flex; flex-direction:column; align-items:center; gap:1px; width:8.3%; }
+    .es-hotkey .es-caret-bar { left:calc(28.55% - (var(--voice-bar-w) / 2)); top:42.2%; width:var(--voice-bar-w); }
+    .es-caret { width:max(1.5px,.43cqw); height:max(13px,3.71cqw); background:var(--ink); border-radius:1px; }
+    .es-key { position:absolute; left:calc(48.5% - (var(--option-size) / 2)); top:88.75%; width:var(--option-size); height:var(--option-size); display:grid; place-items:center; font-family:"JetBrains Mono", monospace; font-size:max(9px,2.57cqw); color:var(--line); background:var(--muted); border-radius:max(4px,1.14cqw); }
+    .es-hotkey .es-caret, .es-pick .es-caret { height:var(--voice-bar-h); }
+    .es-hotkey .es-pill { width:var(--voice-bar-w); height:var(--voice-bar-h); padding:0 max(10px,2.86cqw); gap:max(3px,.86cqw); border-radius:max(10px,2.86cqw); }
+    .es-hotkey .es-pill i, .es-pick .es-pill i { width:max(3px,.86cqw); height:max(3px,.86cqw); flex:0 0 max(3px,.86cqw); }
+    .es-hotkey .es-caret { animation: es-hotkey-caret 4s ease-in-out infinite; }
+    .es-hotkey .es-pill { opacity: 0; transform: translateY(-3px); animation: es-hotkey-bar 4s ease-in-out infinite; }
+    .es-hotkey .es-key { animation: es-hotkey-key 4s ease-in-out infinite; }
+    /* 3 — a selection brings the voice bar directly into the text context */
+    .es-pick .es-lines .w2, .es-pick .es-lines .w1 { width:100%; }
+    .es-pick .es-lines .w3 { display: none; }
+    .es-select-base { position:absolute; left:30%; top:calc(23.1% + max(24px, 6.86cqw)); width:17.5%; height:max(4px, 1.14cqw); border-radius:999px; background:var(--line-strong); }
+    .es-sel { position:absolute; height:max(4px, 1.14cqw); border-radius:999px; background:#0A84FF; left:30%; top:calc(23.1% + max(24px, 6.86cqw)); width:17.5%; animation:es-pick-selection 5s ease-in-out infinite; }
+    .es-pick .es-line--partial { display: none; }
+    .es-pick .es-caret { position:absolute; top:calc(36.25% - 5px); left:30%; animation:es-pick-caret 5s ease-in-out infinite; }
+    .es-pick-menu { position:absolute; left:30.8%; top:calc(36.25% + max(10px,2.86cqw)); width:37.5%; height:10.625%; display:flex; gap:3.3%; padding:.83%; box-sizing:border-box; border-radius:10px; background:#fff; box-shadow:0 2px 3px rgba(0,0,0,.35); opacity:0; animation:es-pick-menu 5s ease-in-out infinite; }
+    .es-pick-menu span { width:29%; height:100%; border:2px solid rgba(0,0,0,.1); border-radius:8px; background:#fff; box-sizing:border-box; }
+    .es-pick-menu .es-pick-menu--voice { width:29%; border:0; background:#14141a; animation:es-pick-menu-press 5s ease-in-out infinite; }
+    .es-pick .es-pill { position:absolute; left:calc(49.25% - (var(--voice-bar-w) / 2)); top:calc(36.25% + max(10px,2.86cqw)); width:var(--voice-bar-w); height:var(--voice-bar-h); padding:0 max(10px,2.86cqw); gap:max(3px,.86cqw); box-sizing:border-box; border-radius:max(10px,2.86cqw); transform:translateY(max(-3px,-.86cqw)) scale(.9); opacity:0; animation:es-pick-bar 5s ease-in-out infinite; }
+    .entry-cap { display:flex; flex:1; flex-direction:column; margin-top:12px; }
+    .entry-name { color:var(--ink); font-family:"Space Grotesk", sans-serif; font-weight:600; font-size:15px; letter-spacing:-.2px; }
+    .entry-form { min-height:38px; color:var(--soft); font-size:12.5px; line-height:1.5; margin-top:4px; }
+    .entry-serves { margin-top:auto; font-family:"JetBrains Mono", monospace; font-size:10px; letter-spacing:.4px; text-transform:uppercase; color:var(--faint); }
+    .entry-serves b { color: var(--muted); font-weight: 500; }
+    @media (max-width: 820px) { .entry-cards { grid-template-columns: 1fr; } }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; gap: 0; }
+      .toc { display: none; }
+    }
+    @media (max-width: 820px) {
+      .meta-grid { grid-template-columns: 1fr 1fr; }
+      .meta-cell:nth-child(2) { border-right: none; }
+      .meta-cell:nth-child(1), .meta-cell:nth-child(2) { border-bottom: 1px solid var(--line); }
+      .duo { grid-template-columns: 1fr; }
+      .caps { grid-template-columns: 1fr; }
+      .voice-entry-grid { grid-template-columns: 1fr; }
+      .context-grid { grid-template-columns: 1fr; }
+      .im2-grid { grid-template-columns: repeat(2, 1fr); }
+      .im2-grid--selection { grid-template-columns: 1fr; }
+      .brand-grid { grid-template-columns:1fr; }
+      .vtabs { flex-direction: column; }
+      .scenes { grid-template-columns: 1fr; }
+      .scenes > * + * { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; }
+      .reflect-grid { grid-template-columns: 1fr; }
+      /* Tiers table collapses to stacked blocks; column headers become inline
+         mono labels via data-label so each cell keeps its meaning. */
+      .tier-head { display: none; }
+      .tier-row { grid-template-columns: 1fr; }
+      .tc { border-right: none; }
+      .tier-row .tc + .tc { border-top: 1px solid var(--line); }
+      .tc[data-label]::before {
+        content: attr(data-label); display: block; margin-bottom: 5px;
+        font-family: "JetBrains Mono", monospace; font-size: 10px;
+        letter-spacing: 1px; text-transform: uppercase; color: var(--faint);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+  </style>
+<link rel="stylesheet" href="portfolio-language.css">
+<style>.brand-route--zh{position:relative;container-type:inline-size;}.brand-route-words{position:absolute;left:8%;top:18.5%;width:21%;height:9%;display:flex;align-items:center;justify-content:center;background:#fff;color:#00b887;font:600 2cqw/1 "PingFang SC",sans-serif;white-space:nowrap;}</style></head>
+<body>
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="back-link" href="portfolio-zh.html">
+        <span class="arw mono">&larr;</span>
+        <span>Home</span>
+      </a>
+      <div class="top-actions">
+        <a class="btn" href="portfolio-zh.html#work">All work</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="shell">
+      <aside class="toc" id="toc">
+        <div class="toc-title">Voice IME</div>
+        <div class="toc-kicker">Case study</div>
+        <nav class="toc-list">
+          <a href="#context"><span class="n">01</span><span>Context</span></a>
+          <a href="#problem"><span class="n">02</span><span>Problem</span></a>
+          <a href="#constraints"><span class="n">03</span><span>Design constraints</span></a>
+          <a href="#approach"><span class="n">04</span><span>Approach</span></a>
+          <a href="#action"><span class="n">05</span><span>In action</span></a>
+          <a href="#model"><span class="n">06</span><span>Interaction model</span></a>
+          <a href="#brand"><span class="n">07</span><span>Brand expression</span></a>
+          <a href="#capabilities"><span class="n">08</span><span>Capabilities</span></a>
+          <a href="#onboarding"><span class="n">09</span><span>Onboarding</span></a>
+          <a href="#reflection"><span class="n">10</span><span>Reflection</span></a>
+        </nav>
+      </aside>
+      <div class="content">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap">
+        <div class="kicker"><span class="dot"></span>Desktop IME · one bar, the whole loop</div>
+        <h1>Speak. Shape. Keep working.</h1>
+        <p class="lede"><em>Reading</em> brings in context. <em>Speaking</em> catches a thought before it slips away. <em>Writing</em> is where people test, shape, and refine it into something useful. But these moves are scattered across apps, the clipboard, a translator, and a chat box; every hop <b>breaks momentum and drops context</b> on the floor. Looop offers several ways to start in the moment — from an always-on docked bar to a bar that lands at your cursor — then keeps the work moving in <b>one continuous place</b>.</p>
+        <div class="hero-recording">
+          <p class="video-cap">Working prototype · modes &amp; cleanup</p>
+          <div class="loom-embed-box"><iframe src="https://www.loom.com/embed/c245ef2097c94586b0984e083cabd4cf" allowfullscreen title="Voice IME working prototype demonstration"></iframe></div>
+        </div>
+        <div class="meta-grid">
+          <div class="meta-cell"><div class="k">Format</div><div class="v">Working prototype — real code, not a mockup</div></div>
+          <div class="meta-cell"><div class="k">Role</div><div class="v">End-to-end — insight, interaction, prototype logic, implementation</div></div>
+          <div class="meta-cell"><div class="k">Timeline</div><div class="v">2026</div></div>
+          <div class="meta-cell"><div class="k">Source</div><div class="v">
+            <a href="https://github.com/gim-home/Looop/releases/latest" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-1.7c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.7.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11.5 11.5 0 0 1 6 0C17.3 4.6 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5Z"/></svg>
+              GitHub
+            </a>
+          </div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 01 CONTEXT -->
+    <section class="block" id="context">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">01 / Context</div>
+          <h2>Input quality is no longer about typing speed</h2>
+          <p>As AI becomes a daily collaborator, what matters is how easily you can catch a thought, shape it, and keep working with it.</p>
+        </div>
+        <div class="card">
+          <p class="lead">On desktop, much of the work still happens in writing and development. <strong>Writing is not just expression:</strong> like sketching, it is how people test, revise, and shape an idea. The design question is therefore not simply how to capture speech, but how to help people <strong>quickly catch a stream of thought</strong>, <strong>organize it into something usable</strong>, and <strong>keep refining it without breaking momentum</strong> — especially in <em>long-form writing</em> and <em>Vibe Coding</em>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 PROBLEM -->
+    <section class="block" id="problem">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">02 / Problem</div>
+          <h2>Raw transcription isn't usable text</h2>
+          <p>Speech-to-text captures words literally. But real speech never arrives clean — and cleaning it up is work.</p>
+        </div>
+        <div class="card">
+          <p class="lead">Raw voice transcription captures words literally, but real speech includes:</p>
+          <ul class="points">
+            <li><b>Self-corrections</b> — &ldquo;month over month, sorry, year over year.&rdquo;</li>
+            <li><b>Fillers and false starts</b> — &ldquo;um,&rdquo; &ldquo;like,&rdquo; &ldquo;let me think.&rdquo;</li>
+            <li><b>Topic drift</b> — a lunch tangent in the middle of a business recap.</li>
+          </ul>
+          <p class="note">This creates heavy cleanup work before the text becomes usable.</p>
+
+          <div class="mini-h"><span class="mk">The core tension</span>Literal fidelity vs usable intent clarity</div>
+          <div class="duo">
+            <div class="def">
+              <div class="def-h"><span class="d"></span>Exact wording</div>
+              <p>Quotes, numbers, commitments — you need it word-for-word.</p>
+            </div>
+            <div class="def">
+              <div class="def-h"><span class="d"></span>Clean meaning</div>
+              <p>Drafting, summarizing, prompt writing — you need clear intent, not the mess.</p>
+            </div>
+          </div>
+          <div class="callout callout--summary">
+            <strong>Core view</strong>
+            <span>The same clip needs both readings depending on the task — a single output style is not enough.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 DESIGN CONSTRAINTS -->
+    <section class="block" id="constraints">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">03 / Design constraints</div>
+          <h2>Make voice useful without taking people out of their work</h2>
+          <p>The opportunity was not another destination AI app. It was a system layer that could help in the moment, without making speech feel less trustworthy.</p>
+        </div>
+        <div class="card">
+          <div class="duo">
+            <div class="def">
+              <div class="def-h"><span class="d"></span>Stay in the flow</div>
+              <p>Voice input has to remain <strong>close to the caret and the active task</strong> — not pull people into a separate AI workspace.</p>
+            </div>
+            <div class="def">
+              <div class="def-h"><span class="d"></span>Keep the source recoverable</div>
+              <p>Quotes, numbers, and commitments matter. Any cleaner interpretation must <strong>keep the original words available</strong>.</p>
+            </div>
+            <div class="def">
+              <div class="def-h"><span class="d"></span>Avoid a feature menu</div>
+              <p>One bar cannot become another complex command surface; it needs to surface <strong>the next useful action from context</strong>.</p>
+            </div>
+            <div class="def">
+              <div class="def-h"><span class="d"></span>Work across real desktop tasks</div>
+              <p>The model must stretch from <strong>long-form writing to cross-language work and prompt editing</strong> — not solve a single demo case.</p>
+            </div>
+          </div>
+          <div class="callout callout--summary">
+            <strong>Design implication</strong>
+            <span>The system needs <strong>one stable entry point</strong>, <strong>context-aware actions</strong>, and <strong>a visible boundary between what was said and what AI resolved</strong>.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 APPROACH -->
+    <section class="block" id="approach">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">04 / Approach</div>
+          <h2>Stay in the work. Let context shape the next step.</h2>
+          <p>Looop is not another destination AI app. It stays inside the work already in progress, then uses the caret, selection, and output state to offer the next useful action.</p>
+        </div>
+        <div class="card">
+          <p class="lead">The solution is built around three connected decisions:</p>
+          <ul class="points">
+            <li><b>Stay where work happens</b> — Looop remains close to the document, code, or chat already in progress, rather than pulling people into a separate AI workspace.</li>
+            <li><b>Start from context already there</b> — the caret, selection, clipboard, and active app determine where the interaction begins and what the next useful action is.</li>
+            <li><b>Keep transformation visible and reversible</b> — AI can organize and refine, but users can inspect the reading, edit the result, and recover the original words.</li>
+          </ul>
+
+          <div class="approach-mode-details" id="mode-details">
+          <div class="mini-h"><span class="mk">The control layer</span>Two modes, one clip — nothing lost</div>
+          <div class="duo">
+            <div class="def">
+              <div class="def-h"><span class="d"></span>Verbatim Mode</div>
+              <p>Preserves wording fidelity for precision-sensitive tasks — quotes, numbers, commitments.</p>
+            </div>
+            <div class="def">
+              <div class="def-h"><span class="d"></span>Intent Mode</div>
+              <p>Resolves spoken repairs, drops low-value noise, and outputs a cleaner structure for drafting.</p>
+            </div>
+          </div>
+          <div class="callout callout--summary">
+            <strong>Not a black box</strong>
+            <span>Users can compare states and recover the raw transcript at any time — Intent is a view, not a rewrite.</span>
+          </div>
+
+          <figure class="figure-dark">
+            <div class="mode-code-grid" aria-label="The same voice clip shown as Verbatim and Intent">
+              <section>
+                <p class="mode-code-label"><b>VERBATIM</b> · RAW, NOTHING DELETED</p>
+                <div class="mode-code-surface">
+                  <p class="mode-code-transcript"><span class="mode-code-fill">Um... so,</span> this month... <span class="mode-code-fill">let me think,</span> the recap... so user growth, <span class="mode-code-fill">yeah,</span> it's... it's actually okay? Like new users, they went up, <span class="mode-code-fill">uh,</span> ten-something percent, somewhere around there. But retention, retention's kind of... <span class="mode-code-fill">yeah</span> it's not great, kinda lagging, and I feel like it's the — the onboarding thing? Maybe? I should... <span class="mode-code-fill">yeah</span> I gotta talk to product about that. Oh, and — wait, there was another thing, the ads, the conversion rate over there, I wanna look at that too, 'cause something's just... <span class="mode-code-fill">I dunno,</span> feels off. <span class="mode-code-drop">Oh, right, lunch — gotta order something, I forgot to bring food today.</span> Anyway, <span class="mode-code-fill">uh...</span> next week, first thing, <span class="mode-code-fix">I'll pull the retention data and</span> <span class="mode-code-fix">— no, wait, actually, no —</span> first I should just do the onboarding myself, <span class="mode-code-fill">like actually</span> go through the whole flow, and, <span class="mode-code-fill">yeah,</span> see where it's breaking.</p>
+                  <div class="mode-code-toolbar" aria-label="Verbatim controls">
+                    <div class="mode-code-tools"><span class="mode-code-button mode-code-button--icon">×</span><span class="mode-code-switch"><span class="is-active">Verbatim</span><span>Intent</span></span></div>
+                    <div class="mode-code-tools"><span class="mode-code-button mode-code-button--tool"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.57 2.76c.487-.119 1.168-.185 1.923.037.741.217 1.141.692 1.333 1.236.172.488.172 1.024.172 1.404v3.558a.5.5 0 0 1-1 0V8.64a6.87 6.87 0 0 1-.502.244c-.57.241-1.309.421-2.07.187-1.702-.523-1.915-2.807-.455-3.702.708-.434 1.675-.424 2.364-.35.242.026.467.063.66.1-.008-.279-.033-.533-.111-.755-.095-.269-.267-.491-.672-.61-.543-.159-1.039-.113-1.405-.024-.182.044-.328.098-.427.14l-.108.05a.5.5 0 1 1-.495-.869l.237-.114c.14-.06.339-.133.583-.193Zm2.428 3.382a9.6 9.6 0 0 0-.77-.126c-.667-.072-1.333-.038-1.734.207-.759.465-.616 1.635.225 1.893.442.136.92.045 1.388-.152.349-.147.647-.333.89-.488V6.142Zm5.104-.631a.5.5 0 0 1 .384.594c-.049.229-.094.452-.134.668.528-.059 1.047-.147 1.53-.26a.5.5 0 0 1 .229.973c-.606.142-1.262.247-1.924.309-.039.292-.07.571-.093.838.315-.081.616-.131.902-.152a.5.5 0 0 1 1 .01v.035c.21.041.408.103.592.182.724.313 1.198.894 1.379 1.576.362 1.365-.457 2.967-2.291 3.673a.5.5 0 1 1-.358-.933c1.458-.561 1.889-1.709 1.684-2.483-.103-.389-.368-.725-.808-.915a2.68 2.68 0 0 0-.285-.096c-.225 1.272-.847 2.265-1.563 2.915.04.14.081.263.121.37a.5.5 0 1 1-.937.35l-.044-.121a2.84 2.84 0 0 1-.651.239c-.474.106-1.019.064-1.397-.323-.56-.573-.596-1.496-.201-2.298.32-.647.923-1.249 1.83-1.673.022-.359.057-.739.107-1.142a15.26 15.26 0 0 1-1.36-.023.5.5 0 1 1 .068-.998c.414.028.849.033 1.291.016.053-.308.115-.626.186-.956a.5.5 0 0 1 .594-.384Zm-1.063 4.641c-.46.298-.748.642-.906.961-.27.547-.158.977.019 1.157.04.04.166.113.464.046.179-.04.387-.126.606-.261a9.5 9.5 0 0 1-.183-1.903Zm1.07 1.087c.35-.453.643-1.038.788-1.743-.225.027-.47.075-.737.156-.041.012-.08.025-.12.038-.01.593.018 1.108.069 1.549Z"></path></svg>Translate</span><span class="mode-code-button mode-code-button--tool"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.2" y="5.2" width="7.1" height="7.1" rx="1"></rect><path d="M10.8 5.2V3.8c0-.6-.5-1-1-1H3.7c-.6 0-1 .4-1 1v6.1c0 .6.4 1 1 1h1.5"></path></svg>Copy</span></div>
+                  </div>
+                </div>
+              </section>
+              <section>
+                <p class="mode-code-label"><b>INTENT</b> · RESOLVED &amp; STRUCTURED</p>
+                <div class="mode-code-surface">
+                  <div class="mode-code-summary">
+                    <h4>Monthly recap</h4>
+                    <ul>
+                      <li><strong>User growth</strong> is healthy — new users up ~10%+.</li>
+                      <li><strong>Retention</strong> is weak — likely an onboarding issue; sync with product.</li>
+                      <li><strong>Ad conversion</strong> quality looks off — worth a review.</li>
+                    </ul>
+                    <p class="mode-code-next"><b>NEXT WEEK</b>Walk through the onboarding flow myself first to find where it breaks, then pull the retention data.</p>
+                  </div>
+                  <div class="mode-code-toolbar" aria-label="Intent controls">
+                    <div class="mode-code-tools"><span class="mode-code-button mode-code-button--icon">×</span><span class="mode-code-switch"><span>Verbatim</span><span class="is-active">Intent</span></span></div>
+                    <div class="mode-code-tools"><span class="mode-code-button mode-code-button--tool"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.57 2.76c.487-.119 1.168-.185 1.923.037.741.217 1.141.692 1.333 1.236.172.488.172 1.024.172 1.404v3.558a.5.5 0 0 1-1 0V8.64a6.87 6.87 0 0 1-.502.244c-.57.241-1.309.421-2.07.187-1.702-.523-1.915-2.807-.455-3.702.708-.434 1.675-.424 2.364-.35.242.026.467.063.66.1-.008-.279-.033-.533-.111-.755-.095-.269-.267-.491-.672-.61-.543-.159-1.039-.113-1.405-.024-.182.044-.328.098-.427.14l-.108.05a.5.5 0 1 1-.495-.869l.237-.114c.14-.06.339-.133.583-.193Zm2.428 3.382a9.6 9.6 0 0 0-.77-.126c-.667-.072-1.333-.038-1.734.207-.759.465-.616 1.635.225 1.893.442.136.92.045 1.388-.152.349-.147.647-.333.89-.488V6.142Zm5.104-.631a.5.5 0 0 1 .384.594c-.049.229-.094.452-.134.668.528-.059 1.047-.147 1.53-.26a.5.5 0 0 1 .229.973c-.606.142-1.262.247-1.924.309-.039.292-.07.571-.093.838.315-.081.616-.131.902-.152a.5.5 0 0 1 1 .01v.035c.21.041.408.103.592.182.724.313 1.198.894 1.379 1.576.362 1.365-.457 2.967-2.291 3.673a.5.5 0 1 1-.358-.933c1.458-.561 1.889-1.709 1.684-2.483-.103-.389-.368-.725-.808-.915a2.68 2.68 0 0 0-.285-.096c-.225 1.272-.847 2.265-1.563 2.915.04.14.081.263.121.37a.5.5 0 1 1-.937.35l-.044-.121a2.84 2.84 0 0 1-.651.239c-.474.106-1.019.064-1.397-.323-.56-.573-.596-1.496-.201-2.298.32-.647.923-1.249 1.83-1.673.022-.359.057-.739.107-1.142a15.26 15.26 0 0 1-1.36-.023.5.5 0 1 1 .068-.998c.414.028.849.033 1.291.016.053-.308.115-.626.186-.956a.5.5 0 0 1 .594-.384Zm-1.063 4.641c-.46.298-.748.642-.906.961-.27.547-.158.977.019 1.157.04.04.166.113.464.046.179-.04.387-.126.606-.261a9.5 9.5 0 0 1-.183-1.903Zm1.07 1.087c.35-.453.643-1.038.788-1.743-.225.027-.47.075-.737.156-.041.012-.08.025-.12.038-.01.593.018 1.108.069 1.549Z"></path></svg>Translate</span><span class="mode-code-button mode-code-button--tool"><svg viewBox="0 0 16 16" aria-hidden="true"><rect x="5.2" y="5.2" width="7.1" height="7.1" rx="1"></rect><path d="M10.8 5.2V3.8c0-.6-.5-1-1-1H3.7c-.6 0-1 .4-1 1v6.1c0 .6.4 1 1 1h1.5"></path></svg>Copy</span></div>
+                  </div>
+                </div>
+              </section>
+            </div>
+            <figcaption>The same clip, both modes. Verbatim keeps every word (fillers, a lunch tangent, a mid-sentence &ldquo;no wait&rdquo;); Intent resolves the repairs, drops the noise, and structures what's left. The original transcript stays recoverable.</figcaption>
+          </figure>
+
+          <div class="tiers">
+            <div class="mini-h"><span class="mk">Verbatim annotation</span>Three tiers, three treatments</div>
+            <p class="lead">Verbatim shows everything actually said — raw. The styling never rewrites; it only marks what each span <em>becomes</em> in Intent. Three semantic tiers, three visual treatments — never one blanket strikethrough.</p>
+            <div class="tier-table">
+              <div class="tier-row tier-head">
+                <div class="tc">Tier</div>
+                <div class="tc">What it is</div>
+                <div class="tc">Treatment</div>
+                <div class="tc">Why</div>
+              </div>
+              <div class="tier-row">
+                <div class="tc tc-name"><b>1 · Filler</b><code class="tier-fill">.fill</code></div>
+                <div class="tc" data-label="What it is">
+                  <div class="tk-demo"><span class="tk-fill">Um, so,</span> the recap, <span class="tk-fill">yeah,</span> user growth <span class="tk-fill">uh…</span></div>
+                  <div class="tk-ex">um, so, yeah, like, uh, I dunno, let me think</div>
+                </div>
+                <div class="tc" data-label="Treatment">Dimmed gray, kept in place, <b>no strikethrough</b></div>
+                <div class="tc" data-label="Why">Really spoken but low-value — recede so the eye skims past; don't delete</div>
+              </div>
+              <div class="tier-row">
+                <div class="tc tc-name"><b>2 · Drift</b><code>.drop</code></div>
+                <div class="tc" data-label="What it is">
+                  <div class="tk-demo">feels off. <span class="tk-drop">Oh, right, lunch — forgot food today.</span></div>
+                  <div class="tk-ex">off-topic tangent (the lunch aside)</div>
+                </div>
+                <div class="tc" data-label="Treatment">Gray strikethrough</div>
+                <div class="tc" data-label="Why">Will be <b>removed</b> in Intent — reads as noise to cut</div>
+              </div>
+              <div class="tier-row">
+                <div class="tc tc-name"><b>3 · Self-correction</b><code>.fix</code></div>
+                <div class="tc" data-label="What it is">
+                  <div class="tk-demo"><span class="tk-fix">…the data and — no, wait, no —</span> first the onboarding</div>
+                  <div class="tk-ex">the <i>abandoned</i> half of a repair: &ldquo;…and — no, wait, actually, no —&rdquo;</div>
+                </div>
+                <div class="tc" data-label="Treatment">Accent highlight + accent strikethrough (abandoned half only; kept half stays ink)</div>
+                <div class="tc" data-label="Why">A <b>decision moment</b>, not junk — mark it as meaningful, not as trash</div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 INTERACTION MODEL — loop table + entries + four-state anatomy -->
+    <section class="block" id="model">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">06 / Interaction model</div>
+          <h2>One handle. The context picks the verb.</h2>
+          <p>Where your cursor or selection sits is the universal handle. The whole loop — bring context in, produce, refine — lands on the same bar, and context decides which verb it offers. Five features stop being a menu and fall into place.</p>
+        </div>
+        <div class="card">
+
+          <div class="mini-h"><span class="mk">The loop</span>Every stage lands on one bar</div>
+          <div class="im-table">
+            <div class="im-row im-head">
+              <div class="ic">Stage</div>
+              <div class="ic">What you can do</div>
+              <div class="ic">Trigger context</div>
+            </div>
+            <div class="im-row">
+              <div class="ic ic-stage" data-label="Stage">The surface</div>
+              <div class="ic" data-label="What you can do">Docked bar stays available &middot; on-demand bar appears at the caret or selection</div>
+              <div class="ic" data-label="Trigger context">Always present, then placed by context</div>
+            </div>
+            <div class="im-row">
+              <div class="ic ic-stage" data-label="Stage">Bring context in</div>
+              <div class="ic" data-label="What you can do">Select text &middot; invoke a context action &middot; use clipboard content</div>
+              <div class="ic" data-label="Trigger context">Text is selected, or the clipboard holds content</div>
+            </div>
+            <div class="im-row">
+              <div class="ic ic-stage" data-label="Stage">Produce</div>
+              <div class="ic" data-label="What you can do">Speak from the docked bar &middot; invoke voice at the caret</div>
+              <div class="ic" data-label="Trigger context">No selection &mdash; you just speak</div>
+            </div>
+            <div class="im-row">
+              <div class="ic ic-stage" data-label="Stage">Continue with output</div>
+              <div class="ic" data-label="What you can do">Review output &middot; copy &middot; translate &middot; refine in place</div>
+              <div class="ic" data-label="Trigger context">A voice result is open in the output workspace</div>
+            </div>
+          </div>
+
+          <div class="mini-h"><span class="mk">The surface</span>Three ways it comes to you</div>
+          <div class="entry-cards">
+
+            <div class="entry-card">
+              <div class="es-screen es-dock">
+                <div class="es-lines"><span class="es-line w2"></span><span class="es-line w1"></span><span class="es-line w3"></span></div>
+                <button class="es-dock-trigger" type="button" aria-label="Voice entry">
+                  <span class="es-default"></span>
+                  <img class="es-mouse" src="assets/voice-ime-mouse-cursor.svg?v=blue" alt="">
+                  <span class="es-dock-expanded"><i></i><i></i><i></i></span>
+                </button>
+              </div>
+              <div class="entry-cap">
+                <div class="entry-name">Always-on</div>
+                <div class="entry-form">Docked bar, always on screen.</div>
+                <div class="entry-serves">Serves &middot; <b>Produce</b></div>
+              </div>
+            </div>
+
+            <div class="entry-card">
+              <div class="es-screen es-hotkey">
+                <div class="es-app"></div>
+                <div class="es-lines"><span class="es-line w1"></span><span class="es-line w2"></span><span class="es-line w3"></span></div>
+                <div class="es-caret-bar"><span class="es-caret"></span><div class="es-pill"><i></i><i></i><i></i></div></div>
+                <span class="es-key">&#8997;</span>
+              </div>
+              <div class="entry-cap">
+                <div class="entry-name">Hotkey at cursor</div>
+                <div class="entry-form">Press &#8997; &rarr; the bar lands at the caret.</div>
+                <div class="entry-serves">Serves &middot; <b>Produce &middot; Refine</b></div>
+              </div>
+            </div>
+
+            <div class="entry-card">
+              <div class="es-screen es-pick">
+                <div class="es-app"></div>
+                <div class="es-lines"><span class="es-line w2"></span><span class="es-line w1"></span><span class="es-line w3"></span></div>
+                <span class="es-select-base"></span>
+                <span class="es-sel"></span>
+                <span class="es-line--partial"></span>
+                <span class="es-caret"></span>
+                <div class="es-pick-menu" aria-label="Context actions">
+                  <span class="es-pick-menu--voice"></span><span></span><span></span>
+                </div>
+                <div class="es-pill"><i></i><i></i><i></i></div>
+              </div>
+              <div class="entry-cap">
+                <div class="entry-name">Mouse pick</div>
+                <div class="entry-form">Select text &rarr; a smart bar floats by the selection.</div>
+                <div class="entry-serves">Serves &middot; <b>Bring in &middot; Refine</b></div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="mini-h"><span class="mk">Interaction architecture</span>One shell, three ways in</div>
+          <div class="bar-anatomy">
+            <div class="bar-stage">
+              <div class="im2-flow"><div class="im2-head"><b>01 · Persistent voice entry</b><span>Mouse click</span></div><div class="im2-grid">
+                <div class="im2-state"><div class="im2-name">Ready</div><div class="im2-pill"><span class="im2-tip">Click &amp; Speak <span class="im2-key">⌥</span></span><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M20 7 Q26 1 32 7 T44 7 T52 7"/></svg></div><p class="im2-note">click → <b>start speaking</b></p></div>
+                <div class="im2-state"><div class="im2-name">Capture speech</div><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7"/></svg></div><p class="im2-note">speaking…</p></div>
+                <div class="im2-state"><div class="im2-name">Finish</div><div class="im2-pill im2-pill--wide"><span class="im2-icon">×</span><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7"/></svg><span class="im2-icon im2-icon--done">✓<span class="im2-tip">Finish <span class="im2-key">⌥</span></span></span></div><p class="im2-note">× cancel · ✓ finish</p></div>
+                <div class="im2-state"><div class="im2-name">Interpret the clip</div><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M8 7 Q14 1 20 7 T32 7"/></svg></div><p class="im2-note">speech → <b>intent</b></p></div>
+              </div></div>
+              <div class="im2-flow"><div class="im2-head"><b>02 · Cursor voice entry</b><span>Hotkey at caret</span></div><div class="im2-grid">
+                <div class="im2-state"><div class="im2-name">Caret</div><div class="im2-caret-stage"><span class="im2-caret"></span></div><p class="im2-note">press ⌥ → invoke</p></div>
+                <div class="im2-state"><div class="im2-name">Listening</div><div class="im2-caret-stage"><span class="im2-caret"></span><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7"/></svg></div></div><p class="im2-note">speak <b>in place</b></p></div>
+                <div class="im2-state"><div class="im2-name">Finish</div><div class="im2-caret-stage"><span class="im2-caret"></span><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7"/></svg></div></div><p class="im2-note">press ⌥ → <b>finish</b></p></div>
+                <div class="im2-state"><div class="im2-name">Resolve</div><div class="im2-caret-stage"><span class="im2-caret"></span><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M36 7 Q42 1 48 7 T60 7"/></svg></div></div><p class="im2-note">resolve <b>at caret</b></p></div>
+              </div></div>
+              <div class="im2-flow"><div class="im2-head"><b>03 · Context-triggered intelligence</b><span>Text selection</span></div><div class="im2-grid im2-grid--selection">
+                <div class="im2-state"><div class="im2-name">Ready</div><div class="im2-selection">Please&nbsp;<mark>postpone the launch</mark><span class="im2-caret-inline"></span>.</div><div class="im2-actions"><span class="im2-action"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2a.5.5 0 0 1 .471.332l1.862 5.214-.782.782L6.076 7H3.924l-.953 2.668a.5.5 0 1 1-.942-.336l2.5-7A.5.5 0 0 1 5 2Zm.719 4L5 3.987 4.281 6H5.72Zm7.72-.438a1.914 1.914 0 0 0-2.707 0l-4.657 4.657a3.39 3.39 0 0 0-.684 1.277l-.381 1.906a.5.5 0 0 0 .588.588l1.906-.381a3.39 3.39 0 0 0 1.277-.684l4.657-4.656a1.914 1.914 0 0 0 0-2.707Zm-.707.707a.914.914 0 0 1 0 1.293l-4.657 4.657a2.392 2.392 0 0 1-.766.409l-1.172.234.234-1.171a2.39 2.39 0 0 1 .41-.766l4.657-4.657a.914.914 0 0 1 1.293 0Z"></path></svg>Formalize</span><span class="im2-action"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.57 2.76c.487-.119 1.168-.185 1.923.037.741.217 1.141.692 1.333 1.236.172.488.172 1.024.172 1.404v3.558a.5.5 0 0 1-1 0V8.64a6.87 6.87 0 0 1-.502.244c-.57.241-1.309.421-2.07.187-1.702-.523-1.915-2.807-.455-3.702.708-.434 1.675-.424 2.364-.35.242.026.467.063.66.1-.008-.279-.033-.533-.111-.755-.095-.269-.267-.491-.672-.61-.543-.159-1.039-.113-1.405-.024-.182.044-.328.098-.427.14l-.108.05a.5.5 0 1 1-.495-.869l.237-.114c.14-.06.339-.133.583-.193Zm2.428 3.382a9.6 9.6 0 0 0-.77-.126c-.667-.072-1.333-.038-1.734.207-.759.465-.616 1.635.225 1.893.442.136.92.045 1.388-.152.349-.147.647-.333.89-.488V6.142Zm5.104-.631a.5.5 0 0 1 .384.594c-.049.229-.094.452-.134.668.528-.059 1.047-.147 1.53-.26a.5.5 0 0 1 .229.973c-.606.142-1.262.247-1.924.309-.039.292-.07.571-.093.838.315-.081.616-.131.902-.152a.5.5 0 0 1 1 .01v.035c.21.041.408.103.592.182.724.313 1.198.894 1.379 1.576.362 1.365-.457 2.967-2.291 3.673a.5.5 0 1 1-.358-.933c1.458-.561 1.889-1.709 1.684-2.483-.103-.389-.368-.725-.808-.915a2.68 2.68 0 0 0-.285-.096c-.225 1.272-.847 2.265-1.563 2.915.04.14.081.263.121.37a.5.5 0 1 1-.937.35l-.044-.121a2.84 2.84 0 0 1-.651.239c-.474.106-1.019.064-1.397-.323-.56-.573-.596-1.496-.201-2.298.32-.647.923-1.249 1.83-1.673.022-.359.057-.739.107-1.142a15.26 15.26 0 0 1-1.36-.023.5.5 0 1 1 .068-.998c.414.028.849.033 1.291.016.053-.308.115-.626.186-.956a.5.5 0 0 1 .594-.384Zm-1.063 4.641c-.46.298-.748.642-.906.961-.27.547-.158.977.019 1.157.04.04.166.113.464.046.179-.04.387-.126.606-.261a9.5 9.5 0 0 1-.183-1.903Zm1.07 1.087c.35-.453.643-1.038.788-1.743-.225.027-.47.075-.737.156-.041.012-.08.025-.12.038-.01.593.018 1.108.069 1.549Z"></path></svg>Translate</span><span class="im2-action im2-action--on"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.5 8.5C2.776 8.5 3 8.724 3 9c0 1.933 1.567 3.5 3.5 3.5 1.933 0 3.5-1.567 3.5-3.5 0-.069.013-.134.038-.193.038.16.106.312.206.449.16.22.38.38.65.48l.041.014c-.33 1.967-1.934 3.501-3.936 3.723V14.5a.5.5 0 0 1-1 0v-1.027C3.75 13.224 2 11.316 2 9a.5.5 0 0 1 .5-.5ZM6.074 3.038A1.49 1.49 0 0 0 5 4.5V9a1.5 1.5 0 0 0 3 0V5.5c0-.111-.013-.22-.036-.323l.068.022c.15.05.29.13.47.29.11.11.2.24.29.47L9 6.587V9a2.5 2.5 0 0 1-5 0V5.5c0-1.235.896-2.259 2.074-2.462ZM13.484 6a.5.5 0 0 1 .475.343l.249.766c.077.232.208.444.381.617.173.173.385.304.617.381l.766.248a.5.5 0 0 1 0 .951l-.765.248a1.513 1.513 0 0 0-1.001 1.001l-.249.766a.5.5 0 0 1-.951 0l-.249-.766a1.513 1.513 0 0 0-1.001-1.001l-.765-.248a.5.5 0 0 1 0-.951l.765-.248a1.513 1.513 0 0 0 1.001-1.001l.248-.766A.5.5 0 0 1 13.484 6Zm-3.006-6a.5.5 0 0 1 .474.343l.348 1.071c.108.326.291.621.534.864.243.242.539.425.864.533l1.072.349a.5.5 0 0 1 0 .951l-1.072.349a2.127 2.127 0 0 0-1.398 1.396l-.348 1.071a.5.5 0 0 1-.951 0L9.653 5.646a2.126 2.126 0 0 0-1.399-1.397L7.182 3.9a.5.5 0 0 1 0-.951l1.072-.349a2.126 2.126 0 0 0 1.398-1.396L10.001.343A.5.5 0 0 1 10.478 0Z"></path></svg>Smart Voice</span></div><p class="im2-note">selection → suggestions</p></div>
+                <div class="im2-state"><div class="im2-name">Listening</div><div class="im2-quote">“Make this more diplomatic.”</div><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7"/></svg></div><p class="im2-note">say what should change</p></div>
+                <div class="im2-state"><div class="im2-name">Resolve</div><div class="im2-pill"><svg class="im2-spring" viewBox="0 0 72 14"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M36 7 Q42 1 48 7 T60 7"/></svg></div><p class="im2-note">apply → <b>transform</b></p></div>
+              </div></div>
+              <div class="interaction-rule"><b>State rule:</b> Listening is a voice-input state. Translate and Formalize are context actions; Smart Voice accepts a spoken instruction from the selection.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 BRAND EXPRESSION -->
+    <section class="block" id="brand">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">07 / Brand expression</div>
+          <h2>A voice you can recognize</h2>
+          <p><b>Looop</b> gives speaking, shaping, and working on text one recognizable form: its continuous mark turns the abstract loop between voice, writing, and reading into a product people can see and learn.</p>
+        </div>
+        <div class="card">
+          <figure class="brand-route brand-route--zh">
+<span class="brand-route-words">说话　写作　阅读</span>
+            <img src="assets/LogoRoute.png" alt="Looop logo route: the mark develops from a continuous spoken line into a recognisable product expression">
+          </figure>
+          <div class="brand-grid">
+            <div class="brand-module brand-module--motion">
+              <div class="brand-index">01 / Mark &amp; motion</div>
+              <h3>Make speech feel continuous</h3>
+              <p>The loop begins as <b>one continuous stroke</b>. In loading states, it <b>draws forward and erases from behind</b>, so processing feels like a thought still moving — <b>not a generic wait</b>.</p>
+              <div class="brand-loop-demo" aria-label="Animated Looop loading path">
+                <svg viewBox="0 0 49 28" role="img" aria-label="A continuous line that draws and erases in a loop">
+                  <path pathLength="100" d="M 1.50032 25.6907 C 11.5602 22.8165 18.2668 3.1759 13.4764 1.73878 C 8.68599 0.301663 4.37461 5.57109 3.89561 13.2357 C 3.40282 21.1208 7.19429 24.7634 13.9659 24.1673 C 23.8692 23.2955 35.0331 5.87315 31.2008 2.69686 C 27.3685 -0.479425 21.141 6.05013 19.7038 13.2357 C 18.4254 19.6276 21.62 23.3818 25.9314 23.7746 C 31.4321 24.2757 36.9597 22.593 42.7082 14.6728 C 48.4818 6.71817 47.9041 1.39787 42.7082 2.69686 C 36.9597 4.13398 30.2427 23.6493 43.1768 23.7746" />
+                </svg>
+              </div>
+            </div>
+            <div class="brand-module brand-module--visual">
+              <div class="brand-index">02 / Visual language</div>
+              <h3>Make focus easy to read</h3>
+              <p><b>Blue is reserved for moments that need attention</b>: a spoken <b>self-correction</b>, or, in onboarding, <b>the hotkey people need to press</b>. The surrounding interface stays quiet, so the <b>cursor, selection, and result</b> lead attention.</p>
+              <div class="brand-hotkey-space" aria-label="Onboarding keyboard with the Option hotkey highlighted">
+                <div class="brand-keyboard" aria-hidden="true"><span class="brand-kbd-key">fn</span><span class="brand-kbd-key">⌃</span><span class="brand-kbd-key brand-kbd-key--active">⌥</span><span class="brand-kbd-key">⌘</span><span class="brand-kbd-key brand-kbd-key--wide"></span><span class="brand-kbd-key">⌘</span><span class="brand-kbd-key">⌥</span></div>
+              </div>
+            </div>
+            <div class="brand-module brand-module--product">
+              <div class="brand-index">03 / In product</div>
+              <h3>Carry identity into the workflow</h3>
+              <p>The <b>same curve and contrast</b> carry from the menu-bar mark to onboarding, live capture, and the result workspace — making <b>separate entry points feel like one product</b>.</p>
+              <div class="brand-listening-space">
+                <div class="brand-listening-bar" aria-label="Voice bar in listening state">
+                  <svg class="im2-spring" viewBox="0 0 72 14" aria-hidden="true"><path class="bg" d="M2 7 Q8 1 14 7 T26 7 T38 7 T50 7 T62 7 T70 7"/><path class="fg" d="M20 7 Q26 1 32 7 T44 7 T52 7"/></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 IN ACTION — show the proof before listing the capability taxonomy -->
+    <section class="block" id="action">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">05 / In action</div>
+          <h2>See it in the work people already do</h2>
+          <p>Each scenario follows the same arc: current context, a spoken request, an interpreted action, and a result the user can still check.</p>
+        </div>
+        <div class="card">
+          <div class="scenes">
+            <div class="scene">
+              <div class="scene-viz scene-viz--writing" aria-hidden="true"><div class="sv-surface sv-surface--dark"><span class="sv-write-col"><i></i><i></i><i></i><i></i></span><span class="sv-write-list"><span class="sv-write-row"><i></i><i></i></span><span class="sv-write-row"><i></i><i></i></span><span class="sv-write-row"><i></i><i></i></span></span></div></div>
+              <div class="scene-k">Long-form writing</div><div class="scene-t">From spoken thought to draft</div><div class="scene-d">A writer dictates a rough idea in <b>Verbatim</b>, then uses <b>Intent</b> to turn it into a sendable paragraph — with the original always available.</div>
+            </div>
+            <div class="scene">
+              <div class="scene-viz scene-viz--vibe" aria-hidden="true"><div class="sv-surface"><span class="sv-lines"><i></i><i></i></span><span class="sv-send"><img src="assets/voice-ime-scene-send-cursor.svg" alt=""></span></div><span class="sv-caret"></span><span class="sv-voice"><i></i><i></i><i></i></span></div>
+              <div class="scene-k">Vibe coding</div><div class="scene-t">Speak the request right where you are</div><div class="scene-d">With the caret in an agent chat, a developer presses <b>⌥</b> and speaks. Looop inserts a clean request at the cursor — removing filler and naturally resolving spoken corrections. The original remains in <b>History</b>.</div>
+            </div>
+            <div class="scene">
+              <div class="scene-viz scene-viz--language" aria-hidden="true"><div class="sv-surface"><span class="sv-letter">A</span><span class="sv-lines"><i></i><i></i><i></i></span></div><span class="sv-caret"></span><span class="sv-voice"><i></i><i></i><i></i></span></div>
+              <div class="scene-k">Cross-language work</div><div class="scene-t">Transform a selected passage</div><div class="scene-d">A user <b>selects Chinese text</b> and asks for <b>natural English in a professional tone</b>. The bar uses the selection as context and returns an <b>editable preview</b>.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 CAPABILITIES -->
+    <section class="block" id="capabilities">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">08 / Capabilities</div>
+          <h2>Make transformation useful, inspectable, and recoverable</h2>
+          <p>From resolving a spoken repair to editing a finished result, each capability makes the path from raw speech to useful output visible.</p>
+        </div>
+        <div class="card">
+          <div class="caps">
+            <div class="vtabs" id="vtabs" role="tablist">
+              <button type="button" class="vtab is-active"><div class="vtab-t"><span class="vtab-idx">1</span>Spoken Self-Correction Resolution</div><p class="vtab-d">Understands &ldquo;sorry, I mean…&rdquo; and preserves final intent.</p></button>
+              <button type="button" class="vtab"><div class="vtab-t"><span class="vtab-idx">2</span>Long-Form Cleanup</div><p class="vtab-d">Removes off-topic chatter, keeps actionable content.</p></button>
+              <button type="button" class="vtab"><div class="vtab-t"><span class="vtab-idx">3</span>Structured-by-Default Output</div><p class="vtab-d">Makes long dictation easier to read and reuse.</p></button>
+              <button type="button" class="vtab"><div class="vtab-t"><span class="vtab-idx">4</span>Structured vs Raw Toggle</div><p class="vtab-d">Trust through visibility and traceability.</p></button>
+              <button type="button" class="vtab"><div class="vtab-t"><span class="vtab-idx">5</span>Post-Output Local Editing</div><p class="vtab-d">Targeted refine — formalize, rewrite, translate — without re-dictating.</p></button>
+            </div>
+            <div class="vdemo" id="vdemo">
+              <div class="vpanel is-active">
+                <div class="vbubble vbubble--raw"><svg class="vloop" viewBox="0 0 49 28" aria-hidden="true"><path d="M 1.50032 25.6907 C 11.5602 22.8165 18.2668 3.1759 13.4764 1.73878 C 8.68599 0.301663 4.37461 5.57109 3.89561 13.2357 C 3.40282 21.1208 7.19429 24.7634 13.9659 24.1673 C 23.8692 23.2955 35.0331 5.87315 31.2008 2.69686 C 27.3685 -0.479425 21.141 6.05013 19.7038 13.2357 C 18.4254 19.6276 21.62 23.3818 25.9314 23.7746 C 31.4321 24.2757 36.9597 22.593 42.7082 14.6728 C 48.4818 6.71817 47.9041 1.39787 42.7082 2.69686 C 36.9597 4.13398 30.2427 23.6493 43.1768 23.7746" /></svg>Q3 revenue grew <span class="vstrike">month over month, sorry,</span> year over year, by 20%.</div>
+                <div class="vbubble vbubble--out">Q3 revenue grew year over year by 20%.</div>
+              </div>
+              <div class="vpanel">
+                <div class="vbubble vbubble--raw"><svg class="vloop" viewBox="0 0 49 28" aria-hidden="true"><path d="M 1.50032 25.6907 C 11.5602 22.8165 18.2668 3.1759 13.4764 1.73878 C 8.68599 0.301663 4.37461 5.57109 3.89561 13.2357 C 3.40282 21.1208 7.19429 24.7634 13.9659 24.1673 C 23.8692 23.2955 35.0331 5.87315 31.2008 2.69686 C 27.3685 -0.479425 21.141 6.05013 19.7038 13.2357 C 18.4254 19.6276 21.62 23.3818 25.9314 23.7746 C 31.4321 24.2757 36.9597 22.593 42.7082 14.6728 C 48.4818 6.71817 47.9041 1.39787 42.7082 2.69686 C 36.9597 4.13398 30.2427 23.6493 43.1768 23.7746" /></svg>User growth is up around 12%, retention is weak, we should review onboarding… <span class="vstrike">oh and I forgot lunch today…</span> <span class="vstrike">anyway</span> ad conversion dropped and we need to check channel quality.</div>
+                <div class="vbubble vbubble--out">User growth increased by about 12%, but retention remains weak.<br>We should review onboarding and investigate the drop in ad conversion quality.</div>
+              </div>
+              <div class="vpanel">
+                <div class="vbubble vbubble--raw"><svg class="vloop" viewBox="0 0 49 28" aria-hidden="true"><path d="M 1.50032 25.6907 C 11.5602 22.8165 18.2668 3.1759 13.4764 1.73878 C 8.68599 0.301663 4.37461 5.57109 3.89561 13.2357 C 3.40282 21.1208 7.19429 24.7634 13.9659 24.1673 C 23.8692 23.2955 35.0331 5.87315 31.2008 2.69686 C 27.3685 -0.479425 21.141 6.05013 19.7038 13.2357 C 18.4254 19.6276 21.62 23.3818 25.9314 23.7746 C 31.4321 24.2757 36.9597 22.593 42.7082 14.6728 C 48.4818 6.71817 47.9041 1.39787 42.7082 2.69686 C 36.9597 4.13398 30.2427 23.6493 43.1768 23.7746" /></svg>For next sprint we need three things first fix signup bug second update onboarding copy third align with design on dashboard layout.</div>
+                <div class="vbubble vbubble--out">
+                  <div class="vout-title">Next sprint priorities:</div>
+                  <div class="vout-line">Fix the signup bug.</div>
+                  <div class="vout-line">Update onboarding copy.</div>
+                  <div class="vout-line">Align with design on dashboard layout.</div>
+                </div>
+              </div>
+              <div class="vpanel">
+                <div class="v-compare" aria-label="Raw and Structured views of the same meeting clip">
+                  <div class="v-compare-toggle" aria-label="Two readings of one clip"><span>Raw</span><span class="is-active">Structured</span></div>
+                  <div class="v-compare-card v-compare-card--raw"><p class="v-compare-label">Raw</p><div class="v-compare-raw">today meeting mainly three things release timing maybe next wed no wait thursday design resource still tight ask alex to confirm with manager dashboard scope not final continue next meeting</div></div>
+                  <div class="v-compare-card v-compare-card--structured"><p class="v-compare-label">Structured</p><div class="vout-title">Meeting summary:</div><div class="vout-line">Release timing moved from Wednesday to Thursday.</div><div class="vout-line">Design resources remain constrained; Alex will confirm staffing with manager.</div><div class="vout-line">Dashboard scope is still open and will continue next meeting.</div></div>
+                </div>
+              </div>
+              <div class="vpanel">
+                <div class="vbubble vbubble--raw vbubble--noicon">We should maybe delay the launch because today is pretty packed.</div>
+                <div class="vact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Formalize + Translate to Chinese</div>
+                <div class="vbubble vbubble--out">Given today's workload constraints, we should postpone the launch.<span class="vzh">鉴于今天的工作负载较高，我们应当推迟发布。</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09 ONBOARDING -->
+    <section class="block" id="onboarding">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">09 / Onboarding</div>
+          <h2>Getting to first success</h2>
+          <p>A new user reaches their first win by solving exactly three things — nothing more in the way.</p>
+        </div>
+        <div class="card">
+          <div class="scenes">
+            <div class="scene"><div class="scene-k">Step 1</div><div class="scene-t">Authorization</div><div class="scene-d">Grant microphone access — clearly, and once.</div></div>
+            <div class="scene"><div class="scene-k">Step 2</div><div class="scene-t">Hotkey</div><div class="scene-d">Learn the voice shortcut — press &#8997;.</div></div>
+            <div class="scene"><div class="scene-k">Step 3</div><div class="scene-t">First success (practice)</div><div class="scene-d">A guided practice line, so the first result feels like a win.</div></div>
+          </div>
+          <div class="video-wrap">
+            <p class="video-cap">Demo · first-run onboarding</p>
+            <div class="loom-embed-box"><iframe src="https://www.loom.com/embed/df00ba8e2a904f8982008069091ae66e" allowfullscreen></iframe></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 REFLECTION -->
+    <section class="block" id="reflection">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">10 / Reflection</div>
+          <h2>From a spoken thought to work in progress</h2>
+        </div>
+        <div class="reflect">
+          <div class="rk">The reframe</div>
+          <div class="big">Voice input isn't just <span class="fade">transcription.</span> It's a way to catch a thought, shape it, and keep working.</div>
+          <div class="reflect-grid">
+            <div class="rc">
+              <strong>Why it matters</strong>
+              <p>The value is not simply faster text entry. It is preserving momentum while people turn a fragment, correction, or instruction into something they can read, revise, and use — while keeping the original speech recoverable.</p>
+            </div>
+            <div class="rc">
+              <strong>End-to-end ownership</strong>
+              <p>I carried the work from problem framing through interaction model, capability logic, visual expression, and an implementation-aligned demo — turning the concept into behavior people can inspect and experience.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap foot-inner">
+      <div class="foot-meta"><strong>Voice-first IME</strong> · Human &rarr; AI · Working prototype</div>
+      <div class="top-actions">
+        <a class="btn" href="microclaw-zh.html">Next: MicroClaw &rarr;</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ---- Spring waveform — buildSpringPath() ported verbatim from the parametric
+    //      demo (assets/parametric-demo-zh.html) so the Listening state's curve is the
+    //      real coiled-spring geometry, not an approximation. Drawn once, static. ----
+    (function () {
+      var wave = document.querySelector('.bar-anatomy .bwave');
+      var SPRING_W = 72;
+      function buildSpringPath(numCoils, archSpread, dipHeight, dipSpread) {
+        var overlap = 4, MARGIN = 4;
+        var visibleStart = MARGIN, visibleEnd = SPRING_W - MARGIN;
+        var step = (visibleEnd - visibleStart) / (numCoils - 1);
+        var W = step + overlap;
+        var archOffX = W * archSpread;
+        var dipOffX = overlap * dipSpread;
+        var s0 = visibleStart - W / 2;
+        var r = function (n) { return +n.toFixed(2); };
+        var d = '', prevEnd = null;
+        var dipCtrlY = r(1 - dipHeight);
+        for (var i = 0; i < numCoils; i++) {
+          var s = s0 + i * step, e = s + W, mx = (s + e) / 2;
+          if (i === 0) {
+            var c1x = 0.25 * s + 0.75 * e - archOffX / 4, c2x = e - archOffX / 2;
+            d += 'M ' + r(mx) + ' 13 C ' + r(c1x) + ' 13, ' + r(c2x) + ' 9, ' + r(e) + ' 1 ';
+          } else if (i === numCoils - 1) {
+            d += 'C ' + r(prevEnd - dipOffX) + ' ' + dipCtrlY + ', ' + r(s + dipOffX) + ' ' + dipCtrlY + ', ' + r(s) + ' 1 ';
+            var c1b = s + archOffX / 2, c2b = 0.75 * s + 0.25 * e + archOffX / 4;
+            d += 'C ' + r(c1b) + ' 9, ' + r(c2b) + ' 13, ' + r(mx) + ' 13 ';
+          } else {
+            d += 'C ' + r(prevEnd - dipOffX) + ' ' + dipCtrlY + ', ' + r(s + dipOffX) + ' ' + dipCtrlY + ', ' + r(s) + ' 1 ';
+            d += 'C ' + r(s + archOffX) + ' 17, ' + r(e - archOffX) + ' 17, ' + r(e) + ' 1 ';
+          }
+          prevEnd = e;
+        }
+        return d.trim();
+      }
+      var d = buildSpringPath(9, -0.15, 2.6, 0.25);   // taller crest for case-study legibility
+      if (wave) wave.querySelectorAll('path').forEach(function (p) { p.setAttribute('d', d); });
+      // The interaction-model cards reuse the same production spring geometry.
+      document.querySelectorAll('.im2-spring').forEach(function (spring) {
+        spring.querySelectorAll('path').forEach(function (p) { p.setAttribute('d', d); });
+      });
+      // Same state motion as the standalone preview: centre-breathing idle,
+      // live-volume listening, and a travelling resolve comet.
+      var imSprings = Array.prototype.slice.call(document.querySelectorAll('.im2-spring')).map(function (spring, index) {
+        var stateCard = spring.closest('.im2-state');
+        var label = stateCard ? (stateCard.querySelector('.im2-name').textContent || '').toLowerCase() : 'listening';
+        var state = /ready|caret/.test(label) ? 'idle' : (/interpret|resolve/.test(label) ? 'processing' : 'listening');
+        var fg = spring.querySelector('.fg');
+        return { fg: fg, length: fg.getTotalLength(), state: state, index: index };
+      });
+      function animateInteractionSprings(now) {
+        imSprings.forEach(function (item) {
+          var fg = item.fg, length = item.length;
+          if (item.state === 'listening') {
+            var volume = .08 + .72 * (.5 + .5 * Math.sin(now / 120 + item.index * 1.9));
+            var lit = length * (1 - Math.exp(-5 * volume));
+            fg.setAttribute('stroke-dasharray', lit + ' ' + length);
+            fg.setAttribute('stroke-dashoffset', '0'); fg.setAttribute('stroke-opacity', '1');
+          } else if (item.state === 'processing') {
+            var t = (now / 1400) % 1, windowLength = length * .30;
+            fg.setAttribute('stroke-dasharray', windowLength + ' ' + length);
+            fg.setAttribute('stroke-dashoffset', windowLength - t * (length + windowLength)); fg.setAttribute('stroke-opacity', '.7');
+          } else {
+            var waveT = .5 + .5 * Math.sin(now / 3500 * 2 * Math.PI), idleLength = length * (.25 + .73 * waveT);
+            fg.setAttribute('stroke-dasharray', idleLength + ' ' + length);
+            fg.setAttribute('stroke-dashoffset', (idleLength - length) / 2); fg.setAttribute('stroke-opacity', (.10 + .30 * waveT).toFixed(3));
+          }
+        });
+        requestAnimationFrame(animateInteractionSprings);
+      }
+      if (imSprings.length) requestAnimationFrame(animateInteractionSprings);
+    })();
+
+    // ---- Move the detailed mode proof into Capabilities, after its examples ----
+    (function () {
+      var modeDetails = document.getElementById('mode-details');
+      var capabilitiesCard = document.querySelector('#capabilities .card');
+      if (modeDetails && capabilitiesCard) capabilitiesCard.appendChild(modeDetails);
+    })();
+
+    // ---- Case-study narrative order: scenarios first, model second ----
+    (function () {
+      var action = document.getElementById('action');
+      var model = document.getElementById('model');
+      if (action && model) model.parentNode.insertBefore(action, model);
+    })();
+
+    // ---- Capabilities tabs (click to switch; auto-advances unless reduced-motion) ----
+    (function () {
+      var tabs = Array.prototype.slice.call(document.querySelectorAll('#vtabs .vtab'));
+      var panels = Array.prototype.slice.call(document.querySelectorAll('#vdemo .vpanel'));
+      if (!tabs.length || tabs.length !== panels.length) return;
+      var i = 0, timer = null;
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      function show(n) {
+        i = n;
+        tabs.forEach(function (t, k) { t.classList.toggle('is-active', k === n); });
+        panels.forEach(function (p, k) { p.classList.toggle('is-active', k === n); });
+      }
+      function arm() { if (reduce) return; clearInterval(timer); timer = setInterval(function () { show((i + 1) % tabs.length); }, 4800); }
+      tabs.forEach(function (t, k) { t.addEventListener('click', function () { show(k); arm(); }); });
+      show(0); arm();
+    })();
+
+    // ---- Raw / Structured: two readings of the same clip ----
+    (function () {
+      document.querySelectorAll('.v-toggle-card').forEach(function (card) {
+        var buttons = Array.prototype.slice.call(card.querySelectorAll('[data-vtoggle]'));
+        var views = Array.prototype.slice.call(card.querySelectorAll('[data-vtoggle-view]'));
+        buttons.forEach(function (button) {
+          button.addEventListener('click', function () {
+            var state = button.getAttribute('data-vtoggle');
+            buttons.forEach(function (item) { item.classList.toggle('is-active', item === button); });
+            views.forEach(function (view) { view.classList.toggle('is-active', view.getAttribute('data-vtoggle-view') === state); });
+          });
+        });
+      });
+    })();
+
+    // ---- Left section-nav scroll-spy ----
+    (function () {
+      var ids = ["context", "problem", "constraints", "approach", "action", "model", "brand", "capabilities", "onboarding", "reflection"];
+      var links = {};
+      ids.forEach(function (id) { links[id] = document.querySelector('.toc-list a[href="#' + id + '"]'); });
+      var els = ids.map(function (id) { return document.getElementById(id); }).filter(Boolean);
+      if (!els.length) return;
+      var visible = {};
+      function setActive(id) {
+        ids.forEach(function (k) { if (links[k]) links[k].classList.toggle("active", k === id); });
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) visible[e.target.id] = true; else delete visible[e.target.id];
+        });
+        var top = ids.filter(function (id) { return visible[id]; })[0];
+        if (top) setActive(top);
+      }, { rootMargin: "-40% 0px -55% 0px", threshold: 0 });
+      els.forEach(function (el) { io.observe(el); });
+      setActive("context");
+    })();
+  </script>
+<script src="portfolio-language.js"></script>
+<script src="portfolio-zh-dictionary.js"></script><script src="portfolio-translate.js"></script>
+</body></html>

@@ -271,9 +271,9 @@
     button.addEventListener("click", () => applyLanguage(button.dataset.language));
   });
 
-  let initialLanguage = "zh";
+  let initialLanguage = new URLSearchParams(location.search).get("lang") === "en" ? "en" : "zh";
   try {
-    if (localStorage.getItem("xiaoice-language") === "en") initialLanguage = "en";
+    if (!new URLSearchParams(location.search).has("lang") && localStorage.getItem("xiaoice-language") === "en") initialLanguage = "en";
   } catch (_) {}
 
   window.xiaoiceI18n = {

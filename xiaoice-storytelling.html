@@ -380,6 +380,7 @@
       .evidence figcaption{grid-template-columns:1fr;gap:5px}
     }
   </style>
+<link rel="stylesheet" href="portfolio-language.css">
 </head>
 <body>
   <header class="topbar">
@@ -1127,5 +1128,5 @@
     lightbox.addEventListener('click',event=>{if(event.target===lightbox)lightbox.close()});
     lightbox.addEventListener('close',()=>{lightboxGallery.querySelectorAll('video').forEach(video=>video.pause());lightboxDocument.removeAttribute('src');lightboxGallery.replaceChildren();galleryThumbnails.replaceChildren();lightbox.classList.remove('lightbox--document','lightbox--gallery')});
   </script>
-</body>
+<script src="portfolio-language.js"></script><script src="portfolio-zh-dictionary.js"></script><script src="portfolio-translate.js"></script></body>
 </html>
