@@ -1,0 +1,1421 @@
+<!doctype html>
+<html lang="zh-CN"><head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>中文版 · MicroClaw — 从害怕错过到建立信任 · Bingnan Jiang</title>
+  <meta name="description" content="MicroClaw case study — designing agentic AI for novice users in China. Turning FOMO-driven installs into trusted, repeat use 通过首次任务成功、清晰的能力边界，以及融入日常的使用循环，逐步走向这一目标。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800;900&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f4f4f5;
+      --bg-2: #fafafa;
+      --ink: #18181b;
+      --soft: #3f3f46;
+      --muted: #71717a;
+      --faint: #a1a1aa;
+      --line: #e4e4e7;
+      --line-strong: #d4d4d8;
+      --card: #ffffff;
+      --card-2: #fafafa;
+      --glass: rgba(255, 255, 255, .88);
+      --accent: #18181b;
+      --green: #10b981;
+      --shadow: 0 10px 28px -18px rgba(24, 24, 27, .22);
+      --shadow-soft: 0 6px 20px -16px rgba(24, 24, 27, .3);
+      --radius: 18px;
+      --radius-lg: 22px;
+      --max: 1080px;
+      font-family: "Space Grotesk", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      letter-spacing: .1px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      font-family: Inter, "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+    }
+    a { color: inherit; text-decoration: none; }
+    a, button { -webkit-tap-highlight-color: transparent; }
+    ::selection { background: rgba(24, 24, 27, .13); color: var(--ink); }
+
+    .wrap { width: min(var(--max), calc(100vw - 40px)); margin: 0 auto; }
+    .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; }
+    h1, h2, h3, .disp { font-family: "Space Grotesk", Inter, sans-serif; }
+
+    /* ---------- Top bar ---------- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: var(--glass);
+      backdrop-filter: saturate(1.4) blur(14px);
+      -webkit-backdrop-filter: saturate(1.4) blur(14px);
+    }
+    .topbar-inner {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 58px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--soft);
+      transition: color .2s ease;
+    }
+    .back-link:hover { color: var(--ink); }
+    .back-link .arw { transition: transform .22s ease; }
+    .back-link:hover .arw { transform: translateX(-3px); }
+    .top-actions { display: inline-flex; gap: 10px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 36px;
+      padding: 0 15px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--line-strong);
+      background: var(--card);
+      color: var(--ink);
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .btn:hover { transform: translateY(-1px); border-color: var(--ink); }
+    .btn.solid { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .btn.solid:hover { background: #000; }
+
+    /* ---------- Eyebrow / kickers ---------- */
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .kicker .dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green);
+    }
+    .sec-num {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--faint);
+      font-weight: 500;
+    }
+
+    /* ---------- Hero ---------- */
+    .hero { padding: 72px 0 40px; }
+    .hero h1 {
+      font-size: clamp(42px, 7vw, 76px);
+      line-height: 1.02;
+      letter-spacing: -1.6px;
+      margin: 20px 0 0;
+      font-weight: 700;
+    }
+    .hero .lede {
+      font-size: clamp(18px, 2.4vw, 23px);
+      line-height: 1.5;
+      color: var(--soft);
+      max-width: 620px;
+      margin: 22px 0 0;
+    }
+    .hero .lede em { font-style: normal; color: var(--ink); font-weight: 600; }
+    .hero-product-sequence { margin-top: 34px; }
+    .hero-product-label {
+      margin: 0 0 10px 2px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      line-height: 1.4;
+      letter-spacing: .9px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .hero-product {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1120 / 891;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 14px 32px rgba(24, 24, 27, .07);
+    }
+    .hero-product iframe {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      border: 0;
+      pointer-events: none;
+      opacity: 0;
+      animation: hero-product-sequence 24s linear infinite;
+    }
+    .hero-product iframe:nth-child(2) { animation-delay: 8s; }
+    .hero-product iframe:nth-child(3) { animation-delay: 16s; }
+    @keyframes hero-product-sequence {
+      /* Keep the outgoing state painted briefly after the next iframe has
+         entered. This overlap prevents a one-frame white flash at handoff. */
+      0%, 34% { opacity: 1; }
+      39%, 98% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      margin-top: 46px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--card);
+      overflow: hidden;
+    }
+    .meta-cell {
+      padding: 18px 20px;
+      border-right: 1px solid var(--line);
+    }
+    .meta-cell:last-child { border-right: none; }
+    .meta-cell .k {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10.5px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--faint);
+    }
+    .meta-cell .v {
+      margin-top: 7px;
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.35;
+    }
+
+    /* ---------- Section frame ---------- */
+    section.block { padding: 52px 0; }
+    .sec-head { max-width: 680px; margin-bottom: 34px; }
+    .sec-head h2 {
+      font-size: clamp(26px, 4vw, 38px);
+      line-height: 1.1;
+      letter-spacing: -0.8px;
+      margin: 14px 0 0;
+      font-weight: 600;
+    }
+    .sec-head p {
+      font-size: 16.5px;
+      line-height: 1.6;
+      color: var(--muted);
+      margin: 14px 0 0;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+    }
+
+    /* ---------- Why-cards (Context / the bet) ---------- */
+    .why-lead {
+      padding-bottom: 26px;
+      margin-bottom: 26px;
+    }
+    .why-num {
+      display: block;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      color: var(--green);
+      font-weight: 500;
+    }
+    .why-lead-title {
+      display: block;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(22px, 3vw, 30px);
+      line-height: 1.14;
+      letter-spacing: -0.5px;
+      font-weight: 600;
+      margin: 12px 0 10px;
+    }
+    .why-lead p { margin: 0; color: var(--soft); font-size: 15.5px; line-height: 1.6; max-width: 640px; }
+    .why-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    /* Section 02 runs the full 5-belief sequence: 3 "getting in" + 2 "staying".
+       Laid out as a 3-over-2 pyramid on a 6-col grid so the two "staying" cards
+       sit centered under the three above — not left-packed with a lone 5th card. */
+    .why-grid--five {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+    }
+    .why-grid--five .why-card { grid-column: span 2; }
+    /* Row 2: center the pair (cols 2–3 and 4–5), leaving a half-card gutter each side. */
+    .why-grid--five .why-card:nth-child(4) { grid-column: 2 / span 2; }
+    .why-grid--five .why-card:nth-child(5) { grid-column: 4 / span 2; }
+    .why-card {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 20px;
+      background: var(--card-2);
+      transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+    }
+    .why-card:hover { border-color: var(--line-strong); transform: translateY(-2px); box-shadow: var(--shadow); }
+    .why-card .why-num { color: var(--muted); }
+    .why-card strong {
+      display: block;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 16.5px;
+      margin: 9px 0 7px;
+      letter-spacing: -0.2px;
+    }
+    .why-card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+
+    /* ---------- Problem: break cards ---------- */
+    .break-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .break-card {
+      position: relative;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px 22px;
+      background: var(--card);
+    }
+    .break-card > strong {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 19px;
+      letter-spacing: -0.3px;
+      display: block;
+    }
+    .break-card .desc { display: block; margin-top: 8px; color: var(--soft); font-size: 14.5px; line-height: 1.55; }
+    .break-card .flow {
+      display: block;
+      margin-top: 14px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      letter-spacing: .2px;
+      color: var(--ink);
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      padding: 10px 12px;
+      line-height: 1.5;
+    }
+    .signals { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 9px; }
+    .signals li {
+      position: relative;
+      padding-left: 24px;
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: var(--soft);
+    }
+    .signals li::before {
+      position: absolute;
+      left: 0; top: 0;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .signals li.good::before { content: "+"; color: var(--green); }
+    .signals li.bad::before { content: "\2212"; color: var(--faint); }
+    .callout {
+      margin-top: 20px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      background: var(--card);
+      color: var(--ink);
+      border: 1px solid var(--line-strong);
+      border-radius: 14px;
+      padding: 20px 22px;
+    }
+    .callout strong {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--green);
+      white-space: nowrap;
+      padding-top: 2px;
+    }
+    .callout span { font-size: 15.5px; line-height: 1.55; color: var(--soft); }
+
+    /* ---------- Feature map ---------- */
+    .fmap-note { font-size: 13px; color: var(--faint); margin: 0 0 18px; font-family: "JetBrains Mono", monospace; letter-spacing: .3px; }
+    .fmap {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr 70px 1fr;
+      gap: 0;
+      align-items: stretch;
+    }
+    .fmap-svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; overflow: visible; }
+    .fmap-path { fill: none; stroke: var(--line-strong); stroke-width: 1.5; opacity: .55; transition: stroke .2s ease, opacity .2s ease, stroke-width .2s ease; }
+    .fmap-path.is-active { stroke: var(--ink); opacity: 1; stroke-width: 2; }
+    .fmap-path.is-dim { opacity: .12; }
+    .fmap-col { display: flex; flex-direction: column; gap: 12px; justify-content: space-between; position: relative; z-index: 2; }
+    .fmap-node {
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 13px 15px;
+      background: var(--card);
+      cursor: pointer;
+      transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+    }
+    .fmap-node:hover { border-color: var(--line-strong); }
+    .fmap-node.is-active { border-color: var(--ink); box-shadow: var(--shadow-soft); transform: translateY(-1px); }
+    .fmap-node.is-linked { border-color: var(--line-strong); }
+    .fmap-node.is-dim { opacity: .38; }
+    .fmap-node strong {
+      display: block;
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 15px; letter-spacing: -0.2px; margin-top: 3px;
+    }
+    .fmap-kicker {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: "JetBrains Mono", monospace; font-size: 10px;
+      letter-spacing: .8px; text-transform: uppercase; color: var(--muted);
+    }
+    .fmap-kicker .kdot { width: 6px; height: 6px; border-radius: 50%; background: var(--faint); }
+    .fmap-kicker.k-must .kdot { background: var(--ink); }
+    .fmap-kicker.k-perf .kdot { background: var(--muted); }
+    .fmap-kicker.k-delight .kdot { background: var(--green); }
+    .fmap-kicker .focus { color: var(--green); font-weight: 600; }
+    .fmap-belief { display: block; margin: 7px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--green); font-weight: 600; }
+    .fmap-desc { margin: 5px 0 0; font-size: 12.5px; line-height: 1.5; color: var(--muted); }
+    .fmap-mid { display: flex; align-items: center; justify-content: center; }
+    .fmap-mid span {
+      writing-mode: vertical-rl;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--faint);
+    }
+    .fmap-caption { display: flex; justify-content: space-between; margin-bottom: 14px; }
+    .fmap-caption span {
+      font-family: "JetBrains Mono", monospace; font-size: 10.5px;
+      letter-spacing: 1.2px; text-transform: uppercase; color: var(--faint);
+    }
+
+    /* ---------- Final design: flow states ---------- */
+    .state { display: grid; grid-template-columns: 1fr; gap: 0; }
+    .state + .state { margin-top: 20px; }
+    .state-copy { margin-bottom: 16px; }
+    .state-copy strong {
+      display: block; font-family: "Space Grotesk", sans-serif;
+      font-size: 18px; letter-spacing: -0.2px;
+    }
+    .state-copy span { display: block; margin-top: 7px; color: var(--muted); font-size: 15px; line-height: 1.6; max-width: 640px; }
+
+    /* ---------- Final design: live prototype embed ---------- */
+    /* The embedded steps page already frames each screen; the wrapper
+       stays chrome-less so it doesn't read as a shell around a shell. */
+    .proto-frame { position: relative; width: 100%; height: 1200px; background: transparent; transition: height .25s ease; }
+    .proto-frame iframe { width: 100%; height: 100%; border: 0; display: block; pointer-events: none; }
+    .proto-note { margin: 16px 0 0; font-size: 13.5px; line-height: 1.55; color: var(--muted); }
+    .proto-note a { color: var(--ink); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--line); transition: opacity .2s ease; }
+    .proto-note a:hover { opacity: .62; }
+
+    /* The six gates read as one continuous ladder, not six boxed cards —
+       matching the chrome-less prototype above it. Each gate states its
+       claim (text first), then shows the live mock as evidence below; a
+       single hairline rules one gate off from the next. */
+    .principles { display: flex; flex-direction: column; margin-top: 28px; }
+    .principle {
+      display: flex; flex-direction: column;
+      padding: 44px 0;
+      border-top: 1px solid var(--line);
+    }
+    .principle:first-child { border-top: 0; padding-top: 6px; }
+    .principle:last-child { padding-bottom: 6px; }
+
+    /* Claim, above the evidence. */
+    .principle .ptext { margin: 0 0 22px; max-width: 720px; }
+    .principle .pk {
+      font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: 1.1px; text-transform: uppercase; color: var(--green);
+    }
+    .principle strong { display: block; font-family: "Space Grotesk", sans-serif; font-size: 20px; margin: 10px 0 9px; letter-spacing: -0.2px; }
+    .principle p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+    /* Evidence: the live mock, framed by one hairline like the prototype's
+       own frame — the embedded step already fills it edge-to-edge, so the
+       wrapper stays a single quiet border, never a shell around a shell. */
+    .principle .pframe {
+      position: relative;
+      border: 1px solid var(--line); border-radius: 12px; overflow: hidden;
+      background: var(--card-2);
+    }
+    /* Gate 01's mock is two install cards that already carry their own
+       borders — the ladder frame would ring them a second time (shell-in-
+       shell), so this one gate drops its outer ring. The single-mock gates
+       (02–06) keep the frame, since it's their only border. */
+    .principle .pframe--bare { border-color: transparent; background: transparent; }
+    /* Gate 05's console fills its frame edge-to-edge, so even the iframe's
+       own placeholder tint would read as a backing colour — drop it. */
+    .principle .pframe--flush { border-radius: 0; }
+    .principle .pframe--flush .pimg { background: transparent; }
+    .principle .pimg { display: block; width: 100%; height: auto; object-fit: contain; background: var(--card-2); }
+    .principle:nth-child(-n+4) .pframe,
+    .principle:nth-child(-n+4) .pimg { background: #fff; }
+    /* Live-mock band: embed the running step instead of a static shot.
+       Height is synced from the embed via postMessage (below); 340px is
+       just the pre-load placeholder so the band never collapses. */
+    .principle iframe.pimg { border: 0; height: 340px; pointer-events: none; }
+
+    /* ---------- Brand expression ---------- */
+    .brand-proof {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(280px, 1.1fr);
+      gap: 28px;
+      align-items: stretch;
+    }
+    .brand-space {
+      min-height: 340px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(155deg, #fff6df 0%, #f2d5a4 100%);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 20px;
+    }
+    .brand-space::before {
+      content: "MicroClaw's space";
+      position: absolute;
+      left: 22px; top: 20px;
+      font: 11px/1 "JetBrains Mono", monospace;
+      letter-spacing: 1.1px; text-transform: uppercase; color: rgba(61, 43, 29, .56);
+    }
+    .brand-space img { width: min(86%, 310px); height: auto; object-fit: contain; }
+    .brand-limit {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      background: var(--card); padding: 28px;
+      display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
+    }
+    .brand-limit .pk { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 1.1px; text-transform: uppercase; color: var(--green); }
+    .brand-limit h3 { margin: 8px 0 0; font: 600 clamp(22px, 2.7vw, 30px)/1.16 "Space Grotesk", sans-serif; letter-spacing: -.45px; }
+    .brand-limit p { margin: 12px 0 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
+    .quota-state { display: flex; align-items: center; gap: 16px; border-radius: 16px; padding: 16px; background: #fbf7f1; border: 1px solid #eadfce; }
+    .quota-state img { width: 72px; height: 72px; object-fit: contain; flex: 0 0 auto; }
+    .quota-state strong { display: block; font-size: 15px; }
+    .quota-state span { display: block; color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .brand-product {
+      min-height: 510px; display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(290px, .72fr);
+      border: 1px solid var(--line); border-radius: var(--radius-lg); overflow: hidden; background: #fbfaf8;
+    }
+    .brand-product__work { padding: 28px; display: flex; flex-direction: column; gap: 20px; background: #f5f1ec; }
+    .brand-product__top { display: flex; align-items: center; gap: 10px; color: #625b53; font-size: 14px; }
+    .brand-product__top img { width: 30px; height: 30px; object-fit: contain; }
+    .brand-product__message { max-width: 500px; padding: 18px 20px; background: #fff; border: 1px solid #e6dfd5; border-radius: 16px 16px 16px 5px; color: #4d4740; font-size: 15px; line-height: 1.55; }
+    .brand-product__plan { flex: 1; padding: 20px; background: #fff; border: 1px solid #e6dfd5; border-radius: 18px; }
+    .brand-product__plan strong { display: block; font-size: 15px; }
+    .brand-product__plan p { margin: 8px 0 0; color: #847c72; font-size: 13px; }
+    .brand-product__plan ul { list-style: none; padding: 0; margin: 20px 0 0; display: grid; gap: 13px; }
+    .brand-product__plan li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #595249; }
+    .brand-product__plan li::before { content: ""; width: 9px; height: 9px; border: 2px solid #b9b1a7; border-radius: 50%; }
+    .brand-product__plan li:first-child::before { background: #1d9a6c; border-color: #1d9a6c; box-shadow: inset 0 0 0 2px #fff; }
+    .brand-panel { padding: 18px; background: #15181f; color: #fff; display: flex; flex-direction: column; }
+    .brand-panel__head { display: flex; align-items: center; gap: 10px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,.1); }
+    .brand-panel__head img { width: 36px; height: 36px; object-fit: contain; }
+    .brand-panel__head strong { display: block; font-size: 14px; }
+    .brand-panel__head span { display: block; color: rgba(255,255,255,.56); font-size: 11px; margin-top: 2px; }
+    .brand-panel__space { margin-top: 16px; height: 162px; position: relative; overflow: hidden; border-radius: 16px; background: radial-gradient(circle at 50% 22%, rgba(240, 146, 69, .22), transparent 42%), #252932; display: flex; align-items: flex-end; justify-content: center; }
+    .brand-panel__space img { height: 142px; width: auto; object-fit: contain; }
+    .brand-panel__badge { position: absolute; left: 10px; top: 10px; padding: 5px 8px; border-radius: 99px; background: rgba(215, 86, 77, .18); border: 1px solid rgba(235, 118, 103, .28); color: #ffaaa1; font: 600 10px/1 "JetBrains Mono", monospace; }
+    .brand-panel__notice { display: flex; align-items: center; gap: 9px; margin-top: 12px; padding: 11px; border-radius: 12px; background: rgba(239, 83, 80, .12); color: #fff; }
+    .brand-panel__notice b { display: block; font-size: 12px; }
+    .brand-panel__notice span { display: block; margin-top: 3px; color: rgba(255,255,255,.62); font-size: 10px; }
+    .brand-panel__usage { margin-top: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .brand-panel__usage div { padding: 9px 7px; border-radius: 9px; background: rgba(255,255,255,.06); }
+    .brand-panel__usage span { display: block; color: rgba(255,255,255,.46); font-size: 9px; }
+    .brand-panel__usage strong { display: block; margin-top: 4px; font-size: 12px; }
+    .brand-gallery { display: grid; grid-template-columns: 1fr; gap: 26px; }
+    .brand-system-card { border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card); padding: 0 34px; overflow: hidden; }
+    .brand-step { padding: 38px 0; }
+    .brand-step + .brand-step { border-top: 1px solid var(--line); }
+    .brand-step__copy { max-width: 720px; margin-bottom: 22px; }
+    .brand-step__copy .pk { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: 1.1px; text-transform: uppercase; color: var(--green); }
+    .brand-step__copy strong { display: block; margin-top: 10px; font: 600 20px/1.25 "Space Grotesk", sans-serif; letter-spacing: -.2px; }
+    .brand-step__copy p { margin: 9px 0 0; color: var(--muted); font-size: 15px; line-height: 1.6; }
+    .brand-tile { margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card); }
+    .brand-tile__visual { height: clamp(380px, 42vw, 560px); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #f5f1ec; }
+    .brand-tile__visual--screen { height: auto; aspect-ratio: 1120 / 891; background: transparent; }
+    .brand-tile figcaption { padding: 16px 18px 19px; }
+    .brand-tile figcaption strong { display: block; font: 600 16px/1.25 "Space Grotesk", sans-serif; }
+    .brand-tile figcaption p { margin: 7px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .brand-tile--mark { flex-direction: column; gap: 18px; }
+    .brand-tile--mark img { width: min(36%, 160px); height: auto; object-fit: contain; transform: rotate(-30deg); transform-origin: center; }
+    .brand-mark-hello {
+      font-family: "Caveat", ui-rounded, cursive;
+      font-size: clamp(24px, 3vw, 34px);
+      font-weight: 600;
+      line-height: 1.05;
+      color: var(--soft);
+      transform: translateY(-32px) rotate(-1.2deg);
+    }
+    .brand-tile--mark,
+    .brand-step:nth-child(2) .brand-tile__visual--frame { border-radius: var(--radius-lg); overflow: hidden; }
+    .brand-tile__visual--frame iframe { display: block; width: 100%; height: 100%; border: 0; pointer-events: none; }
+    .brand-tile--states .brand-tile__visual { background: linear-gradient(135deg, #fff5df, #f6e1bc); }
+    .brand-tile--states span { position: absolute; left: 18px; top: 17px; font: 10px/1 "JetBrains Mono", monospace; color: #8a6242; letter-spacing: 1px; text-transform: uppercase; }
+    .brand-tile--states img { position: absolute; object-fit: contain; filter: drop-shadow(0 10px 14px rgba(85,54,28,.12)); }
+    .brand-tile--states .state-a { width: clamp(170px, 22vw, 280px); left: 12%; bottom: 8%; }
+    .brand-tile--states .state-b { width: clamp(220px, 30vw, 390px); right: 7%; bottom: 5%; }
+    .brand-tile--states .state-c { width: clamp(130px, 17vw, 220px); left: 50%; top: 8%; transform: translateX(-50%); }
+    .brand-product--tile { min-height: 0; width: 100%; height: 100%; grid-template-columns: 1.15fr .85fr; border: 0; border-radius: 0; }
+    .brand-product--tile .brand-product__work { padding: 14px; gap: 10px; min-height: 0; }
+    .brand-product--tile .brand-product__top { font-size: 10px; gap: 5px; }
+    .brand-product--tile .brand-product__top img { width: 20px; height: 20px; }
+    .brand-product--tile .brand-product__message { padding: 10px; border-radius: 10px 10px 10px 3px; font-size: 10px; }
+    .brand-product--tile .brand-product__plan { padding: 11px; border-radius: 11px; }
+    .brand-product--tile .brand-product__plan strong { font-size: 11px; }
+    .brand-product--tile .brand-product__plan p { font-size: 9px; margin-top: 4px; }
+    .brand-product--tile .brand-product__plan ul { margin-top: 10px; gap: 7px; }
+    .brand-product--tile .brand-product__plan li { gap: 5px; font-size: 9px; }
+    .brand-product--tile .brand-product__plan li::before { width: 6px; height: 6px; border-width: 1px; }
+    .brand-product--tile .brand-panel { padding: 10px; }
+    .brand-product--tile .brand-panel__head { padding-bottom: 9px; gap: 5px; }
+    .brand-product--tile .brand-panel__head img { width: 24px; height: 24px; }
+    .brand-product--tile .brand-panel__head strong { font-size: 10px; }
+    .brand-product--tile .brand-panel__head span { font-size: 8px; }
+    .brand-product--tile .brand-panel__space { margin-top: 9px; height: 92px; border-radius: 10px; }
+    .brand-product--tile .brand-panel__space img { height: 82px; }
+    .brand-product--tile .brand-panel__badge { left: 6px; top: 6px; padding: 3px 5px; font-size: 7px; }
+    .brand-product--tile .brand-panel__notice { margin-top: 7px; gap: 5px; padding: 7px; border-radius: 8px; }
+    .brand-product--tile .brand-panel__notice b { font-size: 8px; }
+    .brand-product--tile .brand-panel__notice span { font-size: 7px; }
+    .brand-product--tile .brand-panel__usage { margin-top: 8px; gap: 3px; }
+    .brand-product--tile .brand-panel__usage div { padding: 5px 4px; border-radius: 5px; }
+    .brand-product--tile .brand-panel__usage span { font-size: 6px; }
+    .brand-product--tile .brand-panel__usage strong { margin-top: 2px; font-size: 8px; }
+    /* In the vertical story these are full-page frames, not thumbnail tiles. */
+    .brand-product--tile .brand-product__work { padding: 28px; gap: 20px; }
+    .brand-product--tile .brand-product__top { font-size: 14px; gap: 10px; }
+    .brand-product--tile .brand-product__top img { width: 30px; height: 30px; }
+    .brand-product--tile .brand-product__message { padding: 18px 20px; border-radius: 16px 16px 16px 5px; font-size: 15px; }
+    .brand-product--tile .brand-product__plan { padding: 20px; border-radius: 18px; }
+    .brand-product--tile .brand-product__plan strong { font-size: 15px; }
+    .brand-product--tile .brand-product__plan p { font-size: 13px; margin-top: 8px; }
+    .brand-product--tile .brand-product__plan ul { margin-top: 20px; gap: 13px; }
+    .brand-product--tile .brand-product__plan li { gap: 10px; font-size: 14px; }
+    .brand-product--tile .brand-product__plan li::before { width: 9px; height: 9px; border-width: 2px; }
+    .brand-product--tile .brand-panel { padding: 18px; }
+    .brand-product--tile .brand-panel__head { padding-bottom: 16px; gap: 10px; }
+    .brand-product--tile .brand-panel__head img { width: 36px; height: 36px; }
+    .brand-product--tile .brand-panel__head strong { font-size: 14px; }
+    .brand-product--tile .brand-panel__head span { font-size: 11px; }
+    .brand-product--tile .brand-panel__space { margin-top: 16px; height: 162px; border-radius: 16px; }
+    .brand-product--tile .brand-panel__space img { height: 142px; }
+    .brand-product--tile .brand-panel__badge { left: 10px; top: 10px; padding: 5px 8px; font-size: 10px; }
+    .brand-product--tile .brand-panel__notice { margin-top: 12px; gap: 9px; padding: 11px; border-radius: 12px; }
+    .brand-product--tile .brand-panel__notice b { font-size: 12px; }
+    .brand-product--tile .brand-panel__notice span { font-size: 10px; }
+    .brand-product--tile .brand-panel__usage { margin-top: 15px; gap: 6px; }
+    .brand-product--tile .brand-panel__usage div { padding: 9px 7px; border-radius: 9px; }
+    .brand-product--tile .brand-panel__usage span { font-size: 9px; }
+    .brand-product--tile .brand-panel__usage strong { margin-top: 4px; font-size: 12px; }
+    .brand-full-app { width: 100%; height: 100%; display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(245px, .72fr); background: transparent; border-radius: 0; overflow: hidden; }
+    .brand-full-app__work { min-width: 0; overflow: hidden; }
+    .brand-full-app__work img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: left top; }
+    .brand-full-app__work iframe { display: block; width: 100%; height: 100%; border: 0; pointer-events: none; }
+    .brand-console-embed { width: 100%; height: 100%; display: block; border: 0; background: transparent; pointer-events: none; }
+    /* Portfolio prototypes are playback, not sandboxes. A transparent shield
+       keeps the interviewer's pointer from producing hover, focus, click or
+       scroll states inside an embedded app while its scripted motion remains
+       fully visible underneath. */
+    .proto-frame::after,
+    .principle .pframe::after,
+    .brand-tile__visual--frame::after,
+    .brand-tile__visual--screen::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 50;
+      background: transparent;
+    }
+    .brand-full-app--console { grid-template-columns: minmax(0, 1fr); }
+    .brand-pause-work { min-width: 0; padding: 18px; display: flex; flex-direction: column; justify-content: center; background: #f5f1ec; }
+    .brand-pause-work__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; color: #827970; font-size: 10px; }
+    .brand-pause-work__top span:first-child { color: #4f4740; font-weight: 700; }
+    .brand-pause-card { width: 100%; max-width: 510px; padding: 18px 20px; display: flex; align-items: center; gap: 14px; border: 1px solid #e0dad2; border-radius: 18px; background: #fff; box-shadow: 0 4px 20px rgba(39,35,32,.06), 0 1px 3px rgba(39,35,32,.04); color: #302b27; cursor: pointer; text-align: left; }
+    .brand-pause-card img { width: 48px; height: 48px; flex: 0 0 auto; object-fit: contain; }
+    .brand-pause-card span { min-width: 0; }
+    .brand-pause-card strong, .brand-pause-card em { display: block; }
+    .brand-pause-card strong { font-size: 14px; font-style: normal; }
+    .brand-pause-card em { margin-top: 4px; color: #7c746b; font-size: 11px; font-style: normal; line-height: 1.45; }
+    .brand-pause-card b { margin-left: auto; color: #625b53; font-size: 10px; white-space: nowrap; }
+    .brand-work-ui { height: 100%; position: relative; display: flex; flex-direction: column; background: #f7f4f1; color: #302b27; }
+    .brand-work-ui__nav { position: absolute; inset: 0 auto 0 0; z-index: 2; width: 52px; display: flex; flex-direction: column; align-items: center; gap: 14px; padding-top: 14px; border-right: 1px solid #e2ddd6; background: #f2eeea; color: #8e867e; font-size: 14px; }
+    .brand-work-ui__nav b { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: #54bdea; color: #fff; font-size: 11px; }
+    .brand-work-ui__nav i { margin-top: auto; margin-bottom: 14px; font-style: normal; }
+    .brand-work-ui__sidebar { position: absolute; left: 52px; top: 44px; bottom: 0; width: 240px; padding: 13px 12px; box-sizing: border-box; border-right: 1px solid #e2ddd6; background: #faf9f7; }
+    .brand-work-ui__search, .brand-work-ui__new { height: 30px; display: flex; align-items: center; padding: 0 10px; border: 1px solid #e2ddd6; border-radius: 9px; color: #aaa199; font-size: 10px; }
+    .brand-work-ui__new { justify-content: center; margin-top: 10px; color: #625b53; background: #fff; }
+    .brand-work-ui__sidebar p { margin: 22px 6px 8px; color: #aaa199; font: 600 9px/1 "JetBrains Mono", monospace; letter-spacing: .7px; text-transform: uppercase; }
+    .brand-work-ui__agent { display: flex; align-items: center; gap: 8px; padding: 9px; border-radius: 10px; background: #efebe7; font-size: 10px; font-weight: 600; }
+    .brand-work-ui__agent img { width: 27px; height: 27px; object-fit: contain; }
+    .brand-work-ui__top { height: 44px; margin-left: 52px; display: flex; align-items: center; gap: 9px; padding: 0 12px; border-bottom: 1px solid #e2ddd6; background: rgba(255,255,255,.82); font-size: 13px; font-weight: 600; }
+    .brand-work-ui__top img { width: 26px; height: 26px; object-fit: contain; }
+    .brand-work-ui__agent img[src$="microclaw.png"],
+    .brand-work-ui__top img[src$="microclaw.png"],
+    .brand-pause-card img[src$="microclaw.png"],
+    .brand-panel__head img[src$="microclaw.png"],
+    .agent-panel-actual__head img[src$="microclaw.png"] { transform: rotate(-30deg); transform-origin: center; }
+    .brand-work-ui__window { margin-left: auto; color: #8f877f; font-size: 11px; font-weight: 400; letter-spacing: .08em; }
+    .brand-work-ui__body { flex: 1; min-height: 0; margin-left: 292px; display: flex; flex-direction: column; gap: 14px; padding: 22px 28px 28px; }
+    .brand-work-ui__message { align-self: flex-end; max-width: 86%; padding: 13px 15px; border-radius: 15px 15px 5px 15px; background: #282421; color: rgba(255,255,255,.92); font-size: 12px; line-height: 1.45; }
+    .brand-work-ui__plan { flex: 1; min-height: 0; padding: 16px; border: 1px solid #e0dad2; border-radius: 16px; background: rgba(255,255,255,.88); box-shadow: 0 8px 20px rgba(69,57,45,.04); }
+    .brand-work-ui__planhead { display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 700; }
+    .brand-work-ui__pill { padding: 4px 7px; border-radius: 999px; background: #f3eee7; color: #9a8f84; font-size: 9px; }
+    .brand-work-ui__plan ul { list-style: none; padding: 0; margin: 15px 0 0; display: grid; gap: 11px; }
+    .brand-work-ui__plan li { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #615950; }
+    .brand-work-ui__plan li::before { content: ""; width: 8px; height: 8px; border: 1.5px solid #b9afa4; border-radius: 50%; }
+    .brand-work-ui__plan li.done::before { border-color: #1d9a6c; background: #1d9a6c; box-shadow: inset 0 0 0 2px #fff; }
+    .brand-work-ui__composer { margin: 0 20px 18px 192px; padding: 14px 15px 10px; border: 1px solid #ddd7cf; border-radius: 18px; background: rgba(255,255,255,.96); box-shadow: 0 12px 30px rgba(69,57,45,.09), 0 2px 5px rgba(69,57,45,.04); }
+    .brand-work-ui__placeholder { color: #aaa198; font-size: 12px; }
+    .brand-work-ui__actions { display: flex; align-items: center; justify-content: space-between; margin-top: 18px; color: #827970; }
+    .brand-work-ui__attachments { display: flex; gap: 12px; font-size: 17px; line-height: 1; }
+    .brand-work-ui__send { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: #eee9e2; color: #aea59b; font-size: 14px; }
+    /* Identity in action reuses the Gate 04 shell, but starts with a clean
+       conversation: the pause card is the sole event in the thread. */
+    .brand-work-ui__conversation { flex: 1; display: flex; align-items: center; justify-content: flex-start; }
+    .brand-work-ui__conversation .brand-pause-card { max-width: 430px; }
+    .brand-work-ui__composer { width: 100%; margin: 0; padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; color: #aaa198; font-size: 10px; box-sizing: border-box; }
+    .brand-work-ui__composer b { width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; background: #ece7e1; color: #9f958b; font-size: 12px; }
+    .agent-panel-actual { padding: 16px; display: flex; flex-direction: column; background: #fff; color: #25211e; border: 1px solid #ded8d0; border-radius: 0 14px 14px 0; }
+    .agent-panel-actual__head { display: flex; align-items: center; gap: 9px; padding-bottom: 13px; border-bottom: 1px solid #e8e2db; }
+    .agent-panel-actual__head img { width: 36px; height: 36px; object-fit: contain; }
+    .agent-panel-actual__head strong { display: block; font-size: 13px; }
+    .agent-panel-actual__head span { display: block; color: #8d847a; font-size: 10px; margin-top: 2px; }
+    .agent-panel-actual__scene { height: 156px; margin-top: 14px; position: relative; overflow: hidden; border: 1px solid #ded8d0; border-radius: 16px; display: flex; align-items: flex-end; justify-content: center; background: radial-gradient(circle at 50% 22%, rgba(235, 178, 97, .28), transparent 43%), #eee9e3; }
+    .agent-panel-actual__scene img { height: 142px; width: auto; object-fit: contain; }
+    .agent-panel-actual__badge { position: absolute; left: 9px; top: 9px; padding: 5px 7px; border-radius: 999px; border: 1px solid rgba(198, 80, 70, .22); background: #fbeae7; color: #bd5148; font: 600 9px/1 "JetBrains Mono", monospace; }
+    .agent-panel-actual__banner { display: flex; gap: 8px; margin-top: 11px; padding: 10px; border-radius: 12px; background: #fdf0ed; border: 1px solid #f3d7d1; }
+    .agent-panel-actual__banner b { display: block; font-size: 10px; }
+    .agent-panel-actual__banner span { display: block; margin-top: 3px; color: #8d756d; font-size: 9px; }
+    .agent-panel-actual__label { display: flex; justify-content: space-between; margin: 14px 0 7px; color: #6f675f; font-size: 10px; font-weight: 600; }
+    .agent-panel-actual__tokens { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; }
+    .agent-panel-actual__tokens div { padding: 8px; border: 1px solid #e5dfd7; border-radius: 8px; background: #f3efea; }
+    .agent-panel-actual__tokens span { display: block; color: #958d84; font-size: 8px; }
+    .agent-panel-actual__tokens strong { display: block; margin-top: 3px; font-size: 10px; }
+    .agent-panel-actual__budget { margin-top: 13px; height: 6px; border: 1px solid #ded8d0; border-radius: 9px; background: #e8e1da; overflow: hidden; }
+    .agent-panel-actual__budget i { display: block; width: 100%; height: 100%; background: #d46657; }
+
+    /* ---------- Reflection ---------- */
+    .reflect {
+      background: var(--ink);
+      color: #fff;
+      border-radius: var(--radius-lg);
+      padding: 44px 40px;
+    }
+    .reflect .rk {
+      font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: 1.3px; text-transform: uppercase; color: var(--green);
+    }
+    .reflect .big {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(24px, 3.6vw, 36px);
+      line-height: 1.14; letter-spacing: -0.6px; font-weight: 600;
+      margin: 16px 0 0;
+    }
+    .reflect .big .fade { color: #a1a1aa; }
+    .reflect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 30px; }
+    .reflect-grid .rc strong {
+      display: block; font-family: "JetBrains Mono", monospace; font-size: 11px;
+      letter-spacing: 1.1px; text-transform: uppercase; color: #71717a; margin-bottom: 8px;
+    }
+    .reflect-grid .rc p { margin: 0; color: #d4d4d8; font-size: 15px; line-height: 1.6; }
+
+    /* ---------- Footer ---------- */
+    footer { padding: 40px 0 60px; margin-top: 8px; }
+    .foot-inner { width: min(1180px, calc(100vw - 40px)); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+    .foot-meta { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--faint); letter-spacing: .4px; }
+    .foot-meta strong { color: var(--soft); font-weight: 600; }
+
+    /* ---------- Shell + left section nav ---------- */
+    section[id] { scroll-margin-top: 76px; }
+    .shell {
+      width: min(1180px, calc(100vw - 40px));
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 196px minmax(0, 1fr);
+      gap: 46px;
+      align-items: start;
+    }
+    .content { min-width: 0; }
+    .content .wrap { width: 100%; }
+    .toc {
+      position: sticky;
+      top: 78px;
+      margin-top: 96px;
+      padding-right: 8px;
+    }
+    .toc-title {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      color: var(--ink);
+      margin-bottom: 3px;
+    }
+    .toc-kicker {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      letter-spacing: 1.3px;
+      text-transform: uppercase;
+      color: var(--faint);
+      margin-bottom: 16px;
+    }
+    .toc-list { display: flex; flex-direction: column; }
+    .toc-list a {
+      display: flex;
+      gap: 11px;
+      align-items: baseline;
+      padding: 8px 0 8px 15px;
+      margin-left: -1px;
+      border-left: 2px solid var(--line);
+      font-size: 13.5px;
+      color: var(--muted);
+      transition: color .2s ease, border-color .2s ease;
+    }
+    .toc-list a .n {
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10.5px;
+      color: var(--faint);
+      transition: color .2s ease;
+    }
+    .toc-list a:hover { color: var(--ink); }
+    .toc-list a.active { color: var(--ink); font-weight: 600; border-color: var(--ink); }
+    .toc-list a.active .n { color: var(--green); }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; gap: 0; }
+      .toc { display: none; }
+    }
+    @media (max-width: 820px) {
+      .meta-grid { grid-template-columns: 1fr 1fr; }
+      .meta-cell:nth-child(2) { border-right: none; }
+      .meta-cell:nth-child(1), .meta-cell:nth-child(2) { border-bottom: 1px solid var(--line); }
+      .why-grid { grid-template-columns: 1fr; }
+      /* Collapse the pyramid to a single column on narrow screens. */
+      .why-grid--five { grid-template-columns: 1fr; }
+      .why-grid--five .why-card,
+      .why-grid--five .why-card:nth-child(4),
+      .why-grid--five .why-card:nth-child(5) { grid-column: auto; }
+      .break-grid { grid-template-columns: 1fr; }
+      .principles { grid-template-columns: 1fr; }
+      .brand-proof { grid-template-columns: 1fr; }
+      .brand-space { min-height: 280px; }
+      .brand-product { grid-template-columns: 1fr; }
+      .brand-product__work { min-height: 330px; }
+      .brand-gallery { grid-template-columns: 1fr; }
+      .brand-system-card { padding: 0 20px; }
+      .brand-full-app { grid-template-columns: 1fr; }
+      .brand-full-app__work { display: none; }
+      .reflect-grid { grid-template-columns: 1fr; }
+      .fmap { grid-template-columns: 1fr; }
+      .fmap-svg { display: none; }
+      .fmap-mid { display: none; }
+      .fmap-caption { display: none; }
+      .fmap-col { gap: 10px; }
+      .fmap-col--left { margin-bottom: 10px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; }
+    }
+  </style>
+<style>body{font-family:Inter,-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;} :lang(zh-CN){line-break:strict;} p{overflow-wrap:break-word;}</style>
+<style>
+    /* Case-specific language switch; both versions share section IDs. */
+    .case-language { display:inline-flex; align-items:center; gap:2px; padding:3px; border:1px solid var(--line-strong); border-radius:999px; background:var(--card); }
+    .case-language a { display:inline-flex; align-items:center; justify-content:center; min-width:36px; height:28px; padding:0 9px; border-radius:999px; font-size:12px; font-weight:600; white-space:nowrap; }
+    .case-language a[aria-current="page"] { color:var(--card); background:var(--ink); }
+    .case-language a:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+    @media(max-width:380px) { .topbar-inner .top-actions { gap:6px; } .topbar-inner .btn { padding-inline:10px; } .case-language a { min-width:30px; padding-inline:6px; } }
+</style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="back-link" href="portfolio.html">
+        <span class="arw mono">&larr;</span>
+        <span>首页</span>
+      </a>
+      <div class="top-actions"><nav class="case-language" aria-label="案例语言"><a href="microclaw.html" data-language-page="microclaw.html" lang="en" hreflang="en">EN</a><a href="microclaw-zh.html" data-language-page="microclaw-zh.html" lang="zh-CN" hreflang="zh-CN" aria-current="page">中文</a></nav>
+        <a class="btn" href="portfolio.html#work">全部作品</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="shell">
+      <aside class="toc" id="toc">
+        <div class="toc-title">MicroClaw</div>
+        <div class="toc-kicker">项目案例</div>
+        <nav class="toc-list">
+          <a href="#context"><span class="n">01</span><span>项目背景</span></a>
+          <a href="#problem"><span class="n">02</span><span>问题</span></a>
+          <a href="#insight"><span class="n">03</span><span>重新定义</span></a>
+          <a href="#process"><span class="n">04</span><span>设计思路</span></a>
+          <a href="#final"><span class="n">05</span><span>体验设计</span></a>
+          <a href="#brand"><span class="n">06</span><span>品牌表达</span></a>
+          <a href="#reflection"><span class="n">07</span><span>成果与下一步</span></a>
+        </nav>
+      </aside>
+      <div class="content">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap">
+        <div class="kicker"><span class="dot"></span>项目案例 · 智能体 AI · 从 0 到 1</div>
+        <h1>MicroClaw</h1>
+        <p class="lede"><em>让自主执行的工作变得可见、可控的 AI 伙伴。</em> 本案例记录了产品如何从 <em>因害怕错过而安装</em>，通过首次任务成功、清晰的能力边界，以及融入日常的使用循环，走向<em>建立信任并持续使用</em>。</p>
+        <div class="meta-grid">
+          <div class="meta-cell"><div class="k">职责</div><div class="v">主导产品设计</div></div>
+          <div class="meta-cell"><div class="k">工作范围</div><div class="v">策略到原型</div></div>
+          <div class="meta-cell"><div class="k">项目周期</div><div class="v">1 周 · AI 辅助设计冲刺</div></div>
+          <div class="meta-cell"><div class="k">项目状态</div><div class="v">交互原型</div></div>
+        </div>
+        <div class="hero-product-sequence" aria-label="MicroClaw 连贯任务流程">
+          <div class="hero-product-label">找到适合的任务 → 理解执行过程 → 完成首个任务</div>
+          <div class="hero-product">
+            <iframe src="microclaw-steps-zh.html?only=2&amp;v=avatar-30-2" title="MicroClaw 帮助用户找到适合的任务" scrolling="no"></iframe>
+            <iframe src="microclaw-steps-zh.html?only=3&amp;start-delay=8000&amp;v=avatar-30-2" title="MicroClaw 展示清晰易懂的执行过程" scrolling="no"></iframe>
+            <iframe src="microclaw-steps-zh.html?only=4&amp;v=avatar-30-2" title="MicroClaw 完成有价值的首个任务" scrolling="no"></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 01 CONTEXT -->
+    <section class="block" id="context">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">01 / 项目背景</div>
+          <h2>MicroClaw 是什么</h2>
+          <p>MicroClaw 是面向中国初次使用者的 AI 智能体助手。难点在于：如何让新手愿意信任它，完成安装、成功使用一次，并再次回来。</p>
+        </div>
+        <div class="card">
+          <div class="why-lead">
+            <span class="why-num">出发点 · 聚焦用户采纳</span>
+            <strong class="why-lead-title">害怕错过可以促成安装，却无法让用户信任一个自主执行的产品。</strong>
+            <p>初次使用者关心的不只是“它能做什么”，还包括“我能理解它吗？能安全地尝试吗？能放心把实际任务交给它吗？”因此，本项目聚焦围绕智能体的用户采纳旅程，而非继续为智能体增加能力。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 PROBLEM -->
+    <section class="block" id="problem">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">02 / 问题</div>
+          <h2>用户在哪些环节流失</h2>
+          <p>害怕错过让新手来到产品面前，却没有给他们理解、信任或再次使用智能体的理由。用户会在四个可预见的环节流失：每一处都是产品尚未建立信任，就先要求用户信任它。</p>
+        </div>
+        <div class="break-grid">
+          <div class="break-card">
+            <strong>设置门槛</strong>
+            <span class="desc">安装与首次启动过早要求用户做出太多决定。</span>
+            <span class="flow">跟风安装 → 繁琐配置 → 放弃使用</span>
+            <ul class="signals">
+              <li class="bad">用户尚未体验到价值，就被要求授权和配置。</li>
+              <li class="bad">新手还没完成第一个任务就已离开。</li>
+            </ul>
+          </div>
+          <div class="break-card">
+            <strong>产品认知模糊</strong>
+            <span class="desc">“智能体”是陌生而抽象的概念，用户不知道该说什么。</span>
+            <span class="flow">打开产品 → 空白输入框 → 无从下手</span>
+            <ul class="signals">
+              <li class="bad">用户尚未理解产品到底能做什么。</li>
+              <li class="bad">第一屏的空白输入框就让人不知所措。</li>
+            </ul>
+          </div>
+          <div class="break-card">
+            <strong>执行过程不可见</strong>
+            <span class="desc">智能体在后台执行，用户看不见，也无法引导。</span>
+            <span class="flow">提出请求 → 过程不明 → 得到结果</span>
+            <ul class="signals">
+              <li class="bad">隐藏的步骤让人感到失控，难以信任。</li>
+              <li class="good">信任需要清晰的边界和易懂的状态。</li>
+            </ul>
+          </div>
+          <div class="break-card">
+            <strong>缺少再次使用的理由</strong>
+            <span class="desc">一次尝试始终没有变成使用习惯。</span>
+            <span class="flow">初次尝试 → 没有后续 → 用户流失</span>
+            <ul class="signals">
+              <li class="bad">日常环境中没有自然引导用户次日回来的入口。</li>
+              <li class="good">持续使用需要一个便捷的再次进入入口。</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>核心挑战</strong>
+          <span>每个流失点背后，都是用户尚未获得充分理由形成的一份信念。用户采纳需要逐步跨越这些信任关卡：进入产品、找到与自身相关的用途、理解并引导执行、完成首个任务，再次回来。</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 INSIGHT -->
+    <section class="block" id="insight">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">03 / 重新定义</div>
+          <h2>信任来自一次次具体的确信</h2>
+          <p>我将用户采纳重新理解为一系列信念转变。每个阶段，产品都必须给新手一个继续前进的具体理由，并在体验中清楚地呈现这个理由。</p>
+        </div>
+        <div class="card">
+          <p class="fmap-note">交互图示 · 悬停查看关联，点击固定</p>
+          <div class="fmap-caption">
+            <span>用户旅程 · 用户信念</span>
+            <span>设计回应</span>
+          </div>
+          <div class="fmap" id="fmap">
+            <svg class="fmap-svg" id="fmap-svg"></svg>
+            <div class="fmap-col fmap-col--left" id="fmap-left"></div>
+            <div class="fmap-mid"><span>通过以下设计建立</span></div>
+            <div class="fmap-col fmap-col--right" id="fmap-right"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 DESIGN APPROACH -->
+    <section class="block" id="process">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">04 / 设计思路</div>
+          <h2>先让用户有所进展，再请求信任</h2>
+          <p>这张信念图转化为四项相互衔接的策略：降低开始使用的投入、让首次成果具体可感、让自主执行易于理解和控制，并让再次使用变得轻松。</p>
+        </div>
+        <div class="card">
+          <div class="why-lead">
+            <span class="why-num">设计体系</span>
+            <strong class="why-lead-title">好用的智能体应当亲切易近、清晰易懂，出错后也能恢复。</strong>
+            <p>信任体现在流程、动效和时机之中：价值何时出现、何时请求权限，以及产品如何解释自身行为。我将这些关键时刻做成可运行的体验，以呈现它们的实际节奏。</p>
+          </div>
+          <div class="why-grid">
+            <div class="why-card">
+              <span class="why-num">01 · 降低初始投入</span>
+              <strong>先进入产品，再逐步做决定</strong>
+              <p>通过一键安装与延后决策，把前期繁琐的配置转化为一个轻松的起步动作。</p>
+            </div>
+            <div class="why-card">
+              <span class="why-num">02 · 促成首次成功</span>
+              <strong>从熟悉场景出发，避免空白输入</strong>
+              <p>场景引导将抽象的智能体能力转化为具体任务，让用户在授予更多访问权限之前就能获得价值。</p>
+            </div>
+            <div class="why-card">
+              <span class="why-num">03 · 让执行过程易懂</span>
+              <strong>展示智能体正在做什么</strong>
+              <p>通过熟悉的系统隐喻和可见状态，让原本隐藏的智能体工作变得易懂。</p>
+            </div>
+            <div class="why-card">
+              <span class="why-num">04 · 让再次使用更轻松</span>
+              <strong>让边界可控、可恢复，也便于再次查看</strong>
+              <p>渐进式控制、清晰的恢复路径和融入日常的入口，让首次成功可以安心重现，也让用户在真正需要时更容易回来。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 05 FINAL DESIGN -->
+    <section class="block" id="final">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">05 / 体验设计</div>
+          <h2>建立信任的五个关键时刻</h2>
+          <p>这里展示的是 <em>实时运行的原型状态，而非静态效果图</em>。它们把策略串联为完整进程：进入产品、找到适合的任务、理解智能体、看到首次成果，并安心地再次使用。每个场景都将新手的顾虑与帮助他们迈出下一步的设计回应对应起来。</p>
+        </div>
+
+        <div class="card">
+          <div class="principles">
+            <div class="principle">
+              <div class="ptext">
+                <div class="pk">关卡 01 · 害怕错过</div>
+                <strong>“大家都在用，可我该怎么安装？”</strong>
+                <p>害怕错过带来安装的冲动，却无法建立信任。新手因为大家都说<em>必须拥有</em>而来，尚未理解产品。因此，第一步是<em>一键进入，延后决策</em>：先用起来，再结合具体情境介绍权限和设置。</p>
+              </div>
+              <div class="pframe pframe--bare">
+                <iframe class="pimg pimg--live" src="microclaw-steps-zh.html?only=1&amp;v=avatar-30-2" title="实时运行的安装界面" loading="lazy" scrolling="no"></iframe>
+              </div>
+            </div>
+            <div class="principle">
+              <div class="ptext">
+                <div class="pk">关卡 02 · 与我相关</div>
+                <strong>“装好了，可我能拿它做什么？”</strong>
+                <p>害怕错过让用户把产品装进手机，却没有说明它<em>有什么用</em>。面对空白输入框，新手无从下手。因此，产品会<em>引导他们进入具体的日常场景</em>，主动回答“它对我有什么帮助”。</p>
+              </div>
+              <div class="pframe">
+                <iframe class="pimg pimg--live" src="microclaw-steps-zh.html?only=2&amp;v=avatar-30-2" title="实时运行的场景引导" loading="lazy" scrolling="no"></iframe>
+              </div>
+            </div>
+            <div class="principle">
+              <div class="ptext">
+                <div class="pk">关卡 03 · 理解过程</div>
+                <strong>“我看得懂它在做什么。”</strong>
+                <p>智能体会自主执行，但过程通常不可见。新手在信任结果之前，需要先<em>理解智能体正在做什么</em>。熟悉的隐喻与可见状态，让隐藏的工作过程清晰易懂。</p>
+              </div>
+              <div class="pframe">
+                <iframe class="pimg pimg--live" src="microclaw-steps-zh.html?only=3&amp;v=avatar-30-2" title="实时运行的思考过程" loading="lazy" scrolling="no"></iframe>
+              </div>
+            </div>
+            <div class="principle">
+              <div class="ptext">
+                <div class="pk">关卡 04 · 首次成功</div>
+                <strong>“还没交出任何权限，它就已经帮上忙了。”</strong>
+                <p>新手还不知道哪些授权是安全的，因此流程调整为：应用<em>先完成简单且有价值的工作</em>，通过为首次成功设计的场景，以及<em>熟悉的应用式隐喻</em>让过程易懂；<em>之后</em>才请求权限，并清楚说明授权带来的好处。用实际成果建立信任。</p>
+              </div>
+              <div class="pframe">
+                <iframe class="pimg pimg--live" src="microclaw-steps-zh.html?only=4&amp;v=avatar-30-2" title="实时运行的首次成功：结果与授权请求" loading="lazy" scrolling="no"></iframe>
+              </div>
+            </div>
+            <div class="principle">
+              <div class="ptext">
+                <div class="pk">关卡 05 · 设定边界，再次使用</div>
+                <strong>“我能暂停、调整方向，也能稍后回来继续。”</strong>
+                <p>一次不可逆的错误就可能终结信任；如果没有再次使用的契机，首次成功也会逐渐淡去。时间线控制台支持<em>暂停工作、调整方案、确认高风险操作，以及恢复执行</em>。结合轻量、融入日常的入口，这些控制机制让首次成功逐步转化为可信赖的习惯。</p>
+              </div>
+              <div class="pframe pframe--bare pframe--flush">
+                <iframe class="pimg pimg--live" src="microclaw-steps-zh.html?only=5&amp;v=avatar-30-2" title="实时运行的信任控制台" loading="lazy" scrolling="no"></iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 BRAND EXPRESSION -->
+    <section class="block" id="brand">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">06 / 品牌表达</div>
+          <h2>让抽象的智能体拥有可辨识的形象</h2>
+          <p>这套品牌识别从独特的吉祥物出发，延伸到富有表现力的封面状态，再融入产品本身。因词元额度耗尽而暂停只是其中一个验证场景：同一个角色应当让智能体的各种状态都更易辨认和理解。</p>
+        </div>
+        <div class="brand-system-card">
+          <div class="brand-step"><div class="brand-step__copy"><div class="pk">品牌标识</div><strong>独具辨识度的伙伴</strong><p>吉祥物让抽象的智能体先拥有可辨识的形象，再逐步赢得信任。</p></div><div class="brand-tile__visual brand-tile--mark"><span class="brand-mark-hello">你好，我是 MicroClaw，你的工作伙伴。</span><img src="assets/microclaw.png" alt="MicroClaw 吉祥物" /></div></div>
+          <div class="brand-step"><div class="brand-step__copy"><div class="pk">封面状态</div><strong>用角色传达状态</strong><p>统一的封面视觉语言，呈现角色执行不同工作的状态。</p></div><div class="brand-tile__visual brand-tile__visual--frame"><iframe src="microclaw-cover-zh.html?embed&amp;brand-states" title="展示吉祥物多种状态的 MicroClaw 封面" loading="lazy" scrolling="no"></iframe></div></div>
+          <div class="brand-step"><div class="brand-step__copy"><div class="pk">产品中的应用</div><strong>在体验中表达品牌</strong><p>工作暂停时，MicroClaw 直接出现在任务中，清楚解释原因，并提供直达状态详情的入口。</p></div><div class="brand-tile__visual brand-tile__visual--screen"><div class="brand-full-app"><div class="brand-work-ui"><nav class="brand-work-ui__nav" aria-label="应用导航"><b>B</b><span>◉</span><span>▤</span><span>✧</span><i>⚙</i></nav><aside class="brand-work-ui__sidebar"><div class="brand-work-ui__search">⌕&nbsp; 搜索</div><div class="brand-work-ui__new">＋ 新建智能体</div><p>我的智能体</p><div class="brand-work-ui__agent"><img src="assets/microclaw.png" alt="" />MicroClaw</div></aside><header class="brand-work-ui__top"><img src="assets/microclaw.png" alt="" />MicroClaw <span class="brand-work-ui__window">−　□　×</span></header><main class="brand-work-ui__body"><div class="brand-work-ui__conversation"><button class="brand-pause-card" type="button" aria-label="查看 MicroClaw 状态"><img src="assets/microclaw.png" alt="" /><span><strong>MicroClaw 已暂停</strong><em>今日词元额度已用完，进度已保存。</em></span><b>查看状态 →</b></button></div><div class="brand-work-ui__composer"><span>发送消息给 MicroClaw…</span><b>↑</b></div></main></div><aside class="agent-panel-actual" aria-label="MicroClaw 智能体资料面板"><div class="agent-panel-actual__head"><img src="assets/microclaw.png" alt="" /><div><strong>MicroClaw</strong><span>你的 AI 伙伴</span></div></div><div class="agent-panel-actual__scene"><span class="agent-panel-actual__badge">词元额度已用完</span><img src="assets/microclaw-crash.gif" alt="MicroClaw 已暂停" /></div><div class="agent-panel-actual__banner"><span>💸</span><div><b>额度已用完，智能体已暂停</b><span>00:00 重置</span></div></div><div class="agent-panel-actual__label"><span>词元用量</span><span>最近 30 天</span></div><div class="agent-panel-actual__tokens"><div><span>总计</span><strong>1.28M</strong></div><div><span>剩余</span><strong>0</strong></div><div><span>输入</span><strong>942K</strong></div><div><span>输出</span><strong>342K</strong></div></div><div class="agent-panel-actual__budget"><i></i></div></aside></div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 REFLECTION -->
+    <section class="block" id="reflection">
+      <div class="wrap">
+        <div class="sec-head">
+          <div class="sec-num">07 / 成果与下一步</div>
+          <h2>从害怕错过，到构建智能体信任模型</h2>
+        </div>
+        <div class="reflect">
+          <div class="rk">本项目建立了什么</div>
+          <div class="big">从 <span class="fade">因害怕错过而安装</span> 走向信任与持续使用。</div>
+          <div class="reflect-grid">
+            <div class="rc">
+              <strong>可验证的从 0 到 1 原型</strong>
+              <p>一个可运行、带动效的新手智能体入门模型。它尚未上线，也不代表已验证的使用成效，而是一套可供评估和测试的具体体验。</p>
+            </div>
+            <div class="rc">
+              <strong>可复用的用户采纳模型</strong>
+              <p>将用户采纳重新定义为一系列信任关卡，每个关卡都由具体的设计回应来支撑。这一视角可以延伸到其他产品。</p>
+            </div>
+            <div class="rc">
+              <strong>渐进式信任体系</strong>
+              <p>将渐进式的“权限 × 自主程度”阶梯与可恢复的限制结合起来，为初次使用者提供真正掌控自主智能体的具体模式。</p>
+            </div>
+            <div class="rc">
+              <strong>下一步要验证什么</strong>
+              <p>仍待验证的问题是：从场景引导到首次成功的流程，是否真的能促成使用？融入日常的循环是否能带来真正的回访？下一步是邀请真实的初次使用者进行测试。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap foot-inner">
+      <div class="foot-meta"><strong>MicroClaw</strong> · 智能体 AI · 从 0 到 1 的概念与原型</div>
+      <div class="top-actions">
+        <a class="btn" href="copilot-ime.html">下一个项目：Copilot IME →</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      // ---- Belief-gate map: journey stage -> design response ----
+      var features = [
+        { id: "install",  label: "安装",   kano: "害怕错过",      belief: "“大家都在用，可怎么安装？”" },
+        { id: "relevance",label: "与我相关", kano: "认识产品",     belief: "“装好了，可它对我有什么用？”" },
+        { id: "value",    label: "理解过程",         kano: "价值",  belief: "“我看得懂它在做什么。”" },
+        { id: "firstwin", label: "首次成功", kano: "首次成功",  belief: "“还没交出权限，它就帮上忙了。”", star: true },
+        { id: "return",   label: "再次使用",    kano: "习惯",      belief: "“出了问题也能恢复，我愿意再来。”" }
+      ];
+      var modalities = [
+        { id: "onestep",  label: "一键安装",         effort: "降低门槛",       desc: "安装时延后决策，权限与设置留到具体情境中再处理。" },
+        { id: "scenario", label: "从场景到首次成功",    effort: "确保首次成功",     desc: "将新用户引导到能稳定完成首个实际任务的场景中。" },
+        { id: "metaphor", label: "系统隐喻",         effort: "让执行过程易懂", desc: "以熟悉的应用式隐喻呈现智能体原本不可见的状态。" },
+        { id: "controls", label: "渐进式信任控制", effort: "可见的边界", desc: "通过“权限 × 自主程度”阶梯，让用户看清并设定智能体的行动范围。" },
+        { id: "recover",  label: "可恢复的限制",       effort: "安心应对失败",        desc: "遇到限制或失败都有恢复路径，让用户感到仍有回旋余地。" },
+        { id: "ambient",  label: "融入日常的使用循环",      effort: "便捷的再次进入",       desc: "通过轻量、融入日常的入口，给用户再次使用的理由。" }
+      ];
+      var linkNotes = {
+        install: "害怕错过带来安装压力，却无法建立信任。让第一步一键完成，等到有具体情境时再做决定。",
+        relevance: "大家都有，却不知道有何用。在空白输入框劝退用户之前，先引导他们进入真实场景。",
+        firstwin: "先完成简单且有价值的任务，确保首次成功，再说明授权的好处并请求权限。",
+        value: "价值也在于理解智能体如何工作：熟悉的隐喻让隐藏的工作过程变得可见。",
+        return: "通过可暂停、可调整、可恢复的控制机制，以及便捷的再次进入方式，赢得持续使用。"
+      };
+      var capabilityLinks = [
+        ["install", "onestep"],
+        ["relevance", "scenario"],
+        ["firstwin", "scenario"], ["firstwin", "metaphor"], ["firstwin", "controls"],
+        ["value", "metaphor"],
+        ["return", "controls"], ["return", "recover"], ["return", "ambient"]
+      ];
+
+      var leftEl = document.getElementById("fmap-left");
+      var rightEl = document.getElementById("fmap-right");
+      var mapEl = document.getElementById("fmap");
+      var svg = document.getElementById("fmap-svg");
+      var SVGNS = "http://www.w3.org/2000/svg";
+
+      var stageNodes = {}, capNodes = {}, pathEls = [];
+      var pinned = null; // { type, id }
+      var hover = null;
+
+      features.forEach(function (f) {
+        var node = document.createElement("div");
+        node.className = "fmap-node";
+        var kicker = '<div class="fmap-kicker ' + (f.star ? "k-delight" : "k-perf") + '"><span class="kdot"></span><span>' + f.kano + '</span></div>';
+        node.innerHTML = kicker + '<strong>' + f.label + '</strong><span class="fmap-belief">' + f.belief + '</span><p class="fmap-desc">' + linkNotes[f.id] + '</p>';
+        node.addEventListener("mouseenter", function () { onEnter("stage", f.id); });
+        node.addEventListener("click", function () { onClick("stage", f.id); });
+        leftEl.appendChild(node);
+        stageNodes[f.id] = node;
+      });
+
+      modalities.forEach(function (m) {
+        var node = document.createElement("div");
+        node.className = "fmap-node";
+        node.innerHTML = '<div class="fmap-kicker"><span class="kdot"></span><span>' + m.effort + '</span></div><strong>' + m.label + '</strong><p class="fmap-desc">' + m.desc + '</p>';
+        node.addEventListener("mouseenter", function () { onEnter("cap", m.id); });
+        node.addEventListener("click", function () { onClick("cap", m.id); });
+        rightEl.appendChild(node);
+        capNodes[m.id] = node;
+      });
+
+      capabilityLinks.forEach(function (pair) {
+        var p = document.createElementNS(SVGNS, "path");
+        p.setAttribute("class", "fmap-path");
+        p.__stage = pair[0];
+        p.__cap = pair[1];
+        svg.appendChild(p);
+        pathEls.push(p);
+      });
+
+      mapEl.addEventListener("mouseleave", function () { hover = null; render(); });
+
+      function activeMap() { return pinned || hover; }
+
+      function isLinkedToPinned(type, id) {
+        if (!pinned) return true;
+        if (pinned.type === type && pinned.id === id) return true;
+        if (pinned.type === "stage" && type === "cap") return capabilityLinks.some(function (l) { return l[0] === pinned.id && l[1] === id; });
+        if (pinned.type === "cap" && type === "stage") return capabilityLinks.some(function (l) { return l[1] === pinned.id && l[0] === id; });
+        return false;
+      }
+      function onEnter(type, id) {
+        if (pinned && !isLinkedToPinned(type, id)) return;
+        hover = { type: type, id: id };
+        render();
+      }
+      function onClick(type, id) {
+        if (pinned) {
+          if (pinned.type === type && pinned.id === id) { pinned = null; hover = null; render(); }
+          return;
+        }
+        pinned = { type: type, id: id };
+        hover = { type: type, id: id };
+        render();
+      }
+
+      function render() {
+        var am = activeMap();
+        var linkedStages = {}, linkedCaps = {};
+        if (am && am.type === "cap") capabilityLinks.forEach(function (l) { if (l[1] === am.id) linkedStages[l[0]] = true; });
+        if (am && am.type === "stage") capabilityLinks.forEach(function (l) { if (l[0] === am.id) linkedCaps[l[1]] = true; });
+
+        features.forEach(function (f) {
+          var n = stageNodes[f.id];
+          var isActive = am && am.type === "stage" && am.id === f.id;
+          var isLinked = !!linkedStages[f.id];
+          var isDim = am && !isActive && !isLinked;
+          n.classList.toggle("is-active", !!isActive);
+          n.classList.toggle("is-linked", isLinked);
+          n.classList.toggle("is-dim", !!isDim);
+        });
+        modalities.forEach(function (m) {
+          var n = capNodes[m.id];
+          var isActive = am && am.type === "cap" && am.id === m.id;
+          var isLinked = !!linkedCaps[m.id];
+          var isDim = am && !isActive && !isLinked;
+          n.classList.toggle("is-active", !!isActive);
+          n.classList.toggle("is-linked", isLinked);
+          n.classList.toggle("is-dim", !!isDim);
+        });
+        pathEls.forEach(function (p) {
+          var on = am && ((am.type === "stage" && p.__stage === am.id) || (am.type === "cap" && p.__cap === am.id));
+          p.classList.toggle("is-active", !!on);
+          p.classList.toggle("is-dim", !!(am && !on));
+        });
+      }
+
+      function drawPaths() {
+        var mapRect = mapEl.getBoundingClientRect();
+        svg.setAttribute("viewBox", "0 0 " + mapRect.width + " " + mapRect.height);
+        pathEls.forEach(function (p) {
+          var s = stageNodes[p.__stage], c = capNodes[p.__cap];
+          if (!s || !c) return;
+          var sr = s.getBoundingClientRect(), cr = c.getBoundingClientRect();
+          var x1 = sr.right - mapRect.left;
+          var y1 = sr.top + sr.height / 2 - mapRect.top;
+          var x2 = cr.left - mapRect.left;
+          var y2 = cr.top + cr.height / 2 - mapRect.top;
+          var dx = (x2 - x1) * 0.5;
+          p.setAttribute("d", "M " + x1 + " " + y1 + " C " + (x1 + dx) + " " + y1 + ", " + (x2 - dx) + " " + y2 + ", " + x2 + " " + y2);
+        });
+      }
+
+      var raf;
+      function schedule() { cancelAnimationFrame(raf); raf = requestAnimationFrame(drawPaths); }
+      window.addEventListener("resize", schedule);
+      if (document.fonts && document.fonts.ready) document.fonts.ready.then(schedule);
+      drawPaths();
+      setTimeout(drawPaths, 120);
+      setTimeout(drawPaths, 400);
+      render();
+    })();
+
+    // ---- Left section-nav scroll-spy ----
+    (function () {
+      var ids = ["context", "problem", "insight", "process", "final", "brand", "reflection"];
+      var links = {};
+      ids.forEach(function (id) { links[id] = document.querySelector('.toc-list a[href="#' + id + '"]'); });
+      var els = ids.map(function (id) { return document.getElementById(id); }).filter(Boolean);
+      if (!els.length) return;
+      var visible = {};
+      function setActive(id) {
+        ids.forEach(function (k) { if (links[k]) links[k].classList.toggle("active", k === id); });
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) visible[e.target.id] = true; else delete visible[e.target.id];
+        });
+        var top = ids.filter(function (id) { return visible[id]; })[0];
+        if (top) setActive(top);
+      }, { rootMargin: "-40% 0px -55% 0px", threshold: 0 });
+      els.forEach(function (el) { io.observe(el); });
+      setActive("context");
+    })();
+
+    /* Auto-size the embedded steps frames to their content, so each
+       screen shows with no inner scroll. Every embed (the full stack at
+       the top and each ?only=N live card below) posts its rendered
+       height; we match the message to its source window and size that
+       frame. The top embed sizes its wrapper (.proto-frame); the live
+       card iframes size themselves. */
+    (function () {
+      var frames = document.querySelectorAll("#microclaw-embed, iframe.pimg--live");
+      if (!frames.length) return;
+      window.addEventListener("message", function (e) {
+        var d = e.data;
+        if (!d || d.type !== "microclaw-embed-height") return;
+        var h = Number(d.height);
+        if (!(h > 0)) return;
+        for (var i = 0; i < frames.length; i++) {
+          if (frames[i].contentWindow === e.source) {
+            if (frames[i].id === "microclaw-embed") {
+              frames[i].parentNode.style.height = Math.max(360, h) + "px";
+            } else {
+              frames[i].style.height = Math.max(200, h) + "px";
+            }
+            break;
+          }
+        }
+      });
+    })();
+
+    /* The brand proof embeds Gate 05 itself in token-pause mode. Keeping the
+       shell in the console file prevents its navigation, titlebar, icons and
+       composer from drifting away from the live trust-control prototype. */
+    (function () {
+      document.querySelectorAll(".brand-work-ui").forEach(function (shell) {
+        var frame = document.createElement("iframe");
+        frame.className = "brand-console-embed";
+        /* Version the inner prototype URL as well as the outer case-study.
+           Otherwise Chromium can retain the old console document even after
+           the parent page reloads, including its removed Grid-control logic. */
+        frame.src = "microclaw-console-zh.html?token-pause=1&embed=brand&v=avatar-30";
+        frame.title = "词元额度用完后暂停的 MicroClaw 任务";
+        frame.scrolling = "no";
+        shell.parentElement.classList.add("brand-full-app--console");
+        shell.replaceWith(frame);
+        var externalPanel = frame.nextElementSibling;
+        if (externalPanel && externalPanel.classList.contains("agent-panel-actual")) externalPanel.remove();
+      });
+    })();
+
+  </script>
+
+  <script>
+    (function () {
+      var links = document.querySelectorAll(".case-language a");
+      function syncLanguageLinks() {
+        links.forEach(function (link) {
+          var target = new URL(link.dataset.languagePage, window.location.href);
+          target.search = window.location.search;
+          target.hash = window.location.hash;
+          link.href = target.href;
+        });
+      }
+      syncLanguageLinks();
+      window.addEventListener("hashchange", syncLanguageLinks);
+      links.forEach(function (link) { link.addEventListener("click", syncLanguageLinks); });
+    })();
+  </script>
+</body></html>

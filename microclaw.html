@@ -851,6 +851,14 @@
       * { transition: none !important; }
     }
   </style>
+<style>
+    /* Case-specific language switch; both versions share section IDs. */
+    .case-language { display:inline-flex; align-items:center; gap:2px; padding:3px; border:1px solid var(--line-strong); border-radius:999px; background:var(--card); }
+    .case-language a { display:inline-flex; align-items:center; justify-content:center; min-width:36px; height:28px; padding:0 9px; border-radius:999px; font-size:12px; font-weight:600; white-space:nowrap; }
+    .case-language a[aria-current="page"] { color:var(--card); background:var(--ink); }
+    .case-language a:focus-visible { outline:2px solid var(--green); outline-offset:2px; }
+    @media(max-width:380px) { .topbar-inner .top-actions { gap:6px; } .topbar-inner .btn { padding-inline:10px; } .case-language a { min-width:30px; padding-inline:6px; } }
+</style>
 </head>
 <body>
 
@@ -860,7 +868,7 @@
         <span class="arw mono">&larr;</span>
         <span>Home</span>
       </a>
-      <div class="top-actions">
+      <div class="top-actions"><nav class="case-language" aria-label="Case study language"><a href="microclaw.html" data-language-page="microclaw.html" lang="en" hreflang="en" aria-current="page">EN</a><a href="microclaw-zh.html" data-language-page="microclaw-zh.html" lang="zh-CN" hreflang="zh-CN">中文</a></nav>
         <a class="btn" href="portfolio.html#work">All work</a>
       </div>
     </div>
@@ -1391,5 +1399,22 @@
       });
     })();
 
+  </script>
+
+  <script>
+    (function () {
+      var links = document.querySelectorAll(".case-language a");
+      function syncLanguageLinks() {
+        links.forEach(function (link) {
+          var target = new URL(link.dataset.languagePage, window.location.href);
+          target.search = window.location.search;
+          target.hash = window.location.hash;
+          link.href = target.href;
+        });
+      }
+      syncLanguageLinks();
+      window.addEventListener("hashchange", syncLanguageLinks);
+      links.forEach(function (link) { link.addEventListener("click", syncLanguageLinks); });
+    })();
   </script>
 </body></html>
