@@ -4,7 +4,7 @@
   const attrs = ['title','alt','aria-label','placeholder','data-title','data-caption','data-demo-title','data-gallery-label','data-label'];
   const isChinese = () => document.documentElement.lang.toLowerCase().startsWith('zh');
   function text(node) {
-    if (!isChinese() || !node.parentElement || node.parentElement.closest('script,style,code,pre')) return;
+    if (!isChinese() || !node.parentElement || node.parentElement.closest('script,style,code,pre,[data-preserve-language]')) return;
     const original = node.nodeValue, key = norm(original), value = dict[key];
     if (value && value !== key) node.nodeValue = original.replace(original.trim(), value);
   }
