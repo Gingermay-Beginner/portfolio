@@ -14,3 +14,49 @@
 html:has(.nav-shell){overflow-x:clip;}
 
 @media(max-width:480px){.im2-grid{grid-template-columns:minmax(0,1fr);}.im2-state{min-width:0;}.im2-caret-stage{max-width:100%;}}
+
+/* Chinese display type has denser glyphs than the English display faces.
+   Keep the adjustment on large headings, with body copy and controls unchanged. */
+html[lang="zh-CN"] .hero h1 {
+  font-size:clamp(32px,5.25vw,57px);
+  line-height:1.16;
+  letter-spacing:-.02em;
+}
+html[lang="zh-CN"] .hero .hero-title {
+  font-size:clamp(38px,5.55vw,75px);
+  line-height:1.14;
+}
+html[lang="zh-CN"] .work-copy h3 {
+  font-size:clamp(22px,3vw,38px);
+  line-height:1.24;
+  letter-spacing:-.01em;
+}
+html[lang="zh-CN"] .sec-head h2 {
+  font-size:clamp(21px,3vw,30px);
+  line-height:1.24;
+  letter-spacing:-.01em;
+}
+html[lang="zh-CN"] .section-head h2 {
+  font-size:clamp(23px,3vw,36px);
+  line-height:1.24;
+  letter-spacing:-.01em;
+}
+html[lang="zh-CN"]:has(.nav-shell) h2 {
+  font-size:clamp(28px,3.75vw,50px);
+  line-height:1.2;
+  letter-spacing:-.01em;
+}
+@media(min-width:881px) {
+  html[lang="zh-CN"] .work-copy h3 {
+    font-size:clamp(26px,3.75vw,46px);
+  }
+}
+html[lang="zh-CN"] :is(.hero h1,.work-copy h3,.sec-head h2,.section-head h2),
+html[lang="zh-CN"]:has(.nav-shell) h2 {
+  text-wrap:balance;
+}
+@media(max-width:880px) {
+  html[lang="zh-CN"] .work-copy h3 {
+    word-break:keep-all;
+  }
+}
