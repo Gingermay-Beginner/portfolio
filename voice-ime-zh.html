@@ -675,35 +675,6 @@
     .toc-list a.active { color: var(--ink); font-weight: 600; border-color: var(--ink); }
     .toc-list a.active .n { color: var(--green); }
 
-    /* ---- 04 Interaction model — open editorial tables, same language as .tiers.
-       Two tables share .im-*: the loop (stage × capability × trigger) and the
-       three summon mechanisms (how × form × serves). ---- */
-    .im-table { margin-top: 16px; }
-    .im-row { display: grid; grid-template-columns: 168px 1.5fr 1fr; column-gap: 26px; align-items: start; }
-    .im-row + .im-row { border-top: 1px solid var(--line); }
-    .im-head { border-bottom: 1px solid var(--line-strong); }
-    .im-head + .im-row { border-top: none; }
-    .im-head .ic {
-      padding-top: 0; padding-bottom: 11px;
-      font-family: "JetBrains Mono", monospace; font-size: 10.5px; font-weight: 500;
-      letter-spacing: 1px; text-transform: uppercase; color: var(--faint);
-    }
-    .ic { padding: 15px 0; font-size: 13.5px; line-height: 1.55; color: var(--soft); }
-    .ic b { color: var(--ink); font-weight: 600; }
-    .ic-stage { color: var(--ink); font-weight: 600; }
-    @media (max-width: 820px) {
-      .im-row { grid-template-columns: 1fr; column-gap: 0; }
-      .im-head { display: none; }
-      .im-row .ic + .ic { border-top: 1px solid var(--line); }
-      .ic { padding: 12px 0; }
-      .ic-stage { padding-top: 14px; }
-      .ic[data-label]::before {
-        content: attr(data-label); display: block; margin-bottom: 4px;
-        font-family: "JetBrains Mono", monospace; font-size: 10px;
-        letter-spacing: 1px; text-transform: uppercase; color: var(--faint);
-      }
-    }
-
     /* ---- Three summon mechanisms — mini schematics. The point of the three is
        *where* the bar appears, so the pill stays identical and only the
        surroundings change: docked at the bottom / at the caret / over a
@@ -1081,46 +1052,17 @@
       </div>
     </section>
 
-    <!-- 04 INTERACTION MODEL — loop table + entries + four-state anatomy -->
+    <!-- 06 INTERACTION MODEL — entries and interaction states -->
     <section class="block" id="model">
       <div class="wrap">
         <div class="sec-head">
           <div class="sec-num">06 / Interaction model</div>
           <h2>One handle. The context picks the verb.</h2>
-          <p>Where your cursor or selection sits is the universal handle. The whole loop — bring context in, produce, refine — lands on the same bar, and context decides which verb it offers. Five features stop being a menu and fall into place.</p>
+          <p>从常驻栏、光标或选中的文字开始，Looop 会根据当前上下文提供相应的操作。</p>
         </div>
         <div class="card">
 
-          <div class="mini-h"><span class="mk">The loop</span>Every stage lands on one bar</div>
-          <div class="im-table">
-            <div class="im-row im-head">
-              <div class="ic">Stage</div>
-              <div class="ic">What you can do</div>
-              <div class="ic">Trigger context</div>
-            </div>
-            <div class="im-row">
-              <div class="ic ic-stage" data-label="Stage">The surface</div>
-              <div class="ic" data-label="What you can do">Docked bar stays available &middot; on-demand bar appears at the caret or selection</div>
-              <div class="ic" data-label="Trigger context">Always present, then placed by context</div>
-            </div>
-            <div class="im-row">
-              <div class="ic ic-stage" data-label="Stage">Bring context in</div>
-              <div class="ic" data-label="What you can do">Select text &middot; invoke a context action &middot; use clipboard content</div>
-              <div class="ic" data-label="Trigger context">Text is selected, or the clipboard holds content</div>
-            </div>
-            <div class="im-row">
-              <div class="ic ic-stage" data-label="Stage">Produce</div>
-              <div class="ic" data-label="What you can do">Speak from the docked bar &middot; invoke voice at the caret</div>
-              <div class="ic" data-label="Trigger context">No selection &mdash; you just speak</div>
-            </div>
-            <div class="im-row">
-              <div class="ic ic-stage" data-label="Stage">Continue with output</div>
-              <div class="ic" data-label="What you can do">Review output &middot; copy &middot; translate &middot; refine in place</div>
-              <div class="ic" data-label="Trigger context">A voice result is open in the output workspace</div>
-            </div>
-          </div>
-
-          <div class="mini-h"><span class="mk">The surface</span>Three ways it comes to you</div>
+          <div class="mini-h">同一条工具栏，三种启动方式</div>
           <div class="entry-cards">
 
             <div class="entry-card">
