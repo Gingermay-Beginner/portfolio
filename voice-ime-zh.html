@@ -533,7 +533,6 @@
       font-family: "JetBrains Mono", monospace; font-size: 10px;
       letter-spacing: 1.1px; text-transform: uppercase; color: var(--faint);
     }
-    #action .scene-k { color: var(--green); }
     .scene-t {
       font-family: "Space Grotesk", sans-serif; font-weight: 600;
       font-size: 15px; letter-spacing: -0.2px; margin: 9px 0 6px;
@@ -570,39 +569,6 @@
       100% { stroke-dashoffset:-100; opacity:.28; }
     }
     @media (prefers-reduced-motion: reduce) { .brand-loop-demo path { animation:none; stroke-dashoffset:0; opacity:1; } }
-    /* The three case scenes are direct ports of the 480 × 320 Figma frames.
-       They deliberately share the Figma canvas ratio and component dimensions. */
-    .scene-viz { position:relative; container-type:inline-size; aspect-ratio:3 / 2; margin-bottom:15px; overflow:hidden; border:1px solid #e4e4e7; border-radius:10px; background:#e4e4e7; }
-    .sv-surface { position:absolute; overflow:hidden; border-radius:6.25%; background:#fff; }
-    .sv-surface--dark { background:#14141a; box-shadow:0 2px 3px rgba(0,0,0,.35); }
-    .sv-lines { position:absolute; display:flex; flex-direction:column; gap:5%; }
-    .sv-lines i { display:block; height:8%; min-height:2px; border-radius:999px; background:#d4d4d8; }
-    .sv-lines--dark i { background:rgba(212,212,216,.3); }
-    .sv-voice { position:absolute; display:flex; align-items:center; gap:7.3%; box-sizing:border-box; width:17.08%; height:8.125%; padding:0 4.17%; border-radius:10px; background:#14141a; box-shadow:0 2px 3px rgba(0,0,0,.35); }
-    .sv-voice i { width:7.32%; aspect-ratio:1; border-radius:4px; background:#fff; }
-    .sv-default { position:absolute; width:8.33%; height:2.5%; border-radius:200px; background:rgba(20,20,26,.4); }
-    .sv-cursor { position:absolute; width:5%; height:7.5%; object-fit:contain; }
-    .sv-caret { position:absolute; width:.625%; height:8.125%; border-radius:2px; background:#18181b; }
-    .sv-key { position:absolute; display:grid; place-items:center; width:5%; aspect-ratio:1; border-radius:8px; color:#e4e4e7; background:#71717a; font:500 clamp(7px,1.7vw,16px)/1 "JetBrains Mono", monospace; }
-    .sv-send { position:absolute; display:grid; place-items:center; width:6.67%; aspect-ratio:1; border-radius:100px; background:#71717a; }
-    .sv-send img { width:66%; height:66%; transform:rotate(180deg) scaleY(-1); }
-    /* 01 — Long-form output surface (Figma 40000029:3665). */
-    /* Use paired horizontal/vertical radii: a single percentage made the
-       shorter panel's corners flatten vertically as the card resized. */
-    .scene-viz--writing .sv-surface { left:28.96%; top:34.69%; display:flex; gap:12%; width:41.67%; height:30.63%; padding:4.17%; border-radius:7.143% / 14.286%; }
-    .sv-write-col, .sv-write-list { display:flex; flex:1; min-width:0; flex-direction:column; justify-content:space-between; }
-    .sv-write-col { gap:8%; }.sv-write-col i, .sv-write-row i { display:block; height:8%; min-height:2px; border-radius:999px; background:rgba(212,212,216,.3); }.sv-write-col i:last-child { width:28%; }
-    .sv-write-row { display:flex; align-items:center; gap:12%; height:8%; }.sv-write-row i { height:100%; }.sv-write-row i:first-child { width:auto; height:100%; aspect-ratio:1; flex:0 0 auto; }.sv-write-row i:last-child { flex:1; }
-    /* 02 — Hotkey at the caret (Figma 40000027:3562). */
-    .scene-viz--vibe .sv-surface { left:23.54%; top:35.31%; width:50%; height:28.75%; padding:5%; border-radius:8.333% / 21.739%; }
-    .scene-viz--vibe .sv-lines { left:10%; top:26.09%; width:80%; height:26.09%; justify-content:space-between; gap:0; }.scene-viz--vibe .sv-lines i { flex:0 0 33.33%; height:33.33%; }.scene-viz--vibe .sv-lines i:nth-child(2) { width:46.67%; }
-    .scene-viz--vibe .sv-caret { left:46.15%; top:44.38%; }.scene-viz--vibe .sv-voice { left:calc(46.15% - 20px); top:calc(44.38% + 17px); width:40px; height:14px; }.scene-viz--vibe .sv-key { left:calc(46.15% - 6.5px); top:88.75%; width:13px; height:13px; aspect-ratio:auto; border-radius:4px; font-size:9px; }.scene-viz--vibe .sv-send { right:10%; top:60.87%; width:8.33%; }
-    /* 03 — Context-triggered selection (Figma 40000027:3601). */
-    .scene-viz--language .sv-surface { left:24.79%; top:18.4375%; width:50%; height:62.5%; padding:10%; border-radius:8.333% / 10%; }
-    .scene-viz--language .sv-lines { left:10%; top:12%; width:80%; height:28%; justify-content:space-between; gap:0; }.scene-viz--language .sv-lines i { flex:0 0 14.286%; height:14.286%; background:#0A84FF; }.scene-viz--language .sv-lines i:first-child { width:90.625%; margin-left:9.375%; }.scene-viz--language .sv-lines i:nth-child(3) { width:43.75%; }
-    .scene-viz--language .sv-letter { position:absolute; left:10%; top:10%; color:#0A84FF; font:800 3.333cqw/1 "JetBrains Mono", monospace; }
-    .scene-viz--language .sv-caret { left:47.604%; top:38.4375%; }.scene-viz--language .sv-voice { left:39.583%; top:47.1875%; width:16.667%; height:8.125%; }
-
     /* ---------- Loom video ---------- */
     .loom-embed-box {
       position: relative; width: 100%; padding-top: 62.5%;
@@ -823,12 +789,11 @@
           <a href="#problem"><span class="n">02</span><span>Problem</span></a>
           <a href="#constraints"><span class="n">03</span><span>Design constraints</span></a>
           <a href="#approach"><span class="n">04</span><span>Approach</span></a>
-          <a href="#action"><span class="n">05</span><span>In action</span></a>
-          <a href="#model"><span class="n">06</span><span>Interaction model</span></a>
-          <a href="#brand"><span class="n">07</span><span>Brand expression</span></a>
-          <a href="#capabilities"><span class="n">08</span><span>Capabilities</span></a>
-          <a href="#onboarding"><span class="n">09</span><span>Onboarding</span></a>
-          <a href="#reflection"><span class="n">10</span><span>Reflection</span></a>
+          <a href="#model"><span class="n">05</span><span>Interaction model</span></a>
+          <a href="#brand"><span class="n">06</span><span>Brand expression</span></a>
+          <a href="#capabilities"><span class="n">07</span><span>Capabilities</span></a>
+          <a href="#onboarding"><span class="n">08</span><span>Onboarding</span></a>
+          <a href="#reflection"><span class="n">09</span><span>Reflection</span></a>
         </nav>
       </aside>
       <div class="content">
@@ -1052,11 +1017,11 @@
       </div>
     </section>
 
-    <!-- 06 INTERACTION MODEL — entries and interaction states -->
+    <!-- 05 INTERACTION MODEL — entries and interaction states -->
     <section class="block" id="model">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">06 / Interaction model</div>
+          <div class="sec-num">05 / 交互模型</div>
           <h2>One handle. The context picks the verb.</h2>
           <p>从常驻栏、光标或选中的文字开始，Looop 会根据当前上下文提供相应的操作。</p>
         </div>
@@ -1144,11 +1109,11 @@
       </div>
     </section>
 
-    <!-- 07 BRAND EXPRESSION -->
+    <!-- 06 BRAND EXPRESSION -->
     <section class="block" id="brand">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">07 / Brand expression</div>
+          <div class="sec-num">06 / 品牌表达</div>
           <h2>A voice you can recognize</h2>
           <p><b>Looop</b> gives speaking, shaping, and working on text one recognizable form: its continuous mark turns the abstract loop between voice, writing, and reading into a product people can see and learn.</p>
         </div>
@@ -1191,40 +1156,11 @@
       </div>
     </section>
 
-    <!-- 06 IN ACTION — show the proof before listing the capability taxonomy -->
-    <section class="block" id="action">
-      <div class="wrap">
-        <div class="sec-head">
-          <div class="sec-num">05 / In action</div>
-          <h2>See it in the work people already do</h2>
-          <p>Each scenario follows the same arc: current context, a spoken request, an interpreted action, and a result the user can still check.</p>
-        </div>
-        <div class="card">
-          <div class="scenes">
-            <div class="scene">
-              <div class="scene-viz scene-viz--writing" aria-hidden="true"><div class="sv-surface sv-surface--dark"><span class="sv-write-col"><i></i><i></i><i></i><i></i></span><span class="sv-write-list"><span class="sv-write-row"><i></i><i></i></span><span class="sv-write-row"><i></i><i></i></span><span class="sv-write-row"><i></i><i></i></span></span></div></div>
-              <div class="scene-k">工作中的写作</div>
-              <div class="scene-t">从零散想法到可修改的草稿</div>
-              <div class="scene-d">写方案时，想到一点就先说下来，随时补充或改口。Looop 把零散的想法整理成草稿，方便用户继续调整结构、打磨措辞，也保留原话供核对。</div>
-            </div>
-            <div class="scene">
-              <div class="scene-viz scene-viz--vibe" aria-hidden="true"><div class="sv-surface"><span class="sv-lines"><i></i><i></i></span><span class="sv-send"><img src="assets/voice-ime-scene-send-cursor.svg" alt=""></span></div><span class="sv-caret"></span><span class="sv-voice"><i></i><i></i><i></i></span></div>
-              <div class="scene-k">Vibe coding</div><div class="scene-t">Speak the request right where you are</div><div class="scene-d">With the caret in an agent chat, a developer presses <b>⌥</b> and speaks. Looop inserts a clean request at the cursor — removing filler and naturally resolving spoken corrections. The original remains in <b>History</b>.</div>
-            </div>
-            <div class="scene">
-              <div class="scene-viz scene-viz--language" aria-hidden="true"><div class="sv-surface"><span class="sv-letter" data-preserve-language>A</span><span class="sv-lines"><i></i><i></i><i></i></span></div><span class="sv-caret"></span><span class="sv-voice"><i></i><i></i><i></i></span></div>
-              <div class="scene-k">Cross-language work</div><div class="scene-t">Transform a selected passage</div><div class="scene-d">A user <b>selects Chinese text</b> and asks for <b>natural English in a professional tone</b>. The bar uses the selection as context and returns an <b>editable preview</b>.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 08 CAPABILITIES -->
+    <!-- 07 CAPABILITIES -->
     <section class="block" id="capabilities">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">08 / Capabilities</div>
+          <div class="sec-num">07 / 核心能力</div>
           <h2>Make transformation useful, inspectable, and recoverable</h2>
           <p>From resolving a spoken repair to editing a finished result, each capability makes the path from raw speech to useful output visible.</p>
         </div>
@@ -1273,11 +1209,11 @@
       </div>
     </section>
 
-    <!-- 09 ONBOARDING -->
+    <!-- 08 ONBOARDING -->
     <section class="block" id="onboarding">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">09 / Onboarding</div>
+          <div class="sec-num">08 / 首次使用引导</div>
           <h2>Getting to first success</h2>
           <p>A new user reaches their first win by solving exactly three things — nothing more in the way.</p>
         </div>
@@ -1295,11 +1231,11 @@
       </div>
     </section>
 
-    <!-- 10 REFLECTION -->
+    <!-- 09 REFLECTION -->
     <section class="block" id="reflection">
       <div class="wrap">
         <div class="sec-head">
-          <div class="sec-num">10 / Reflection</div>
+          <div class="sec-num">09 / 设计复盘</div>
           <h2>From a spoken thought to work in progress</h2>
         </div>
         <div class="reflect">
@@ -1411,13 +1347,6 @@
       if (modeDetails && capabilitiesCard) capabilitiesCard.appendChild(modeDetails);
     })();
 
-    // ---- Case-study narrative order: scenarios first, model second ----
-    (function () {
-      var action = document.getElementById('action');
-      var model = document.getElementById('model');
-      if (action && model) model.parentNode.insertBefore(action, model);
-    })();
-
     // ---- Capabilities tabs (click to switch; auto-advances unless reduced-motion) ----
     (function () {
       var tabs = Array.prototype.slice.call(document.querySelectorAll('#vtabs .vtab'));
@@ -1452,7 +1381,7 @@
 
     // ---- Left section-nav scroll-spy ----
     (function () {
-      var ids = ["context", "problem", "constraints", "approach", "action", "model", "brand", "capabilities", "onboarding", "reflection"];
+      var ids = ["context", "problem", "constraints", "approach", "model", "brand", "capabilities", "onboarding", "reflection"];
       var links = {};
       ids.forEach(function (id) { links[id] = document.querySelector('.toc-list a[href="#' + id + '"]'); });
       var els = ids.map(function (id) { return document.getElementById(id); }).filter(Boolean);
